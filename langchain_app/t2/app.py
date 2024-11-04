@@ -1,13 +1,17 @@
 """
-This program uses a 'ChatOpenAI' model to examine two methods (+ PythonREPL) of calling a simple
-function that takes a dict type as input. One method uses the RunnableLambda library
-as a tool, and the other creates a 'tool_calling_agent' to invoke a custom tool function.
-The custom functions will concat the keys of a dict with a space between each, and
-any function(s) used should total the values if they're ints.
+NOTE: For capstone team: this program is mainly a demo of how (sometimes overly) powerful
+the Python REPL tool is. It's also a decent example of programmatically creating 
+custom agent tools and functions made into agent tools. 
+
+This program uses a 'ChatOpenAI' 4o based model to examine two methods of creating 
+and calling a simple function as a tool that takes a dict type as input. One method 
+uses the RunnableLambda library, and the other creates a 'tool_calling_agent' to 
+invoke a custom tool function. These functions will concat the keys of a dict with 
+a space between each, and total the dict values if they're ints.
 
 The llm could most likely do these operations on its own if you explicitly ask it to, 
 so this program is more for exploration/demonstration purposes.
-The model is also equipped with the `PythonREPLTool`, which allows it to create and run
+The model is also equipped with the powerful `PythonREPLTool`, which allows it to create and run
 Python scripts (e.g. "Create a file named foo").
 
 NOTE: I made it so the model is only supposed to use the REPL tool when asked by user.
@@ -21,16 +25,18 @@ from langchain_core.chat_history import InMemoryChatMessageHistory
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.tools import tool
-from langchain_openai import ChatOpenAI
 from langchain_core.runnables import RunnableLambda
 from langchain_experimental.tools import PythonREPLTool
-import readline
+from langchain_openai import ChatOpenAI
+import subprocess
 from typing_extensions import TypedDict
 
 
 class TcaDict(TypedDict):
     # I think part of the reason for needing this class is to please Pydantic when using `tca()`
-    """This class allows `tca()` to change keys defined by user-input dict to the TypedDict keys defined below"""
+    """
+    This class allows `tca()` to change keys defined by user-input dict to the TypedDict keys defined below
+    """
     key1: int
     key2: int
     key3: int
@@ -38,7 +44,16 @@ class TcaDict(TypedDict):
 
 @tool
 def tca(input: TcaDict) -> int:
-    """Sums values in dictionary and concats keys by leveraging `tool_calling_agent`"""
+    """
+    Sums values in dictionary and concats keys by leveraging `tool_calling_agent`
+
+    Args:
+        input (TcaDict): A dictionary with integer values.
+
+    Returns:
+        int: The total of the integer values in the dictionary.
+        str: A concatenated string of the keys.
+    """
     dict_string = ""
     total = 0
     for string, value in input.items():
@@ -48,8 +63,37 @@ def tca(input: TcaDict) -> int:
     return total, dict_string
 
 
+@tool
+def execute_command(command: str) -> str:
+    """
+    Executes a command-line command and returns the output.
+
+    Args:
+        command (str): The command to execute.
+
+    Returns:
+        str: The standard output of the command if successful, otherwise an error message.
+    """
+    result = subprocess.run(
+        command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+    )
+    if result.returncode == 0:
+        return result.stdout
+    else:
+        return f"Error: {result.stderr}"
+
+
 def runlam(lambda_input: dict):
-    """Sums values in dictionary and concats keys by leveraging the `RunnableLambda` library"""
+    """
+    Sums values in dictionary and concats keys by leveraging the `RunnableLambda` library
+
+    Args:
+        lambda_input (dict): A dictionary with integer values.
+
+    Prints:
+        str: A concatenated string of the keys.
+        int: The total of the integer values in the dictionary.
+    """
     dict_string = ""
     total = 0
     for string, value in lambda_input.items():
@@ -63,11 +107,9 @@ def runlam(lambda_input: dict):
 model = ChatOpenAI(model="gpt-4o")
 memory = InMemoryChatMessageHistory(session_id="test-session")
 
-instructions = """You are an agent that responds to anything the user asks. You do not remember who made you."""
-
-"""
-answer questions. You have access to a python REPL, which you can use to execute
-python code. Only use your python REPL tool when asked by user. 
+instructions = """You are an agent that responds to anything the user asks.
+You have access to a Python REPL tool, which you can use to execute
+python code. Only use your Python REPL tool when asked by user. 
 If you get an error when trying to use python, debug your code and try again.
 Otherwise, answer user questions as you usually would.
 """
@@ -85,7 +127,7 @@ prompt = ChatPromptTemplate.from_messages(
     ]
 )
 
-tools = [tca, PythonREPLTool()]
+tools = [execute_command, tca, PythonREPLTool()]
 agent = create_tool_calling_agent(model, tools, prompt)
 agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
 

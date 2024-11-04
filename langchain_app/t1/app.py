@@ -1,7 +1,7 @@
 """
 This program uses PyPDFLoader as a file loader and Chroma as a vector database.
 It loads local PDFs and also checks web pages to scrape and consume data.
-It currently get responses from both Gemini and Gpt4o, though more models could be added.
+It currently get responses from both Gemini  Gpt4o, though more models could be added.
 """
 
 from langchain import hub
@@ -17,16 +17,21 @@ import getpass
 import os
 
 llms = [
-    ChatAnthropic(model="claude-3-5-sonnet-latest"),  # No embedding readily available
     ChatOpenAI(model="gpt-4o"),
     GoogleGenerativeAI(model="gemini-1.5-pro-latest", temperature=0),
+    ChatAnthropic(model="claude-3-5-sonnet-latest"),
 ]
 
 list_len = len(llms)
 
 
 def load_docs(docs):
-    """Split text of arg documents and load them into the Chroma vector store"""
+    """
+    Split text of arg documents and load them into the Chroma vector store
+
+    :param docs: List of documents to load and split.
+    :type docs: list
+    """
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=10)
     splits = text_splitter.split_documents(docs)
     for i in range(list_len):
@@ -34,12 +39,24 @@ def load_docs(docs):
 
 
 def load_urls(urls):
-    """Use AsyncHtmlLoader library to check and scrape websites then load to Chroma"""
+    """
+    Use AsyncHtmlLoader library to check and scrape websites then load to Chroma
+
+    :param urls: List of URLs to load documents from.
+    :type urls: list
+    """
     load_docs(AsyncHtmlLoader(urls).load())
 
 
 def format_docs(docs):
-    """Concatenate chunks to include in prompt"""
+    """
+    Concatenate chunks to include in prompt
+
+    :param docs: List of documents to format.
+    :type docs: list
+    :return: Formatted string of document contents.
+    :rtype: str
+    """
     return "\n\n".join(doc.page_content for doc in docs)
 
 
@@ -75,6 +92,7 @@ vectorstore.append(
         ),
     )
 )
+# No Claude embedding models readily available; just using Google's
 vectorstore.append(
     Chroma(
         persist_directory="./rag_data/.chromadb/gemini",
