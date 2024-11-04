@@ -16,6 +16,14 @@ from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 import getpass
 import os
 
+llms = [
+    ChatAnthropic(model="claude-3-5-sonnet-latest"),  # No embedding readily available
+    ChatOpenAI(model="gpt-4o"),
+    GoogleGenerativeAI(model="gemini-1.5-pro-latest", temperature=0),
+]
+
+list_len = len(llms)
+
 
 def load_docs(docs):
     """Split text of arg documents and load them into the Chroma vector store"""
@@ -35,17 +43,9 @@ def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
 
-# If Google API key not found, prompt user for it (not sure if works properly?)
+# (Demo/Example code) If Google API key not found, prompt user for it
 if "GOOGLE_API_KEY" not in os.environ:
     os.environ["GOOGLE_API_KEY"] = getpass.getpass("Google API Key:")
-
-llms = [
-    # ChatAnthropic(model="claude-3-sonnet-20240229"), # No embedding readily available
-    ChatOpenAI(model="gpt-4o"),
-    GoogleGenerativeAI(model="gemini-1.5-pro-latest", temperature=0),
-]
-
-list_len = len(llms)
 
 # URL list for scraping
 urls = [
@@ -53,7 +53,7 @@ urls = [
 ]
 
 # Add local file(s)
-file_path = "nyug.pdf"
+file_path = "OWASPtop10forLLMS.pdf"
 loader = PyPDFLoader(file_path)
 pages = []
 for page in loader.lazy_load():
@@ -65,6 +65,14 @@ vectorstore.append(
     Chroma(
         persist_directory="./rag_data/.chromadb/openai",
         embedding_function=OpenAIEmbeddings(model="text-embedding-3-large"),
+    )
+)
+vectorstore.append(
+    Chroma(
+        persist_directory="./rag_data/.chromadb/gemini",
+        embedding_function=GoogleGenerativeAIEmbeddings(
+            model="models/embedding-001", task_type="retrieval_query"
+        ),
     )
 )
 vectorstore.append(
@@ -109,6 +117,6 @@ while True:
     if line:
         for i in range(list_len):
             result = rag_chain[i].invoke(line)
-            print(result)
+            print(f"\nModel {i}: {result}")
     else:
         break

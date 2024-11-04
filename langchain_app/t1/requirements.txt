@@ -1,8 +1,3 @@
-argparse
-arxiv
-asyncio
-bs4
-docx2txt
 langchain
 langchainhub
 langchain_anthropic
@@ -11,13 +6,5 @@ langchain-community
 langchain_google_genai
 langchain-experimental
 langchain_openai
-grpcio
-markdown
-nltk
 pymupdf
 pypdf
-scikit-learn
-tiktoken
-unstructured
-validators
-wikipedia
