@@ -1,7 +1,8 @@
 """
 NOTE: For capstone team: this program is mainly a demo of how (sometimes overly) powerful
 the Python REPL tool is. It's also a decent example of programmatically creating 
-custom agent tools and functions made into agent tools. 
+custom agent tools and functions made into agent tools.
+Additionally, it shows one way to keep a message history/memory/state.
 
 This program uses a 'ChatOpenAI' 4o based model to examine two methods of creating 
 and calling a simple function as a tool that takes a dict type as input. One method 
@@ -129,6 +130,7 @@ prompt = ChatPromptTemplate.from_messages(
 
 tools = [execute_command, tca, PythonREPLTool()]
 agent = create_tool_calling_agent(model, tools, prompt)
+# NOTE: The verbose setting is great for a look into the model's "thoughts" via stdout
 agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
 
 agent_with_chat_history = RunnableWithMessageHistory(
