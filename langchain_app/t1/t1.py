@@ -24,6 +24,7 @@ llms = [
     ChatAnthropic(model="claude-3-5-sonnet-latest"),
 ]
 
+model_names = ["GPT-4", "Gemini 1.5 Pro", "Claude 3.5 Sonnet"]
 list_len = len(llms)
 
 
@@ -148,6 +149,6 @@ while True:
     if line:
         for i in range(list_len):
             result = rag_chain[i].invoke(line)
-            print(f"\nModel {i}: {result}")
+            print(f"\nModel {model_names[i]}: {result}")
     else:
         break
