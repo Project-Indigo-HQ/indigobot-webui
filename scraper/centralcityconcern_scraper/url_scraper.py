@@ -1,3 +1,5 @@
+
+
 import requests
 import xml.etree.ElementTree as ET
 import os
@@ -16,6 +18,20 @@ def fetch_xml(url):
     else:
         raise Exception(f"Failed to fetch XML from {url}, Status Code: {response.status_code}")
     
+"""  
+def get_xml(url):
+    session = requests.Session()
+    retries = Retry(total=5, backoff_factor = 1, status_forceList=[403,500,502,503,504])
+    session.mount('https://', HTTPAdapter(max_retries=retries))
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"}
+    response = session.get(url, headers=headers)
+    if response.status_code == 200:
+        return response.content
+    else:
+        raise Exception(f"Fail to fetch XML form {url}, Status Code: {response.status_code}")
+"""     
+
+#Functionn to parse a list of url to resource page from sitemap
 def extract_xml(xml):
     sitemap = ET.fromstring(xml)
     url_list = []
