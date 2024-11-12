@@ -3,6 +3,7 @@
 import requests
 import xml.etree.ElementTree as ET
 import os
+import time
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
@@ -43,14 +44,20 @@ def extract_xml(xml):
 def main():
     # URL of the housing sitemap
     housing_sitemap_url = "https://centralcityconcern.org/housing-sitemap.xml"
+    
     healthcare_sitemap_url = "https://centralcityconcern.org/healthcare-sitemap.xml"
+    
     recovery_sitemap_url = "https://centralcityconcern.org/recovery-sitemap.xml"
+    
     jobs_sitemap_url = "https://centralcityconcern.org/jobs-sitemap.xml"
 
     # Scrrape Housing URL and then safe to file
     housing_urls = extract_xml(fetch_xml(housing_sitemap_url))
+    time.sleep(5)
     healthcare_url = extract_xml(fetch_xml(healthcare_sitemap_url))
+    time.sleep(5)
     recovery_url = extract_xml(fetch_xml(recovery_sitemap_url))
+    time.sleep(5)
     jobs_url = extract_xml(fetch_xml(jobs_sitemap_url))
 
     # Output all housing URLs
