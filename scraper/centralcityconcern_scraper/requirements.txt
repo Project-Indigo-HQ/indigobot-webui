@@ -1,0 +1,14 @@
+langchain
+langchain-core
+langchainhub
+langchain_anthropic
+langchain-chroma
+langchain-community
+langchain_google_genai
+langchain-experimental
+langchain_openai
+pymupdf
+pypdf
+beautifulsoup4
+requests
+langchain-community
