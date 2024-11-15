@@ -1,5 +1,4 @@
-
-
+import random 
 import requests
 import xml.etree.ElementTree as ET
 import os
@@ -7,11 +6,15 @@ import time
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
-# Function to fetch and parse XML from a URL with retry mechanism
-def fetch_xml(url):
+# create a REST session
+def start_sessionn():
     session = requests.Session()
     retries = Retry(total=5, backoff_factor=1, status_forcelist=[403, 500, 502, 503, 504])
     session.mount('https://', HTTPAdapter(max_retries=retries))
+    return session
+
+# Function to fetch and parse XML from a URL with retry mechanism
+def fetch_xml(url,session):
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"}
     response = session.get(url, headers=headers)
     if response.status_code == 200:
@@ -40,15 +43,11 @@ def load_urls(folder_path):
     return urls
 
 # Get the HTML file for each URL and save it
-def download_and_save_html(urls):
-    session = requests.Session()
-    retries = Retry(total=5, backoff_factor=1, status_forcelist=[403, 500, 502, 503, 504])
-    session.mount('https://', HTTPAdapter(max_retries=retries))
+def download_and_save_html(urls,session):
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"}
     
-    
     for url in urls:
-        time.sleep(5)
+        time.sleep(random.randint(3, 6))
         response = session.get(url, headers=headers)
 
         if response.status_code == 200:
@@ -66,8 +65,9 @@ def download_and_save_html(urls):
         else:
             print(f"Faile to fetch {url}, Status code: {response.status_code}")
 
-def parse_url(sitemap_url,target_file_name):
-    urls = extract_xml(fetch_xml(sitemap_url))
+def parse_url(sitemap_url, target_file_name, session):
+
+    urls = extract_xml(fetch_xml(sitemap_url,session))
 
         # Output all housing URLs
     print("Extracted Housing URLs:")
@@ -86,6 +86,8 @@ def parse_url(sitemap_url,target_file_name):
 
 def main():
 
+    session = start_sessionn()
+
     # URL of the housing sitemap
     housing_sitemap_url = "https://centralcityconcern.org/housing-sitemap.xml"
     
@@ -96,16 +98,18 @@ def main():
     jobs_sitemap_url = "https://centralcityconcern.org/jobs-sitemap.xml"
 
     # Scrrape Housing URL and then safe to file
-    parse_url(housing_sitemap_url, "housing_urls")
-    parse_url(healthcare_sitemap_url, "healthcare_url")
-    parse_url(recovery_sitemap_url, "recovery_url")
-    parse_url(jobs_sitemap_url, "jobs_url")
+    parse_url(housing_sitemap_url, "housing_urls", session)
+    parse_url(healthcare_sitemap_url, "healthcare_url", session)
+    parse_url(recovery_sitemap_url, "recovery_url", session)
+    parse_url(jobs_sitemap_url, "jobs_url", session)
 
     # Load urls from all .txt files
     urls = load_urls("./urls")
     
     # Download all resource page as html
-    download_and_save_html(urls)
+    download_and_save_html(urls,session)
+
+    print("\nThe crawler is finished")
 
 if __name__ == "__main__":
     main()

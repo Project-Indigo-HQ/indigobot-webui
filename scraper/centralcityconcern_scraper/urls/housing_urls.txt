@@ -1,7 +1,6 @@
 https://centralcityconcern.org/housing-location/miracles-central/
 https://centralcityconcern.org/housing-location/medford-hotel/
 https://centralcityconcern.org/housing-location/shoreline/
-https://centralcityconcern.org/housing-location/sunrise-place/
 https://centralcityconcern.org/housing-location/town-center-courtyards/
 https://centralcityconcern.org/housing-location/chez-ami-apartments/
 https://centralcityconcern.org/housing-location/crescent-court-apartments/
@@ -28,3 +27,4 @@ https://centralcityconcern.org/housing-location/madrona-studios/
 https://centralcityconcern.org/housing-location/taggart-manor/
 https://centralcityconcern.org/housing-location/hazel-heights/
 https://centralcityconcern.org/housing-location/meridian-gardens/
+https://centralcityconcern.org/housing-location/sunrise-place/
