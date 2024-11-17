@@ -15,21 +15,14 @@ from langchain.tools.retriever import create_retriever_tool
 from langchain_anthropic import ChatAnthropic
 from langchain_chroma import Chroma
 from langchain_community.agent_toolkits import SQLDatabaseToolkit
-from langchain_community.agent_toolkits.load_tools import load_tools
-from langchain_community.agent_toolkits.sql.base import create_sql_agent
 from langchain_community.document_loaders import AsyncHtmlLoader, PyPDFLoader
 from langchain_community.document_loaders.generic import GenericLoader
 from langchain_community.document_loaders.parsers import LanguageParser
 from langchain_community.document_transformers import BeautifulSoupTransformer
 from langchain_community.utilities import SQLDatabase
-from langchain_core.chat_history import InMemoryChatMessageHistory
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
-from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.prompts import MessagesPlaceholder
-from langchain_core.runnables import RunnablePassthrough
-from langchain_core.runnables.history import RunnableWithMessageHistory
-from langchain_core.tools import tool
 from langchain_google_genai import (
     GoogleGenerativeAI,
     GoogleGenerativeAIEmbeddings,
@@ -38,10 +31,17 @@ from langchain_google_genai import (
 )
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langgraph.checkpoint.memory import MemorySaver
-from langgraph.prebuilt import create_react_agent
 from typing_extensions import Annotated, TypedDict
 from typing import Sequence
-import readline
+import readline  # need this to use arrow keys
+
+
+### Statefully manage chat history ###
+class State(TypedDict):
+    input: str
+    chat_history: Annotated[Sequence[BaseMessage], add_messages]
+    context: str
+    answer: str
 
 
 def load_docs(docs):
@@ -76,6 +76,18 @@ def format_docs(docs) -> str:
     :rtype: str
     """
     return "\n\n".join(doc.page_content for doc in docs)
+
+
+def call_model(state: State):
+    response = rag_chain.invoke(state)
+    return {
+        "chat_history": [
+            HumanMessage(state["input"]),
+            AIMessage(response["answer"]),
+        ],
+        "context": response["context"],
+        "answer": response["answer"],
+    }
 
 
 def search_vectorstore(query):
@@ -170,27 +182,6 @@ qa_prompt = ChatPromptTemplate.from_messages(
 question_answer_chain = create_stuff_documents_chain(llm, qa_prompt)
 rag_chain = create_retrieval_chain(history_aware_retriever, question_answer_chain)
 
-
-### Statefully manage chat history ###
-class State(TypedDict):
-    input: str
-    chat_history: Annotated[Sequence[BaseMessage], add_messages]
-    context: str
-    answer: str
-
-
-def call_model(state: State):
-    response = rag_chain.invoke(state)
-    return {
-        "chat_history": [
-            HumanMessage(state["input"]),
-            AIMessage(response["answer"]),
-        ],
-        "context": response["context"],
-        "answer": response["answer"],
-    }
-
-
 workflow = StateGraph(state_schema=State)
 workflow.add_edge(START, "model")
 workflow.add_node("model", call_model)
@@ -198,48 +189,26 @@ workflow.add_node("model", call_model)
 memory = MemorySaver()
 app = workflow.compile(checkpointer=memory)
 
-
 # db = SQLDatabase.from_uri(f"sqlite:///{gpt_db}")
 # sql_tool = SQLDatabaseToolkit(db=db, llm=llm)
 # agent_executor = create_sql_agent(llm=llm, toolkit=toolkit, verbose=True)
 
-# agent = create_react_agent(llm, tools)
-# NOTE: The verbose setting is great for a look into the model's "thoughts" via stdout
-# agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
-
-
 retriever_tool = create_retriever_tool(retriever, "my_retriever", "my_description")
 tools = [retriever_tool]
 
-memory = MemorySaver()
-agent_executor = create_react_agent(llm, tools, checkpointer=memory)
-
-
-# memory = InMemoryChatMessageHistory(session_id="test-session")
-
-# agent_with_chat_history = RunnableWithMessageHistory(
-#     agent_executor,
-#     # This is needed because in most real world scenarios, a session id is needed;
-#     # It isn't really used here because we are using a simple in memory ChatMessageHistory
-#     lambda session_id: memory,
-#     input_messages_key="input",
-#     history_messages_key="chat_history",
-# )
-
-# config = {"configurable": {"session_id": "test-session"}}
 config = {"configurable": {"thread_id": "abc123"}}
 
 load_urls(urls)
-# load_docs(pages)
+load_docs(pages)
 load_docs(local_files)
 
 print("What kind of questions do you have about the following resources?")
 # Iterate over documents and dump metadata
-# document_data_sources = set()
-# for doc_metadata in retriever.vectorstore.get()["metadatas"]:
-#     document_data_sources.add(doc_metadata["source"])
-# for doc in document_data_sources:
-#     print(f"  {doc}")
+document_data_sources = set()
+for doc_metadata in retriever.vectorstore.get()["metadatas"]:
+    document_data_sources.add(doc_metadata["source"])
+for doc in document_data_sources:
+    print(f"  {doc}")
 
 while True:
     try:
@@ -250,14 +219,6 @@ while True:
                 config=config,
             )
             print(result["answer"])
-
-            # query = line
-            # for event in agent_executor.stream(
-            #     {"messages": [HumanMessage(content=query)]},
-            #     config=config,
-            #     stream_mode="values",
-            # ):
-            #     event["messages"][-1].pretty_print()
         else:
             break
     except Exception as e:
