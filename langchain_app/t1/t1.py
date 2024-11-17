@@ -9,7 +9,6 @@ import os
 import readline
 import subprocess
 
-from bs4 import BeautifulSoup
 from langchain import hub
 from langchain.agents import AgentExecutor, create_react_agent
 from langchain.text_splitter import RecursiveCharacterTextSplitter
