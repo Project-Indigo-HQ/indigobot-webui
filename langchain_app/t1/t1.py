@@ -41,6 +41,7 @@ from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
 from typing_extensions import Annotated, TypedDict
 from typing import Sequence
+import readline
 
 
 def load_docs(docs):
