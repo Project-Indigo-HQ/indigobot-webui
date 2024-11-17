@@ -1,3 +1,6 @@
+black
+build
+isort
 langchain
 langchainhub
 langchain_anthropic
@@ -6,5 +9,13 @@ langchain-community
 langchain-experimental
 langchain_openai
 langchain_google_genai
+pylama[all]
+pylama[toml]
 pymupdf
 pypdf
+pyyaml
+setuptools
+setuptools-scm
+sphinx
+sphinx-rtd-theme
+types-pyyaml

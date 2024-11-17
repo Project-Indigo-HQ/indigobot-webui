@@ -21,15 +21,16 @@ run on its own when user inputs only a dict on the CLI,
 *(must be typed, no c&p)* (e.g.) llm>> {"AA":23,"RR":54,"CC":1}
 """
 
+import subprocess
+
 from langchain.agents import AgentExecutor, create_tool_calling_agent
 from langchain_core.chat_history import InMemoryChatMessageHistory
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.runnables import RunnableLambda
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.tools import tool
-from langchain_core.runnables import RunnableLambda
 from langchain_experimental.tools import PythonREPLTool
 from langchain_openai import ChatOpenAI
-import subprocess
 from typing_extensions import TypedDict
 
 
@@ -158,9 +159,7 @@ while True:
                 as_tool.invoke()
 
             except Exception:
-                result = agent_with_chat_history.invoke({"input": line}, config)[
-                    "output"
-                ]
+                result = agent_with_chat_history.invoke({"input": line}, config)["output"]
                 print(result)
         else:
             break

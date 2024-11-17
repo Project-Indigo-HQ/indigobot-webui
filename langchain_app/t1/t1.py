@@ -4,13 +4,19 @@ It loads local PDFs, Python files, and also checks web pages to scrape and consu
 It currently gets responses from Gpt4o, Gemini, and Cluade, though more models could be added.
 """
 
+import getpass
+import os
+import readline
+import subprocess
+
 from bs4 import BeautifulSoup
 from langchain import hub
 from langchain.agents import AgentExecutor, create_react_agent
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_anthropic import ChatAnthropic
 from langchain_chroma import Chroma
 from langchain_community.agent_toolkits.load_tools import load_tools
-from langchain_community.document_loaders import PyPDFLoader, AsyncHtmlLoader
+from langchain_community.document_loaders import AsyncHtmlLoader, PyPDFLoader
 from langchain_community.document_loaders.generic import GenericLoader
 from langchain_community.document_loaders.parsers import LanguageParser
 from langchain_community.document_transformers import BeautifulSoupTransformer
@@ -20,13 +26,8 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.tools import tool
-from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_google_genai import GoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-import getpass
-import os
-import readline
-import subprocess
 
 
 def load_docs(docs):
