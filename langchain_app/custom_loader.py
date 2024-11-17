@@ -38,6 +38,9 @@ def load_urls(urls):
 
 
 def main():
+    """
+    Execute the document loading process by scraping web pages, reading PDFs, and loading local files.
+    """
     load_urls(url_list)
     load_docs(pages)
     load_docs(local_files)
