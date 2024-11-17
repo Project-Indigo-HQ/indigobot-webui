@@ -23,7 +23,7 @@ def load_docs(docs):
     """
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=10)
     splits = text_splitter.split_documents(docs)
-    for i in range(num_embeddings):
+    for i in range(NUM_EMBEDDINGS):
         vectorstore[i].add_documents(documents=splits)
 
 
@@ -38,27 +38,27 @@ def load_urls(urls):
 
 
 def main():
-    load_urls(urls)
+    load_urls(url_list)
     load_docs(pages)
     load_docs(local_files)
 
 
 # URL list for scraping
-urls = [
+url_list = [
     "https://rosecityresource.streetroots.org/api/query",
 ]
 
 # Add local pdf file(s)
-file_path = "./rag_data/pdf/LLM_Agents_Beginners.pdf"
-loader = PyPDFLoader(file_path)
+PDF_PATH = "./rag_data/pdf/LLM_Agents_Beginners.pdf"
+loader = PyPDFLoader(PDF_PATH)
 pages = []
 for page in loader.lazy_load():
     pages.append(page)
 
 # Add local files
-local_path = "."
+LOCALS_PATH = "."
 local_loader = GenericLoader.from_filesystem(
-    local_path,
+    LOCALS_PATH,
     glob="*",
     # Can select different file suffixes and language types
     suffixes=[".py"],
@@ -66,7 +66,7 @@ local_loader = GenericLoader.from_filesystem(
 )
 local_files = local_loader.load()
 
-vectorstore = list()
+vectorstore = []
 # OpenAI embeddings
 vectorstore.append(
     Chroma(
@@ -83,7 +83,7 @@ vectorstore.append(
         ),
     )
 )
-num_embeddings = len(vectorstore)
+NUM_EMBEDDINGS = len(vectorstore)
 
 if __name__ == "__main__":
     try:

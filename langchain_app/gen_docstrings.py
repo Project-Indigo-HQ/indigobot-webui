@@ -3,6 +3,8 @@ This program provides an agent that generates Sphinx-style docstrings and a
 summary when given a file path or name. It assumes the provided file is in the cwd.
 """
 
+import readline
+
 from langchain.agents import AgentExecutor, create_tool_calling_agent
 from langchain_community.agent_toolkits.load_tools import load_tools
 from langchain_core.chat_history import InMemoryChatMessageHistory
@@ -10,13 +12,12 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_experimental.tools import PythonREPLTool
 from langchain_openai import ChatOpenAI
-import readline
 
 model = ChatOpenAI(model="gpt-4o")
 
 memory = InMemoryChatMessageHistory(session_id="test-session")
 
-instructions = """You are an expert at writing Sphinx-style docstrings. This is your only job. 
+instructions = """You are an expert at writing Sphinx-style docstrings. This is your only job.
 Do not make an API call if asked to do anything else and instead ask the user to provide a file.
 You will write docstrings for all functions and classes defined in a file that is given to you.
 Unless specified, assume that the file given to you is in the current directory.
@@ -49,7 +50,9 @@ agent_with_chat_history = RunnableWithMessageHistory(
 
 config = {"configurable": {"session_id": "test-session"}}
 
-print("Please enter a file path or name to generate docstrings (can use relative path/name): ")
+print(
+    "Please enter a file path or name to generate docstrings (can use relative path/name): "
+)
 
 while True:
     try:

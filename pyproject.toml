@@ -19,9 +19,6 @@ dependencies = [
 [tool.setuptools.packages.find]
 exclude = ["docs*", "tests*"]
 
-[tool.black]
-line_length = 100
-
 [tool.pylama]
 format = "pylint"
 skip = "*/.tox/*,*/.env/,*/.git/*,*/.github/*,*/build/*,.direnv/*"

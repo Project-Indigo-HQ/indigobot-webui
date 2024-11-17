@@ -2,28 +2,28 @@
 This is meant to be a starting point for the Indigo-CfSS model
 """
 
-from langchain.chains import create_retrieval_chain, create_history_aware_retriever
+import readline  # need this to use arrow keys
+from typing import Sequence
+
+import custom_loader
+from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
-from langgraph.graph import START, StateGraph
-from langgraph.graph.message import add_messages
 from langchain.tools.retriever import create_retriever_tool
 from langchain_anthropic import ChatAnthropic
 from langchain_chroma import Chroma
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.prompts import MessagesPlaceholder
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_google_genai import (
     GoogleGenerativeAI,
     GoogleGenerativeAIEmbeddings,
-    HarmCategory,
     HarmBlockThreshold,
+    HarmCategory,
 )
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langgraph.checkpoint.memory import MemorySaver
+from langgraph.graph import START, StateGraph
+from langgraph.graph.message import add_messages
 from typing_extensions import Annotated, TypedDict
-from typing import Sequence
-import custom_loader
-import readline  # need this to use arrow keys
 
 
 class State(TypedDict):
@@ -93,7 +93,7 @@ vectorstore = Chroma(
     persist_directory="./rag_data/.chromadb/openai",
     embedding_function=OpenAIEmbeddings(model="text-embedding-3-large"),
 )
-gpt_sql_db = "./rag_data/.chromadb/openai/chroma.sqlite3"
+GPT_SQL_DB = "./rag_data/.chromadb/openai/chroma.sqlite3"
 
 # Google embeddings
 # vectorstore = Chroma(
@@ -102,7 +102,7 @@ gpt_sql_db = "./rag_data/.chromadb/openai/chroma.sqlite3"
 #         model="models/embedding-001", task_type="retrieval_query"
 #     ),
 # )
-# google_sql_db = "./rag_data/.chromadb/gemini/chroma.sqlite3"
+# GOOGLE_SQL_DB = "./rag_data/.chromadb/gemini/chroma.sqlite3"
 
 # Create vectorstore retriever for accessing & displaying doc info & metadata
 retriever = vectorstore.as_retriever()
@@ -122,7 +122,9 @@ contextualize_q_prompt = ChatPromptTemplate.from_messages(
         ("human", "{input}"),
     ]
 )
-history_aware_retriever = create_history_aware_retriever(llm, retriever, contextualize_q_prompt)
+history_aware_retriever = create_history_aware_retriever(
+    llm, retriever, contextualize_q_prompt
+)
 
 ### Answer question ###
 system_prompt = (
