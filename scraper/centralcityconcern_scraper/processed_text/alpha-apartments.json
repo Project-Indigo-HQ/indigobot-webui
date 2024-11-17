@@ -1,0 +1,65 @@
+{
+    "title": "Alpha Apartments - Housing Location - Central City Concern",
+    "headers": [
+        {
+            "tag": "h1",
+            "text": "Alpha Apartments",
+            "html": "<h1>Alpha Apartments</h1>"
+        },
+        {
+            "tag": "h3",
+            "text": "18088 SE Market St.Gresham, OR 97233",
+            "html": "<h3>18088 SE Market St.<br/>\nGresham, OR 97233</h3>"
+        },
+        {
+            "tag": "h4",
+            "text": "This waitlist closed on 8/6/24 @ 11:50 AM",
+            "html": "<h4>This waitlist closed on 8/6/24 @ 11:50 AM</h4>"
+        },
+        {
+            "tag": "h4",
+            "text": "Family Alcohol and Drug Free Network (FAN) program waitlist for Alpha Apartments. \u00a0ADFC requirements apply.",
+            "html": "<h4>Family Alcohol and Drug Free Network (FAN) program waitlist for Alpha Apartments. \u00a0ADFC requirements apply.</h4>"
+        },
+        {
+            "tag": "h3",
+            "text": "Jump to:",
+            "html": "<h3>Jump to:</h3>"
+        },
+        {
+            "tag": "h2",
+            "text": "Community Overview",
+            "html": "<h2>Community Overview</h2>"
+        },
+        {
+            "tag": "h2",
+            "text": "The FAN 1 and 2 bedroom waitlist is currently closed.",
+            "html": "<h2><strong>The FAN 1 and 2 bedroom waitlist is currently closed.\u00a0</strong></h2>"
+        },
+        {
+            "tag": "h4",
+            "text": "Submitting Your Pre-Application Materials",
+            "html": "<h4 class=\"title\">\n\t\t\t\t\t\t\n\t\t\t\t\t\tSubmitting Your Pre-Application Materials\t\t\t\t\t\t\n\t\t\t\t\t\t<img alt=\"maroon arrow pointing right\" src=\"https://centralcityconcern.org/wp-content/themes/ccc/assets/images/icon-arrow-right-maroon.svg\"/>\n</h4>"
+        },
+        {
+            "tag": "h2",
+            "text": "Amenities",
+            "html": "<h2>Amenities</h2>"
+        },
+        {
+            "tag": "h2",
+            "text": "Eligibility and screening",
+            "html": "<h2>Eligibility and screening</h2>"
+        },
+        {
+            "tag": "h2",
+            "text": "This content block does not have a preview.",
+            "html": "<h2>This content block does not have a preview.</h2>"
+        },
+        {
+            "tag": "h4",
+            "text": "Sign up for our newsletter",
+            "html": "<h4>Sign up for our newsletter</h4>"
+        }
+    ]
+}

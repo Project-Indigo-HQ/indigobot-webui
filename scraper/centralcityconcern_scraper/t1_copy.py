@@ -15,8 +15,10 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_google_genai import GoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain.schema import Document
 import getpass
 import os
+import json
 
 llms = [
     ChatOpenAI(model="gpt-4o"),
@@ -48,6 +50,31 @@ def load_urls(urls):
     """
     load_docs(AsyncHtmlLoader(urls).load())
 
+def load_JSON_files(folder_path):
+    JSON_files = []
+    for filename in os.listdir(folder_path):
+        if filename.endswith(".json"):
+            file_path = os.path.join(folder_path, filename)
+            try:
+                    with open(file_path, 'r', encoding='utf-8') as file:
+                        json_content = json.load(file)
+                        if isinstance(json_content, dict) and "content" in json_content:
+                            JSON_files.append(Document(
+                                page_content=json_content["content"],
+                                metadata=json_content.get("metadata", {})
+                            ))
+                        elif isinstance(json_content, list):
+                            for item in json_content:
+                                if isinstance(item, dict) and "content" in item:
+                                    JSON_files.append(Document(
+                                        page_content=item["content"],
+                                        metadata=item.get("metadata", {})
+                                    ))
+            except Exception as e:
+                print(f"Error reading JSON file {file_path}: {e}")
+
+    return JSON_files
+
 def format_docs(docs):
     """
     Concatenate chunks to include in prompt
@@ -67,6 +94,10 @@ urls = [
 # (Demo/Example code) If Google API key not found, prompt user for it
 if "GOOGLE_API_KEY" not in os.environ:
     os.environ["GOOGLE_API_KEY"] = getpass.getpass("Google API Key:")
+if "OPENAI_API_KEY" not in os.environ:
+    os.environ["OPENAI_API_KEY"] = getpass.getpass("OPENAI API Key:")
+if "ANTHROPIC_API_KEY" not in os.environ:
+    os.environ["ANTHROPIC_API_KEY"] = getpass.getpass("ANTHROPIC API Key:")
 
 # Create a list of vectorstore entries for each model embedding
 vectorstore = list()
@@ -95,7 +126,11 @@ vectorstore.append(
 )
 
 # Load JSON documents into the vectorstore
-load_urls(urls)
+script_dir = os.path.dirname(os.path.abspath(__file__))
+json_files_dir = os.path.join(script_dir, "processed_text")
+JSON_files = load_JSON_files(json_files_dir)
+for file in JSON_files:
+    load_docs(file)
 
 retriever = list()
 for i in range(list_len):

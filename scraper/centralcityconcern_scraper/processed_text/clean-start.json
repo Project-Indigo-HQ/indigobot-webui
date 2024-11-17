@@ -1,0 +1,60 @@
+{
+    "title": "Clean Start - Employment Center - Central City Concern",
+    "headers": [
+        {
+            "tag": "h1",
+            "text": "Clean Start",
+            "html": "<h1>Clean Start</h1>"
+        },
+        {
+            "tag": "h2",
+            "text": "This content block does not have a preview.",
+            "html": "<h2>This content block does not have a preview.</h2>"
+        },
+        {
+            "tag": "h2",
+            "text": "Program Information",
+            "html": "<h2 style=\"text-align: center;\">Program Information</h2>"
+        },
+        {
+            "tag": "h3",
+            "text": "",
+            "html": "<h3></h3>"
+        },
+        {
+            "tag": "h2",
+            "text": "Services",
+            "html": "<h2>Services</h2>"
+        },
+        {
+            "tag": "h2",
+            "text": "Begin Your Journey with Clean Start",
+            "html": "<h2><b>Begin Your Journey with Clean Start</b></h2>"
+        },
+        {
+            "tag": "h2",
+            "text": "This content block does not have a preview.",
+            "html": "<h2>This content block does not have a preview.</h2>"
+        },
+        {
+            "tag": "h3",
+            "text": "In 2023, our cleaners removed 4.1 MILLION pounds of trash from throughout the Portland metro region and over 122,000 needles!",
+            "html": "<h3>In 2023, our cleaners removed 4.1 MILLION pounds of trash from throughout the Portland metro region and over 122,000 needles!</h3>"
+        },
+        {
+            "tag": "h2",
+            "text": "Read more about Clean Start",
+            "html": "<h2>Read more about Clean Start</h2>"
+        },
+        {
+            "tag": "h3",
+            "text": "Support CCC Employment Services",
+            "html": "<h3 style=\"text-align: center;\"><b>Support CCC Employment Services</b></h3>"
+        },
+        {
+            "tag": "h4",
+            "text": "Sign up for our newsletter",
+            "html": "<h4>Sign up for our newsletter</h4>"
+        }
+    ]
+}

@@ -1,0 +1,65 @@
+{
+    "title": "Estate Hotel - Housing Location - Central City Concern",
+    "headers": [
+        {
+            "tag": "h1",
+            "text": "Estate Hotel",
+            "html": "<h1>Estate Hotel</h1>"
+        },
+        {
+            "tag": "h3",
+            "text": "225 NW Couch St.Portland, OR 97209",
+            "html": "<h3>225 NW Couch St.<br/>\nPortland, OR 97209</h3>"
+        },
+        {
+            "tag": "h4",
+            "text": "The fair market waitlist for the Estate Hotel will open on Thursday 12/14/23 at 8:00 AM PST.",
+            "html": "<h4>The fair market waitlist for the Estate Hotel will open on Thursday 12/14/23 at 8:00 AM PST.</h4>"
+        },
+        {
+            "tag": "h4",
+            "text": "The Employment Recovery Program (ERP) waitlist is closed as of 5:00pm 3/16/2022.",
+            "html": "<h4>The Employment Recovery Program (ERP) waitlist is closed as of 5:00pm 3/16/2022.</h4>"
+        },
+        {
+            "tag": "h3",
+            "text": "Jump to:",
+            "html": "<h3>Jump to:</h3>"
+        },
+        {
+            "tag": "h2",
+            "text": "Community Overview",
+            "html": "<h2>Community Overview</h2>"
+        },
+        {
+            "tag": "h2",
+            "text": "The fair market waitlist will open on Thursday 12/14/23 at 8:00 AM PST.",
+            "html": "<h2 style=\"text-align: left;\">The fair market waitlist will open on Thursday 12/14/23 at 8:00 AM PST.</h2>"
+        },
+        {
+            "tag": "h4",
+            "text": "Submitting Your Fair Market Pre-Application Materials",
+            "html": "<h4 class=\"title\">\n\t\t\t\t\t\t\n\t\t\t\t\t\tSubmitting Your Fair Market Pre-Application Materials\t\t\t\t\t\t\n\t\t\t\t\t\t<img alt=\"maroon arrow pointing right\" src=\"https://centralcityconcern.org/wp-content/themes/ccc/assets/images/icon-arrow-right-maroon.svg\"/>\n</h4>"
+        },
+        {
+            "tag": "h2",
+            "text": "Amenities",
+            "html": "<h2>Amenities</h2>"
+        },
+        {
+            "tag": "h2",
+            "text": "Eligibility and screening",
+            "html": "<h2>Eligibility and screening</h2>"
+        },
+        {
+            "tag": "h2",
+            "text": "This content block does not have a preview.",
+            "html": "<h2>This content block does not have a preview.</h2>"
+        },
+        {
+            "tag": "h4",
+            "text": "Sign up for our newsletter",
+            "html": "<h4>Sign up for our newsletter</h4>"
+        }
+    ]
+}

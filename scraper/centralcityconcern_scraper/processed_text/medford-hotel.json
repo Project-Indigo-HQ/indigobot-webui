@@ -1,0 +1,55 @@
+{
+    "title": "Medford Hotel - Housing Location - Central City Concern",
+    "headers": [
+        {
+            "tag": "h1",
+            "text": "Medford Hotel",
+            "html": "<h1>Medford Hotel</h1>"
+        },
+        {
+            "tag": "h3",
+            "text": "506 NW 5th Ave.Portland, OR 97209",
+            "html": "<h3>506 NW 5th Ave.<br/>\nPortland, OR 97209</h3>"
+        },
+        {
+            "tag": "h4",
+            "text": "All programs at the Medford Hotel are by referral only.",
+            "html": "<h4>All programs at the Medford Hotel are by referral only.</h4>"
+        },
+        {
+            "tag": "h3",
+            "text": "Jump to:",
+            "html": "<h3>Jump to:</h3>"
+        },
+        {
+            "tag": "h2",
+            "text": "Community Overview",
+            "html": "<h2>Community Overview</h2>"
+        },
+        {
+            "tag": "h2",
+            "text": "There is no waitlist for the Medford Hotel.",
+            "html": "<h2>There is no waitlist for the Medford Hotel.</h2>"
+        },
+        {
+            "tag": "h2",
+            "text": "Amenities",
+            "html": "<h2>Amenities</h2>"
+        },
+        {
+            "tag": "h2",
+            "text": "Eligibility and screening",
+            "html": "<h2>Eligibility and screening</h2>"
+        },
+        {
+            "tag": "h2",
+            "text": "This content block does not have a preview.",
+            "html": "<h2>This content block does not have a preview.</h2>"
+        },
+        {
+            "tag": "h4",
+            "text": "Sign up for our newsletter",
+            "html": "<h4>Sign up for our newsletter</h4>"
+        }
+    ]
+}
