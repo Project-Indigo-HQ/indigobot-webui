@@ -6,8 +6,6 @@ It currently gets responses from Gpt4o, Gemini, and Cluade, though more models c
 
 import getpass
 import os
-import readline
-import subprocess
 
 from langchain import hub
 from langchain.agents import AgentExecutor, create_react_agent
@@ -64,10 +62,6 @@ def format_docs(docs) -> str:
     return "\n\n".join(doc.page_content for doc in docs)
 
 
-# (Demo/Example code) If Google API key not found, prompt user for it
-if "GOOGLE_API_KEY" not in os.environ:
-    os.environ["GOOGLE_API_KEY"] = getpass.getpass("Google API Key:")
-
 llms = [
     ChatOpenAI(model="gpt-4o"),
     GoogleGenerativeAI(model="gemini-1.5-pro-latest", temperature=0),
@@ -79,16 +73,15 @@ list_len = len(llms)
 
 # URL list for scraping
 urls = [
-    "https://github.com/GunterMueller/Books-3/blob/master/Design%20Patterns%20Elements%20of%20Reusable%20Object-Oriented%20Software.pdf",
     "https://rosecityresource.streetroots.org/api/query",
 ]
 
 # Add local pdf file(s)
-file_path = "OWASPtop10forLLMS.pdf"
-loader = PyPDFLoader(file_path)
-pages = []
-for page in loader.lazy_load():
-    pages.append(page)
+# file_path = "PathOrNameOfPdf.pdf"
+# loader = PyPDFLoader(file_path)
+# pages = []
+# for page in loader.lazy_load():
+#     pages.append(page)
 
 # Add local files
 local_path = "."
@@ -128,8 +121,8 @@ vectorstore.append(
 )
 
 load_urls(urls)
-load_docs(pages)
-load_docs(local_files)
+# load_docs(pages)
+# load_docs(local_files)
 
 # Create retriever for accessing & displaying doc info & metadata
 retriever = list()

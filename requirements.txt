@@ -11,8 +11,6 @@ langchain_openai
 langchain_google_genai
 pylama[all]
 pylama[toml]
-pymupdf
-pypdf
 pyyaml
 setuptools
 setuptools-scm
