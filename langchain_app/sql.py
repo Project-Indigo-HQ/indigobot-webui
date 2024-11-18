@@ -1,7 +1,7 @@
 """
 This program uses PyPDFLoader as a file loader and SQL as a vector database.
 It loads local PDFs, Python files, and also checks web pages to scrape and consume data.
-It currently gets responses from Gpt4o, Gemini, and Cluade, though more models could be added.
+It currently gets responses from Gpt4o, Gemini, and Claude, though more models could be added.
 """
 
 from langchain import hub
@@ -15,10 +15,10 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from langchain_google_genai import GoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-#from sql import init_sql_agent
-import getpass
+
 import os
-#sql
+
+# sql
 from langchain_community.utilities import SQLDatabase
 from langchain_community.agent_toolkits.sql.base import create_sql_agent
 from langchain_community.agent_toolkits import SQLDatabaseToolkit
@@ -37,22 +37,24 @@ llms = [
 list_len = len(llms)
 
 
-#init db
-db_path = "indigo_bot_db.sqlite"
+# init db
+db_path = "rag_data/indigo_bot_db.sqlite"
 
-#check if the file exists and is a valid db
+# check if the file exists and is a valid db
 if not os.path.exists(db_path):
     print("Database file does not exist, creating one...")
     try:
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
-        cursor.execute('''
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS documents (
                 id INTEGER PRIMARY KEY,
                 text TEXT,
                 metadata TEXT
             );
-        ''')
+        """
+        )
         conn.commit()
         conn.close()
     except sqlite3.DatabaseError as e:
@@ -62,15 +64,19 @@ else:
     try:
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='documents';")
+        cursor.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='documents';"
+        )
         if not cursor.fetchone():
-            cursor.execute('''
+            cursor.execute(
+                """
                 CREATE TABLE documents (
                     id INTEGER PRIMARY KEY,
                     text TEXT,
                     metadata TEXT
                 );
-            ''')
+            """
+            )
             conn.commit()
         conn.close()
     except sqlite3.DatabaseError as e:
@@ -79,7 +85,7 @@ else:
 
 db = SQLDatabase.from_uri(f"sqlite:///{db_path}")
 
-#create agents for each llm
+# create agents for each llm
 agents = []
 for llm in llms:
     toolkit = SQLDatabaseToolkit(db=db, llm=llm)  # create llm toolkit
@@ -99,17 +105,19 @@ def load_docs(docs):
 
     try:
         conn = sqlite3.connect(db_path)
-        cursor = conn.cursor() 
+        cursor = conn.cursor()
 
         for doc in splits:
-            metadata_json = json.dumps(doc.metadata)  #dict to json string
-            cursor.execute("INSERT INTO documents (text, metadata) VALUES (?, ?)", (doc.page_content, metadata_json))
-        
+            metadata_json = json.dumps(doc.metadata)  # dict to json string
+            cursor.execute(
+                "INSERT INTO documents (text, metadata) VALUES (?, ?)",
+                (doc.page_content, metadata_json),
+            )
+
         conn.commit()
         conn.close()
     except sqlite3.DatabaseError as e:
         print(f"Error inserting document into the database: {e}")
-
 
 
 def load_urls(urls):
@@ -134,9 +142,14 @@ def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
 
-# (Demo/Example code) If Google API key not found, prompt user for it
-if "GOOGLE_API_KEY" not in os.environ:
-    os.environ["GOOGLE_API_KEY"] = getpass.getpass("Google API Key:")
+def query_database(query):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute(query)
+    results = cursor.fetchall()
+    conn.close()
+    return results
+
 
 # URL list for scraping
 urls = [
@@ -160,23 +173,16 @@ pyfiles_loader = GenericLoader.from_filesystem(
 )
 pyfiles = pyfiles_loader.load()
 
-
 load_urls(urls)
 load_docs(pages)
 load_docs(pyfiles)
 
-def query_database(query):
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    cursor.execute(query)
-    results = cursor.fetchall()
-    conn.close()
-    return results
-
 retriever = list()
 for i in range(list_len):
     retriever.append(
-        RunnableLambda(lambda query=f"SELECT text FROM documents": query_database(query))
+        RunnableLambda(
+            lambda query=f"SELECT text FROM documents": query_database(query)
+        )
     )
 formatted_docs_runnable = RunnableLambda(format_docs)
 
@@ -189,26 +195,16 @@ for i in range(list_len):
     )
 
 print("What kind of questions do you have about the following resources?")
-#iterate over documents and dump metadata
+# iterate over documents and dump metadata
 document_data_sources = set()
 for i in range(list_len):
 
     for doc_metadata in query_database("SELECT metadata FROM documents"):
-        metadata_dict = json.loads(doc_metadata[0])  #JSON to dict
+        metadata_dict = json.loads(doc_metadata[0])  # JSON to dict
         document_data_sources.add(metadata_dict.get("source", "Unknown"))
 for doc in document_data_sources:
     print(f"  {doc}")
 
-'''
-while True:
-    line = input("llm>> ")
-    if line:
-        for i in range(list_len):
-            result = rag_chain[i].invoke({"question": line})
-            print(f"\nModel {i}: {result}")
-    else:
-        break
-'''
 while True:
     line = input("llm>> ")
     if line.strip().lower() == "quit":
@@ -223,4 +219,3 @@ while True:
                 print(f"Model {i} error: {e}")
     else:
         break
-
