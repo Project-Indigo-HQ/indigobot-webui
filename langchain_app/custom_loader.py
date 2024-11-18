@@ -19,7 +19,7 @@ import re
 from langchain_community.document_loaders.recursive_url_loader import RecursiveUrlLoader
 from urllib.parse import urljoin
 import ssl
-
+import requests
 
 def load_docs(docs):
     """
@@ -42,7 +42,9 @@ def load_urls(urls):
     load_docs(AsyncHtmlLoader(urls).load())
 
 def scrape_articles(links):
-    """Scrapes list of links, extracts article text, returns Documents"""
+    """
+    Scrapes list of links, extracts article text, returns Documents
+    """
     # Scrape list of links
     # Create SSL context with verification disabled
     ssl_context = ssl.create_default_context()
@@ -53,13 +55,15 @@ def scrape_articles(links):
     # Extract article tag
     transformer = BeautifulSoupTransformer()
     docs_tr = transformer.transform_documents(
-        documents=docs, tags_to_extract=["article"]
+        documents=docs, tags_to_extract=[]
     )
     clean_documents(docs_tr)
     return docs_tr
 
 def scrape_main(url, depth):
-    """Recursively scrapes URL and returns Documents"""
+    """
+    Recursively scrapes URL and returns Documents
+    """
     loader = RecursiveUrlLoader(
         url=url,
         max_depth=depth,
@@ -75,7 +79,9 @@ def scrape_main(url, depth):
     return docs
 
 def extract_text(html):
-    """Used by loader to extract text from div tag with id of main"""
+    """
+    Used by loader to extract text from div tag with id of main
+    """
     soup = BeautifulSoup(html, "html.parser")
     div_main = soup.find("div", {"id": "main"})
     if div_main:
@@ -83,27 +89,46 @@ def extract_text(html):
     return " ".join(soup.stripped_strings)
 
 def clean_documents(documents):
-    """Cleans page_content text of Documents list"""
+    """
+    Cleans page_content text of Documents list
+    """
     for doc in documents:
         doc.page_content = clean_text(doc.page_content)
     return documents
 
 def clean_text(text):
-    """Replaces unicode characters and strips extra whitespace"""
+    """
+    Replaces unicode characters and strips extra whitespace
+    """
     text = unidecode.unidecode(text)
     text = re.sub(r"\s+", " ", text).strip()
     return text
 
 def add_documents(vectorstore, chunks, n):
-   """Adds documents to the vectorstore database"""
+   """
+   Adds documents to the vectorstore database
+   """
    for i in range(0, len(chunks), n):
        vectorstore.add_documents(chunks[i:i+n])
 
 def chunking(documents):
-    """Takes in Documents and splits text into chunks"""
+    """
+    Takes in Documents and splits text into chunks
+    """
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=1000)
     chunks = text_splitter.split_documents(documents)
     return chunks
+
+def scrape_urls(url_list):
+    """
+    Takes in a url_list and gets the relevent URLs from the URL,
+    scrapes them, then adds them to the vector database
+    """
+    for url in url_list:
+        docs = scrape_main(url, 12)
+        chunks = chunking(docs)
+        for i in range(NUM_EMBEDDINGS):
+            add_documents(vectorstore[i], chunks, 300)
 
 def main():
     """
@@ -112,10 +137,17 @@ def main():
     load_urls(url_list)
     load_docs(pages)
     load_docs(local_files)
+    scrape_urls(url_list_recursive)
 
-# URL list for scraping
+
+# URL list for scraping JSON blob
 url_list = [
     "https://rosecityresource.streetroots.org/api/query",
+]
+
+# URL list for recursively scraping
+url_list_recursive = [
+    "https://www.multco.us/food-assistance/get-food-guide",
 ]
 
 # Add local pdf file(s)
