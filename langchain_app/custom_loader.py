@@ -43,7 +43,12 @@ def load_urls(urls):
 
 def scrape_articles(links):
     """
-    Scrapes list of links, extracts article text, returns Documents
+    Scrapes a list of links, extracts article text, and returns Documents.
+
+    :param links: List of URLs to scrape.
+    :type links: list
+    :return: List of transformed documents.
+    :rtype: list
     """
     # Scrape list of links
     # Create SSL context with verification disabled
@@ -62,7 +67,14 @@ def scrape_articles(links):
 
 def scrape_main(url, depth):
     """
-    Recursively scrapes URL and returns Documents
+    Recursively scrapes a URL and returns Documents.
+
+    :param url: The base URL to scrape.
+    :type url: str
+    :param depth: The depth of recursion for scraping.
+    :type depth: int
+    :return: List of cleaned documents.
+    :rtype: list
     """
     loader = RecursiveUrlLoader(
         url=url,
@@ -80,7 +92,12 @@ def scrape_main(url, depth):
 
 def extract_text(html):
     """
-    Used by loader to extract text from div tag with id of main
+    Extracts text from a div tag with id of 'main' from HTML content.
+
+    :param html: HTML content to parse.
+    :type html: str
+    :return: Extracted text.
+    :rtype: str
     """
     soup = BeautifulSoup(html, "html.parser")
     div_main = soup.find("div", {"id": "main"})
@@ -90,7 +107,12 @@ def extract_text(html):
 
 def clean_documents(documents):
     """
-    Cleans page_content text of Documents list
+    Cleans the page_content text of a list of Documents.
+
+    :param documents: List of documents to clean.
+    :type documents: list
+    :return: List of cleaned documents.
+    :rtype: list
     """
     for doc in documents:
         doc.page_content = clean_text(doc.page_content)
@@ -98,22 +120,39 @@ def clean_documents(documents):
 
 def clean_text(text):
     """
-    Replaces unicode characters and strips extra whitespace
+    Replaces unicode characters and strips extra whitespace from text.
+
+    :param text: Text to clean.
+    :type text: str
+    :return: Cleaned text.
+    :rtype: str
     """
     text = unidecode.unidecode(text)
     text = re.sub(r"\s+", " ", text).strip()
     return text
 
 def add_documents(vectorstore, chunks, n):
-   """
-   Adds documents to the vectorstore database
-   """
-   for i in range(0, len(chunks), n):
+    """
+    Adds documents to the vectorstore database.
+
+    :param vectorstore: The vector store to add documents to.
+    :type vectorstore: object
+    :param chunks: List of document chunks to add.
+    :type chunks: list
+    :param n: Number of documents to add per batch.
+    :type n: int
+    """
+    for i in range(0, len(chunks), n):
        vectorstore.add_documents(chunks[i:i+n])
 
 def chunking(documents):
     """
-    Takes in Documents and splits text into chunks
+    Splits text of documents into chunks.
+
+    :param documents: List of documents to split.
+    :type documents: list
+    :return: List of text chunks.
+    :rtype: list
     """
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=1000)
     chunks = text_splitter.split_documents(documents)
@@ -121,8 +160,9 @@ def chunking(documents):
 
 def scrape_urls(url_list):
     """
-    Takes in a url_list and gets the relevent URLs from the URL,
-    scrapes them, then adds them to the vector database
+    Processes a list of URLs, scrapes them, and adds them to the vector database.
+
+    :param url_list: List of URLs to process and scrape.
     """
     for url in url_list:
         docs = scrape_main(url, 12)
@@ -148,6 +188,9 @@ url_list = [
 # URL list for recursively scraping
 url_list_recursive = [
     "https://www.multco.us/food-assistance/get-food-guide",
+    "https://www.multco.us/dchs/rent-housing-shelter",
+    "https://www.multco.us/veterans",
+    "https://www.multco.us/dd",
 ]
 
 # Add local pdf file(s)
