@@ -10,7 +10,5 @@ langchain_openai
 langgraph
 pymupdf
 pypdf
-beautifulsoup4
 requests
-langchain-community
 unidecode==1.3.8

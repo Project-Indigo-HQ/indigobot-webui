@@ -4,22 +4,65 @@ It loads local PDFs, Python files, and also checks web pages to scrape and consu
 It currently gets responses from either Gpt4o, Gemini, or Claude, though more models could be added.
 """
 
+import re
+import ssl
+from urllib.parse import urljoin
+
+import requests
+import unidecode
+from bs4 import BeautifulSoup
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
 from langchain_community.document_loaders import AsyncHtmlLoader, PyPDFLoader
 from langchain_community.document_loaders.generic import GenericLoader
 from langchain_community.document_loaders.parsers import LanguageParser
+from langchain_community.document_loaders.recursive_url_loader import RecursiveUrlLoader
 from langchain_community.document_transformers import BeautifulSoupTransformer
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_openai import OpenAIEmbeddings
-from bs4 import BeautifulSoup
-from langchain_community.document_transformers import BeautifulSoupTransformer
-import unidecode
-import re
-from langchain_community.document_loaders.recursive_url_loader import RecursiveUrlLoader
-from urllib.parse import urljoin
-import ssl
-import requests
+
+
+def clean_text(text):
+    """
+    Replaces unicode characters and strips extra whitespace from text.
+
+    :param text: Text to clean.
+    :type text: str
+    :return: Cleaned text.
+    :rtype: str
+    """
+    text = unidecode.unidecode(text)
+    text = re.sub(r"\s+", " ", text).strip()
+    return text
+
+
+def clean_documents(documents):
+    """
+    Cleans the page_content text of a list of Documents.
+
+    :param documents: List of documents to clean.
+    :type documents: list
+    :return: List of cleaned documents.
+    :rtype: list
+    """
+    for doc in documents:
+        doc.page_content = clean_text(doc.page_content)
+    return documents
+
+
+def chunking(documents):
+    """
+    Splits text of documents into chunks.
+
+    :param documents: List of documents to split.
+    :type documents: list
+    :return: List of text chunks.
+    :rtype: list
+    """
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=1000)
+    chunks = text_splitter.split_documents(documents)
+    return chunks
+
 
 def load_docs(docs):
     """
@@ -32,6 +75,7 @@ def load_docs(docs):
     for i in range(NUM_EMBEDDINGS):
         add_documents(vectorstore[i], chunks, 300)
 
+
 def load_urls(urls):
     """
     Use AsyncHtmlLoader library to check and scrape websites then load to Chroma
@@ -40,6 +84,7 @@ def load_urls(urls):
     :type urls: list
     """
     load_docs(AsyncHtmlLoader(urls).load())
+
 
 def scrape_articles(links):
     """
@@ -59,11 +104,26 @@ def scrape_articles(links):
     docs = loader.load()
     # Extract article tag
     transformer = BeautifulSoupTransformer()
-    docs_tr = transformer.transform_documents(
-        documents=docs, tags_to_extract=[]
-    )
+    docs_tr = transformer.transform_documents(documents=docs, tags_to_extract=[])
     clean_documents(docs_tr)
     return docs_tr
+
+
+def extract_text(html):
+    """
+    Extracts text from a div tag with id of 'main' from HTML content.
+
+    :param html: HTML content to parse.
+    :type html: str
+    :return: Extracted text.
+    :rtype: str
+    """
+    soup = BeautifulSoup(html, "html.parser")
+    div_main = soup.find("div", {"id": "main"})
+    if div_main:
+        return div_main.get_text(" ", strip=True)
+    return " ".join(soup.stripped_strings)
+
 
 def scrape_main(url, depth):
     """
@@ -90,46 +150,6 @@ def scrape_main(url, depth):
     clean_documents(docs)
     return docs
 
-def extract_text(html):
-    """
-    Extracts text from a div tag with id of 'main' from HTML content.
-
-    :param html: HTML content to parse.
-    :type html: str
-    :return: Extracted text.
-    :rtype: str
-    """
-    soup = BeautifulSoup(html, "html.parser")
-    div_main = soup.find("div", {"id": "main"})
-    if div_main:
-        return div_main.get_text(" ", strip=True)
-    return " ".join(soup.stripped_strings)
-
-def clean_documents(documents):
-    """
-    Cleans the page_content text of a list of Documents.
-
-    :param documents: List of documents to clean.
-    :type documents: list
-    :return: List of cleaned documents.
-    :rtype: list
-    """
-    for doc in documents:
-        doc.page_content = clean_text(doc.page_content)
-    return documents
-
-def clean_text(text):
-    """
-    Replaces unicode characters and strips extra whitespace from text.
-
-    :param text: Text to clean.
-    :type text: str
-    :return: Cleaned text.
-    :rtype: str
-    """
-    text = unidecode.unidecode(text)
-    text = re.sub(r"\s+", " ", text).strip()
-    return text
 
 def add_documents(vectorstore, chunks, n):
     """
@@ -143,20 +163,8 @@ def add_documents(vectorstore, chunks, n):
     :type n: int
     """
     for i in range(0, len(chunks), n):
-       vectorstore.add_documents(chunks[i:i+n])
+        vectorstore.add_documents(chunks[i : i + n])
 
-def chunking(documents):
-    """
-    Splits text of documents into chunks.
-
-    :param documents: List of documents to split.
-    :type documents: list
-    :return: List of text chunks.
-    :rtype: list
-    """
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=1000)
-    chunks = text_splitter.split_documents(documents)
-    return chunks
 
 def scrape_urls(url_list):
     """
@@ -170,14 +178,18 @@ def scrape_urls(url_list):
         for i in range(NUM_EMBEDDINGS):
             add_documents(vectorstore[i], chunks, 300)
 
+
 def main():
     """
     Execute the document loading process by scraping web pages, reading PDFs, and loading local files.
     """
-    load_urls(url_list)
-    load_docs(pages)
-    load_docs(local_files)
-    scrape_urls(url_list_recursive)
+    try:
+        load_urls(url_list)
+        load_docs(pages)
+        load_docs(local_files)
+        scrape_urls(url_list_recursive)
+    except Exception as e:
+        print(e)
 
 
 # URL list for scraping JSON blob
