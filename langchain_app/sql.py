@@ -157,7 +157,7 @@ urls = [
 ]
 
 # Add local pdf file(s)
-file_path = "OWASPtop10forLLMS.pdf"
+file_path = "rag_data/pdfs/OWASPtop10forLLMS.pdf"
 loader = PyPDFLoader(file_path)
 pages = []
 for page in loader.lazy_load():
