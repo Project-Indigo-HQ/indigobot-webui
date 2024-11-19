@@ -9,16 +9,10 @@ import custom_loader
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.tools.retriever import create_retriever_tool
-from langchain_anthropic import ChatAnthropic
 from langchain_chroma import Chroma
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain_google_genai import (
-    GoogleGenerativeAI,
-    GoogleGenerativeAIEmbeddings,
-    HarmBlockThreshold,
-    HarmCategory,
-)
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import START, StateGraph
@@ -172,12 +166,14 @@ for doc in document_data_sources:
 
 while True:
     try:
+        print()
         line = input("llm>> ")
         if line:
             result = app.invoke(
                 {"input": line},
                 config=config,
             )
+            print()
             print(result["answer"])
         else:
             break

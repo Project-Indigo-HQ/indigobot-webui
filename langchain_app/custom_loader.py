@@ -6,9 +6,7 @@ It currently gets responses from either Gpt4o, Gemini, or Claude, though more mo
 
 import re
 import ssl
-from urllib.parse import urljoin
 
-import requests
 import unidecode
 from bs4 import BeautifulSoup
 from langchain.text_splitter import RecursiveCharacterTextSplitter
