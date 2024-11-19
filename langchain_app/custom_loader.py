@@ -221,6 +221,7 @@ local_loader = GenericLoader.from_filesystem(
 )
 local_files = local_loader.load()
 
+# Create a list so program generates separate db's for different embedding types
 vectorstore = []
 # OpenAI embeddings
 vectorstore.append(
