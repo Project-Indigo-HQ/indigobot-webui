@@ -1,3 +1,4 @@
+bs4
 langchain
 langchainhub
 langchain_anthropic
