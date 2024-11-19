@@ -3,5 +3,4 @@ env
 .chromadb
 __pycache__
 *.pyc
-langchain_app/t1/weatherMachine.pdf
-docs/build/
+docs/*
