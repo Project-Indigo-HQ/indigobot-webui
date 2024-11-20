@@ -1,0 +1,6 @@
+.DS_Store
+env
+.chromadb
+__pycache__
+*.pyc
+docs/*
