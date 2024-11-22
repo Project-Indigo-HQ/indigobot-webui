@@ -75,9 +75,9 @@ def load_docs(docs):
     :type docs: list
     """
     # FIXME: unable to chunk the doc
-    #chunks = chunking(docs)
+    chunks = chunking(docs)
     for i in range(NUM_EMBEDDINGS):
-        add_documents(vectorstore[i], docs, 300)
+        add_documents(vectorstore[i], chunks, 300)
 
 
 def load_urls(urls):
@@ -165,8 +165,12 @@ def add_documents(vectorstore, chunks, n):
     :param n: Number of documents to add per batch.
     :type n: int
     """
+    #FIXME vectorstore.add_documents has error
     for i in range(0, len(chunks), n):
-        vectorstore.add_documents(chunks[i : i + n])
+        try:
+            vectorstore.add_documents(chunks[i : i + n])
+        except Exception as e:
+            print(e)
 
 
 def scrape_urls(url_list):
@@ -183,20 +187,25 @@ def scrape_urls(url_list):
 
 def load_JSON_files(folder_path):
 
-
     JSON_files = []
     for filename in os.listdir(folder_path):
         file_path = os.path.join(folder_path, filename)
         if filename.endswith(".json"):
-            data = json.loads(Path(file_path).read_text())
+            loader = JSONLoader(
+                file_path=file_path,
+                jq_schema=".headers[].text",
+                text_content=False,
+                )
+            data = loader.load()
+            #print(data[3].metadata)
             JSON_files.append(data)
+
     return JSON_files
 
 def main():
     """
     Execute the document loading process by scraping web pages, reading PDFs, and loading local files.
     """
-    #urls = fetch_urls("./urls")
     try:
         #load_urls(urls)
         # load_docs(pages)
@@ -204,6 +213,7 @@ def main():
         json_files_dir = os.path.join(script_dir, "processed_text")
         JSON_files = load_JSON_files(json_files_dir)
         for file in JSON_files:
+            #pprint(file)
             load_docs(file)
         
         #load_docs(local_files)
