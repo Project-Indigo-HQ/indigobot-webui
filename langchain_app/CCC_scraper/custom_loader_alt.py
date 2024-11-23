@@ -213,7 +213,6 @@ def main():
         json_files_dir = os.path.join(script_dir, "processed_text")
         JSON_files = load_JSON_files(json_files_dir)
         for file in JSON_files:
-            #pprint(file)
             load_docs(file)
         
         #load_docs(local_files)

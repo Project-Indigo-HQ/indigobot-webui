@@ -1,6 +1,7 @@
 import os
 import json
 from bs4 import BeautifulSoup
+from langchain_community.document_loaders import JSONLoader
 
 #Load each of the .html files under the "html_files/" folder
 def load_html_files(folder_path):
@@ -58,8 +59,25 @@ def parse_and_save(file_path):
     except Exception as e:
         print(f"Error saving JSON to {json_path}: {e}")    
 
-# Main Function
-def main():
+def load_JSON_files(folder_path):
+
+    JSON_files = []
+    for filename in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, filename)
+        if filename.endswith(".json"):
+            loader = JSONLoader(
+                file_path=file_path,
+                jq_schema=".headers[].text",
+                text_content=False,
+                )
+            data = loader.load()
+            #print(data[3].metadata)
+            JSON_files.append(data)
+
+    return JSON_files
+
+#TODO make this works anywhere
+def refine_text():
     # Load HTML files from "html_files" directory
     script_dir = os.path.dirname(os.path.abspath(__file__))
     html_files_dir = os.path.join(script_dir, "html_files")
@@ -68,6 +86,10 @@ def main():
     # Parse and save JSON content for each HTML file individually
     for html_file in html_files:
         parse_and_save(html_file)
+
+# Main Function
+def main():
+    refine_text()
 
 if __name__ == "__main__":
     main()

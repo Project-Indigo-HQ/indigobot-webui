@@ -6,6 +6,7 @@ It currently gets responses from either Gpt4o, Gemini, or Claude, though more mo
 
 import re
 import ssl
+import os
 
 import unidecode
 from bs4 import BeautifulSoup
@@ -18,6 +19,7 @@ from langchain_community.document_loaders.recursive_url_loader import RecursiveU
 from langchain_community.document_transformers import BeautifulSoupTransformer
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_openai import OpenAIEmbeddings
+from CCC_scraper import refine_html, crawler
 
 
 def clean_text(text):
@@ -176,7 +178,20 @@ def scrape_urls(url_list):
         for i in range(NUM_EMBEDDINGS):
             add_documents(vectorstore[i], chunks, 300)
 
+def load_CCC():
+        
+        # Fetching document from CCC the save to for further process
+        crawler.crawl()
+        # Refine text, by removing meanless conent from the XML files
+        refine_html.refine_text()
+        # Load the content into vectorstored database
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        json_files_dir = os.path.join(script_dir, "./CCC_scraper/processed_text")
+        JSON_files = refine_html.load_JSON_files(json_files_dir)
+        for file in JSON_files:
+            load_docs(file)
 
+#TODO add method to load docs from CCC website
 def main():
     """
     Execute the document loading process by scraping web pages, reading PDFs, and loading local files.
@@ -186,6 +201,8 @@ def main():
         load_docs(pages)
         load_docs(local_files)
         scrape_urls(url_list_recursive)
+        load_CCC()
+
     except Exception as e:
         print(e)
 

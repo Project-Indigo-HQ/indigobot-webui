@@ -65,7 +65,7 @@ def download_and_save_html(urls,session):
         else:
             print(f"Faile to fetch {url}, Status code: {response.status_code}")
 
-def parse_url(sitemap_url, target_file_name, session):
+def parse_url_and_save(sitemap_url, target_file_name, session):
 
     urls = extract_xml(fetch_xml(sitemap_url,session))
 
@@ -84,32 +84,44 @@ def parse_url(sitemap_url, target_file_name, session):
             file.write(url + "\n")
     time.sleep(5)
 
-def main():
+def parse_url(sitemap_url, session):
+    urls = []
+    page_content = extract_xml(fetch_xml(sitemap_url,session))
 
+    # Display all  URLs
+    print("Extracting URLs:")
+    for url in page_content:
+        print(url)
+        urls.append(url)
+
+    return urls
+
+
+#TODO make this work anywhere
+def crawl():
     session = start_sessionn()
+    url_list = []
 
-    # URL of the housing sitemap
-    housing_sitemap_url = "https://centralcityconcern.org/housing-sitemap.xml"
-    
-    healthcare_sitemap_url = "https://centralcityconcern.org/healthcare-sitemap.xml"
-    
-    recovery_sitemap_url = "https://centralcityconcern.org/recovery-sitemap.xml"
-    
-    jobs_sitemap_url = "https://centralcityconcern.org/jobs-sitemap.xml"
+    # URL of the sitemap
+    sitemaps = [ "https://centralcityconcern.org/housing-sitemap.xml",
+                 "https://centralcityconcern.org/healthcare-sitemap.xml",
+                 "https://centralcityconcern.org/recovery-sitemap.xml",
+                 "https://centralcityconcern.org/jobs-sitemap.xml"
+    ]
 
-    # Scrrape Housing URL and then safe to file
-    parse_url(housing_sitemap_url, "housing_urls", session)
-    parse_url(healthcare_sitemap_url, "healthcare_url", session)
-    parse_url(recovery_sitemap_url, "recovery_url", session)
-    parse_url(jobs_sitemap_url, "jobs_url", session)
+    # Scrrape URLs from the sitemap 
+    for page in sitemaps:
+        url_list.append(parse_url(page, session))
 
-    # Load urls from all .txt files
-    urls = load_urls("./urls")
-    
+
     # Download all resource page as html
-    download_and_save_html(urls,session)
+    download_and_save_html(url_list,session)
 
     print("\nThe crawler is finished")
+
+def main():
+    crawl()
+
 
 if __name__ == "__main__":
     main()
