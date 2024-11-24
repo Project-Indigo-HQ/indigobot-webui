@@ -4,3 +4,5 @@ env
 __pycache__
 *.pyc
 docs/*
+./langchain_app/CCC_scraper/html_files/*
+./langchain_app/CCC_scraper/processed_text/*
