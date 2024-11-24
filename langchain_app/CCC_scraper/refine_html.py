@@ -60,8 +60,8 @@ def parse_and_save(file_path):
         print(f"Error saving JSON to {json_path}: {e}")    
 
 def load_JSON_files(folder_path):
-
     JSON_files = []
+    # Load json file into the format needed for langchain
     for filename in os.listdir(folder_path):
         file_path = os.path.join(folder_path, filename)
         if filename.endswith(".json"):

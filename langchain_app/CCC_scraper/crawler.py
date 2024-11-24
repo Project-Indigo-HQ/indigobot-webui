@@ -55,14 +55,16 @@ def download_and_save_html(urls,session):
             # Extract last section of url as file name
             filename = url.rstrip('/').split('/')[-1] + ".html"
 
-            if not os.path.exists("html_files"):
-                os.makedirs("html_files")
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            html_files_dir = os.path.join(script_dir, "html_files")
+            if not os.path.exists(html_files_dir):
+                os.makedirs(html_files_dir)
             
             # save the content to html
-            file_path = os.path.join("html_files", filename)
-            with open(file_path, "w", encoding = "utf-8") as file:
+
+            with open(html_files_dir, "w", encoding = "utf-8") as file:
                 file.write(response.text)
-                print(f"Save html content to {file_path}")
+                print(f"Save html content to {html_files_dir}")
         else:
             print(f"Faile to fetch {url}, Status code: {response.status_code}")
 

@@ -71,6 +71,7 @@ def load_docs(docs):
     :param docs: List of documents to load and split.
     :type docs: list
     """
+
     chunks = chunking(docs)
     for i in range(NUM_EMBEDDINGS):
         add_documents(vectorstore[i], chunks, 300)
@@ -181,9 +182,11 @@ def scrape_urls(url_list):
 def load_CCC():
         
         # Fetching document from CCC the save to for further process
-        crawler.crawl()
+        #crawler.crawl()
+
         # Refine text, by removing meanless conent from the XML files
-        refine_html.refine_text()
+        #refine_html.refine_text()
+
         # Load the content into vectorstored database
         script_dir = os.path.dirname(os.path.abspath(__file__))
         json_files_dir = os.path.join(script_dir, "./CCC_scraper/processed_text")
