@@ -197,10 +197,10 @@ def main():
     Execute the document loading process by scraping web pages, reading PDFs, and loading local files.
     """
     try:
-        load_urls(url_list)
-        load_docs(pages)
-        load_docs(local_files)
-        scrape_urls(url_list_recursive)
+        #load_urls(url_list)
+        #load_docs(pages)
+        #load_docs(local_files)
+        #scrape_urls(url_list_recursive)
         load_CCC()
 
     except Exception as e:
@@ -219,7 +219,7 @@ url_list_recursive = [
     "https://www.multco.us/veterans",
     "https://www.multco.us/dd",
 ]
-
+"""
 # Add local pdf file(s)
 PDF_PATH = "./rag_data/pdf/LLM_Agents_Beginners.pdf"
 loader = PyPDFLoader(PDF_PATH)
@@ -237,7 +237,7 @@ local_loader = GenericLoader.from_filesystem(
     parser=LanguageParser(language="python"),
 )
 local_files = local_loader.load()
-
+"""
 # Create a list so program generates separate db's for different embedding types
 vectorstore = []
 # OpenAI embeddings

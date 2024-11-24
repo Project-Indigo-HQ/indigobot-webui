@@ -94,8 +94,8 @@ vectorstore = Chroma(
     embedding_function=OpenAIEmbeddings(model="text-embedding-3-large"),
 )
 
-GPT_SQL_DB = "./rag_data/.chromadb/openai/chroma.sqlite3"
-#GPT_SQL_DB = "../scraper/centralcityconcern_scraper/rag_data/.chromadb/openai/chroma.sqlite3"
+#GPT_SQL_DB = "./rag_data/.chromadb/openai/chroma.sqlite3"
+GPT_SQL_DB = "./CCC_scraper/rag_data/.chromadb/openai/chroma.sqlite3"
 
 # Google embeddings
 # vectorstore = Chroma(

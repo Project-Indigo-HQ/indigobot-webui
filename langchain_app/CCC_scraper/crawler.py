@@ -18,6 +18,7 @@ def fetch_xml(url,session):
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"}
     response = session.get(url, headers=headers)
     if response.status_code == 200:
+        time.sleep(5)
         return response.content
     else:
         raise Exception(f"Failed to fetch XML from {url}, Status Code: {response.status_code}")
@@ -111,7 +112,7 @@ def crawl():
 
     # Scrrape URLs from the sitemap 
     for page in sitemaps:
-        url_list.append(parse_url(page, session))
+        url_list.extend(parse_url(page, session))
 
 
     # Download all resource page as html
