@@ -2,6 +2,7 @@ import os
 import json
 from bs4 import BeautifulSoup
 from langchain_community.document_loaders import JSONLoader
+from langchain.schema import Document
 
 #Load each of the .html files under the "html_files/" folder
 def load_html_files(folder_path):
@@ -71,8 +72,10 @@ def load_JSON_files(folder_path):
                 text_content=False,
                 )
             data = loader.load()
-            #print(data[3].metadata)
-            JSON_files.append(data)
+            
+            for item in data:
+                JSON_files.append(Document(page_content=item.page_content, metadata=item.metadata))
+                
 
     return JSON_files
 

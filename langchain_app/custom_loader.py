@@ -59,7 +59,8 @@ def chunking(documents):
     :return: List of text chunks.
     :rtype: list
     """
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=1000)
+    #text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=1000)
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
     chunks = text_splitter.split_documents(documents)
     return chunks
 
@@ -163,6 +164,16 @@ def add_documents(vectorstore, chunks, n):
     :param n: Number of documents to add per batch.
     :type n: int
     """
+    #TODO, find out why is add_documents does not work
+    for i, chunk in enumerate(chunks[:5]):  # Test first 5 chunks
+        try:
+            embedding = vectorstore[0].embedding_function.embed_query(chunk.page_content)
+            print(f"Chunk {i} embedding: {embedding[:5]}")
+            print(f"Doc {i}: page_content={chunk.page_content}, metadata={chunk.metadata}")
+        except Exception as e:
+            print(f"Error embedding Chunk {i}: {e}")
+
+
     for i in range(0, len(chunks), n):
         vectorstore.add_documents(chunks[i : i + n])
 
@@ -191,10 +202,12 @@ def load_CCC():
         script_dir = os.path.dirname(os.path.abspath(__file__))
         json_files_dir = os.path.join(script_dir, "./CCC_scraper/processed_text")
         JSON_files = refine_html.load_JSON_files(json_files_dir)
-        for file in JSON_files:
-            load_docs(file)
+        print(f"Loaded {len(JSON_files)} documents.")
+        #for file in JSON_files:
+            #load_docs(file)
+        load_docs(JSON_files)
 
-#TODO add method to load docs from CCC website
+
 def main():
     """
     Execute the document loading process by scraping web pages, reading PDFs, and loading local files.
