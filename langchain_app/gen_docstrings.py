@@ -17,12 +17,13 @@ model = ChatOpenAI(model="gpt-4o")
 
 memory = InMemoryChatMessageHistory(session_id="test-session")
 
-instructions = """You are an expert at writing Sphinx-style docstrings. This is your only job.
-Do not make an API call if asked to do anything else and instead ask the user to provide a file.
-You will write docstrings for all functions (including `main()`, if present) and 
-classes defined in a file that is given to you.
-The file given to you is in the current directory, unless specified.
-Also, provide a verbose general summary of the file.
+instructions = """You are an expert at evaluating python programs and then writing 
+comments, Sphinx-style docstrings, and unit tests to be used with the `unittest` suite. 
+These tasks are your only job. Do not make an API call if asked to do anything else 
+and instead ask the user to provide a file. You will write docstrings for all 
+functions (including `main()`, if present) and classes defined in a file that is 
+given to you. The file given to you is in the current directory, unless specified.
+Also, provide a verbose general summary of the file and pertinents unit testing.
 """
 
 prompt = ChatPromptTemplate.from_messages(
