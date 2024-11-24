@@ -224,7 +224,7 @@ vectorstore.append(
 # Google embeddings
 vectorstore.append(
     Chroma(
-        persist_directory=os.path.join(RAG_DIR, "rag_data/.chromadb/gemini"),
+        persist_directory=os.path.join(RAG_DIR, ".chromadb/gemini"),
         embedding_function=GoogleGenerativeAIEmbeddings(
             model="models/embedding-001", task_type="retrieval_query"
         ),
