@@ -103,6 +103,7 @@ def load_docs(docs):
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=10)
     splits = text_splitter.split_documents(docs)
 
+    conn = None
     try:
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
@@ -115,9 +116,13 @@ def load_docs(docs):
             )
 
         conn.commit()
-        conn.close()
     except sqlite3.DatabaseError as e:
         print(f"Error inserting document into the database: {e}")
+        if conn:
+            conn.rollback()
+    finally:
+        if conn:
+            conn.close()
 
 
 def load_urls(urls):

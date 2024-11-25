@@ -44,6 +44,14 @@ class TestSQLAgent(unittest.TestCase):
         conn.commit()
         conn.close()
 
+        # Verify the table is empty
+        conn = sqlite3.connect(self.test_db_path)
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM documents")
+        count = cursor.fetchone()[0]
+        assert count == 0, f"Database should be empty but contains {count} records"
+        conn.close()
+
     def tearDown(self):
         """Clean up test database after each test"""
         if os.path.exists(self.test_db_path):
