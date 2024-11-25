@@ -4,7 +4,7 @@ import sqlite3
 import unittest
 from unittest.mock import Mock, patch
 
-from langchain_community.document_loaders import Document
+from langchain_core.documents import Document
 
 from langchain_app.sql_agent import (
     load_docs,
