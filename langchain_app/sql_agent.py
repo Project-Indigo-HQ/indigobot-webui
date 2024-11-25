@@ -33,18 +33,19 @@ llms = [
 
 list_len = len(llms)
 
-
 # init db
-db_path = os.path.join(os.path.dirname(__file__), "..", "rag_data", "indigo_bot_db.sqlite")
+DB_PATH = os.path.join(
+    os.path.dirname(__file__), "..", "rag_data", "indigo_bot_db.sqlite"
+)
 
 # Ensure directory exists
-os.makedirs(os.path.dirname(db_path), exist_ok=True)
+os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
 
 # check if the file exists and is a valid db
-if not os.path.exists(db_path):
+if not os.path.exists(DB_PATH):
     print("Database file does not exist, creating one...")
     try:
-        conn = sqlite3.connect(db_path)
+        conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         cursor.execute(
             """
@@ -62,7 +63,7 @@ if not os.path.exists(db_path):
         exit()
 else:
     try:
-        conn = sqlite3.connect(db_path)
+        conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         cursor.execute(
             "SELECT name FROM sqlite_master WHERE type='table' AND name='documents';"
@@ -83,7 +84,7 @@ else:
         print(f"Error opening or reading the database: {e}")
         exit()
 
-db = SQLDatabase.from_uri(f"sqlite:///{db_path}")
+db = SQLDatabase.from_uri(f"sqlite:///{DB_PATH}")
 
 # create agents for each llm
 agents = []
@@ -105,7 +106,7 @@ def load_docs(docs):
 
     conn = None
     try:
-        conn = sqlite3.connect(db_path)
+        conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
         for doc in splits:
@@ -125,16 +126,6 @@ def load_docs(docs):
             conn.close()
 
 
-def load_urls(urls):
-    """
-    Use AsyncHtmlLoader library to check and scrape websites then load to Chroma
-
-    :param urls: List of URLs to load documents from.
-    :type urls: list
-    """
-    load_docs(AsyncHtmlLoader(urls).load())
-
-
 def format_docs(docs):
     """
     Concatenate chunks to include in prompt
@@ -148,7 +139,7 @@ def format_docs(docs):
 
 
 def query_database(query):
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute(query)
     results = cursor.fetchall()
@@ -157,32 +148,6 @@ def query_database(query):
 
 
 def main():
-    # URL list for scraping
-    urls = [
-        "https://github.com/GunterMueller/Books-3/blob/master/Design%20Patterns%20Elements%20of%20Reusable%20Object-Oriented%20Software.pdf",
-    ]
-
-    # Add local pdf file(s)
-    file_path = "rag_data/pdfs/OWASPtop10forLLMS.pdf"
-    loader = PyPDFLoader(file_path)
-    pages = []
-    for page in loader.lazy_load():
-        pages.append(page)
-
-    # Add local py files
-    pyfiles_path = "."
-    pyfiles_loader = GenericLoader.from_filesystem(
-        pyfiles_path,
-        glob="*",
-        suffixes=[".py"],
-        parser=LanguageParser(),
-    )
-    pyfiles = pyfiles_loader.load()
-
-    load_urls(urls)
-    load_docs(pages)
-    load_docs(pyfiles)
-
     retriever = list()
     for i in range(list_len):
         retriever.append(
@@ -197,7 +162,13 @@ def main():
 
     for i in range(list_len):
         rag_chain.append(
-            (retriever[i] | formatted_docs_runnable | prompt | llms[i] | StrOutputParser())
+            (
+                retriever[i]
+                | formatted_docs_runnable
+                | prompt
+                | llms[i]
+                | StrOutputParser()
+            )
         )
 
     print("What kind of questions do you have about the following resources?")
@@ -225,6 +196,7 @@ def main():
                     print(f"Model {i} error: {e}")
         else:
             break
+
 
 if __name__ == "__main__":
     main()

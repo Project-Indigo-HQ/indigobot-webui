@@ -1,7 +1,7 @@
 import os
 
 CURRENT_DIR = os.path.dirname(__file__)
-RAG_DIR = os.path.join(CURRENT_DIR, "rag_data")
+RAG_DIR = os.path.join(CURRENT_DIR, "..", "rag_data")
 
 # URL list for scraping JSON blob
 URLS = [

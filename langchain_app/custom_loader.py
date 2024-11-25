@@ -1,7 +1,7 @@
 """
-This module uses PyPDFLoader as a file loader and Chroma as a vector database.
+This module is the customized document loader for the chatbot. 
+It uses PyPDFLoader as a PDF loader and Chroma as a vector database.
 It loads local PDFs, Python files, and also checks web pages to scrape and consume data.
-It currently gets responses from either Gpt4o, Gemini, or Claude, though more models could be added.
 """
 
 import re
@@ -21,7 +21,12 @@ from langchain_community.document_transformers import BeautifulSoupTransformer
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_openai import OpenAIEmbeddings
 
-from langchain_app.config import RAG_DIR, CURRENT_DIR, URLS, R_URLS
+if __package__ is None or __package__ == "":
+    # uses current directory visibility
+    import config
+else:
+    # uses current package visibility
+    from langchain_app import config
 
 
 def clean_text(text):
@@ -97,7 +102,6 @@ def scrape_articles(links):
     :return: List of transformed documents.
     :rtype: list
     """
-    # Scrape list of links
     # Create SSL context with verification disabled
     ssl_context = ssl.create_default_context()
     ssl_context.check_hostname = False  # Disable hostname checking
@@ -186,23 +190,23 @@ def main():
     Execute the document loading process by scraping web pages, reading PDFs, and loading local files.
     """
     try:
-        load_urls(URLS)
+        load_urls(config.URLS)
         load_docs(pages)
         load_docs(local_files)
-        scrape_urls(R_URLS)
+        scrape_urls(config.R_URLS)
     except Exception as e:
         print(e)
 
 
 # Add local pdf file(s)
-PDF_PATH = Path(os.path.join(RAG_DIR, "pdfs/NavigatingLLMsBegginersGuide.pdf"))
+PDF_PATH = Path(os.path.join(config.RAG_DIR, "pdfs/NavigatingLLMsBegginersGuide.pdf"))
 loader = PyPDFLoader(PDF_PATH)
 pages = []
 for page in loader.lazy_load():
     pages.append(page)
 
 # Add local files
-LOCALS_PATH = CURRENT_DIR
+LOCALS_PATH = config.CURRENT_DIR
 local_loader = GenericLoader.from_filesystem(
     LOCALS_PATH,
     glob="*",
@@ -217,14 +221,14 @@ vectorstore = []
 # OpenAI embeddings
 vectorstore.append(
     Chroma(
-        persist_directory=os.path.join(RAG_DIR, ".chromadb/openai"),
+        persist_directory=os.path.join(config.RAG_DIR, ".chromadb/openai"),
         embedding_function=OpenAIEmbeddings(model="text-embedding-3-large"),
     )
 )
 # Google embeddings
 vectorstore.append(
     Chroma(
-        persist_directory=os.path.join(RAG_DIR, ".chromadb/gemini"),
+        persist_directory=os.path.join(config.RAG_DIR, ".chromadb/gemini"),
         embedding_function=GoogleGenerativeAIEmbeddings(
             model="models/embedding-001", task_type="retrieval_query"
         ),
