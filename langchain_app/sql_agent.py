@@ -35,7 +35,10 @@ list_len = len(llms)
 
 
 # init db
-db_path = "rag_data/indigo_bot_db.sqlite"
+db_path = os.path.join(os.path.dirname(__file__), "..", "rag_data", "indigo_bot_db.sqlite")
+
+# Ensure directory exists
+os.makedirs(os.path.dirname(db_path), exist_ok=True)
 
 # check if the file exists and is a valid db
 if not os.path.exists(db_path):
