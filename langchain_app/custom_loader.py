@@ -195,7 +195,7 @@ def main():
 
 
 # Add local pdf file(s)
-PDF_PATH = Path(f"./langchain_app/rag_data/pdfs/NavigatingLLMsBegginersGuide.pdf")
+PDF_PATH = Path(os.path.join(RAG_DIR, "pdfs/NavigatingLLMsBegginersGuide.pdf"))
 loader = PyPDFLoader(PDF_PATH)
 pages = []
 for page in loader.lazy_load():

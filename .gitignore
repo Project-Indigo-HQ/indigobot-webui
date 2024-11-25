@@ -4,3 +4,4 @@ env
 __pycache__
 *.pyc
 docs/*
+project_indigo.egg-info
