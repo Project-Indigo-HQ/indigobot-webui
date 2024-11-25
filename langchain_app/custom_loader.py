@@ -215,11 +215,11 @@ def scrape_urls(url_list):
 
 def load_CCC():
         
-        # Fetching document from CCC the save to for further process
-        crawler.crawl()#switch back 
+    # Fetching document from CCC the save to for further process
+    crawler.crawl()#switch back 
 
-        # Refine text, by removing meanless conent from the XML files
-        refine_html.refine_text()#switch back 
+    # Refine text, by removing meanless conent from the XML files
+    refine_html.refine_text()#switch back 
 
     # Load the content into vectorstored database
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -277,25 +277,6 @@ local_loader = GenericLoader.from_filesystem(
 )
 local_files = local_loader.load()
 
-# Create a list so program generates separate db's for different embedding types
-vectorstore = []
-# OpenAI embeddings
-vectorstore.append(
-    Chroma(
-        persist_directory="./rag_data/.chromadb/openai",
-        embedding_function=OpenAIEmbeddings(model="text-embedding-3-large"),
-    )
-)
-# Google embeddings
-vectorstore.append(
-    Chroma(
-        persist_directory="./rag_data/.chromadb/gemini",
-        embedding_function=GoogleGenerativeAIEmbeddings(
-            model="models/embedding-001", task_type="retrieval_query"
-        ),
-    )
-)
-NUM_EMBEDDINGS = len(vectorstore)
 
 if __name__ == "__main__":
     try:
