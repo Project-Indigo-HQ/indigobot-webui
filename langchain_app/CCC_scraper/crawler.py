@@ -2,14 +2,20 @@ import os
 import random
 import time
 import xml.etree.ElementTree as ET
-
 import requests
+
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
 
 # create a REST session
 def start_sessionn():
+    """
+    Create and configure a REST session with retry mechanisms.
+
+    :return: A configured requests session.
+    :rtype: requests.Session
+    """
     session = requests.Session()
     retries = Retry(
         total=5, backoff_factor=1, status_forcelist=[403, 500, 502, 503, 504]
@@ -20,6 +26,17 @@ def start_sessionn():
 
 # Function to fetch and parse XML from a URL with retry mechanism
 def fetch_xml(url, session):
+    """
+    Fetch XML content from a given URL using a session with retries.
+
+    :param url: The URL to fetch XML from.
+    :type url: str
+    :param session: The requests session to use for fetching.
+    :type session: requests.Session
+    :return: The XML content of the response.
+    :rtype: bytes
+    :raises Exception: If the URL cannot be fetched successfully.
+    """
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
     }
@@ -35,6 +52,14 @@ def fetch_xml(url, session):
 
 # Functionn to parse a list of url to resource page from sitemap
 def extract_xml(xml):
+    """
+    Parse XML content to extract URLs.
+
+    :param xml: The XML content to parse.
+    :type xml: bytes
+    :return: A list of URLs extracted from the XML.
+    :rtype: list[str]
+    """
     sitemap = ET.fromstring(xml)
     url_list = []
     for url_element in sitemap.findall(
@@ -49,6 +74,14 @@ def extract_xml(xml):
 
 # Load each of the .txt file under "urls/"
 def load_urls(folder_path):
+    """
+    Load URLs from text files in a specified folder.
+
+    :param folder_path: Path to the folder containing URL text files.
+    :type folder_path: str
+    :return: A list of URLs read from the files.
+    :rtype: list[str]
+    """
     urls = []
     for filename in os.listdir(folder_path):
         if filename.endswith(".txt"):
@@ -60,6 +93,14 @@ def load_urls(folder_path):
 
 # Get the HTML file for each URL and save it
 def download_and_save_html(urls, session):
+    """
+    Download HTML content from a list of URLs and save it to a file.
+
+    :param urls: List of URLs to download HTML from.
+    :type urls: list[str]
+    :param session: The requests session to use for downloading.
+    :type session: requests.Session
+    """
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
     }
@@ -87,7 +128,16 @@ def download_and_save_html(urls, session):
 
 
 def parse_url_and_save(sitemap_url, target_file_name, session):
+    """
+    Parse URLs from a sitemap and save them to a file.
 
+    :param sitemap_url: The URL of the sitemap to parse.
+    :type sitemap_url: str
+    :param target_file_name: The name of the file to save URLs.
+    :type target_file_name: str
+    :param session: The requests session to use for fetching.
+    :type session: requests.Session
+    """
     urls = extract_xml(fetch_xml(sitemap_url, session))
 
     # Output all housing URLs
@@ -107,6 +157,16 @@ def parse_url_and_save(sitemap_url, target_file_name, session):
 
 
 def parse_url(sitemap_url, session):
+    """
+    Parse URLs from a sitemap without saving them to a file.
+
+    :param sitemap_url: The URL of the sitemap to parse.
+    :type sitemap_url: str
+    :param session: The requests session to use for fetching.
+    :type session: requests.Session
+    :return: A list of URLs extracted from the sitemap.
+    :rtype: list[str]
+    """
     urls = []
     page_content = extract_xml(fetch_xml(sitemap_url, session))
 
@@ -118,9 +178,16 @@ def parse_url(sitemap_url, session):
 
     return urls
 
-
-# TODO make this work anywhere
 def crawl():
+    """
+    Crawls a website starting from the given URL up to a specified depth.
+
+    :param url: The starting URL for the crawl.
+    :type url: str
+    :param depth: The depth of the crawl.
+    :type depth: int
+    """
+
     session = start_sessionn()
     url_list = []
 

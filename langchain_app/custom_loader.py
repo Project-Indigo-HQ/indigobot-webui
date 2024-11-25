@@ -185,6 +185,9 @@ def scrape_urls(url_list):
 
 
 def load_CCC():
+    """
+    Fetches and refines documents from the CCC source and loads them into the vector database.
+    """
         
     # Fetching document from CCC the save to for further process
     crawler.crawl()#switch back 

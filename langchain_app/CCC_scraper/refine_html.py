@@ -8,6 +8,14 @@ from langchain_community.document_loaders import JSONLoader
 
 # Load each of the .html files under the "html_files/" folder
 def load_html_files(folder_path):
+    """
+    Load all HTML files from a specified directory.
+
+    :param folder_path: Path to the directory containing HTML files.
+    :type folder_path: str
+    :return: List of file paths to HTML files.
+    :rtype: list
+    """
     html_files = []
     for filename in os.listdir(folder_path):
         if filename.endswith(".html"):
@@ -18,6 +26,13 @@ def load_html_files(folder_path):
 
 # Parse a single HTML file and extract required information to save as JSON
 def parse_and_save(file_path):
+    """
+    Parse an HTML file to extract the title and headers, and save the result as a JSON file.
+
+    :param file_path: Path to the HTML file to be parsed.
+    :type file_path: str
+    :return: None
+    """
     # Load file
     try:
         with open(file_path, "r", encoding="utf-8") as file:
@@ -80,6 +95,14 @@ def parse_and_save(file_path):
 
 
 def load_JSON_files(folder_path):
+    """
+    Load JSON files from a directory and parse them into Document objects.
+
+    :param folder_path: Path to the directory containing JSON files.
+    :type folder_path: str
+    :return: List of Document objects with parsed content and metadata.
+    :rtype: list
+    """
     JSON_files = []
     # Load json file into the format needed for langchain
     for filename in os.listdir(folder_path):
@@ -102,6 +125,11 @@ def load_JSON_files(folder_path):
 
 # TODO make this works anywhere
 def refine_text():
+    """
+    Execute the process of loading, parsing, and saving HTML content as JSON.
+
+    :return: None
+    """
     # Load HTML files from "html_files" directory
     script_dir = os.path.dirname(os.path.abspath(__file__))
     html_files_dir = os.path.join(script_dir, "html_files")
