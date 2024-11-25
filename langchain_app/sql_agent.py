@@ -151,71 +151,75 @@ def query_database(query):
     return results
 
 
-# URL list for scraping
-urls = [
-    "https://github.com/GunterMueller/Books-3/blob/master/Design%20Patterns%20Elements%20of%20Reusable%20Object-Oriented%20Software.pdf",
-]
+def main():
+    # URL list for scraping
+    urls = [
+        "https://github.com/GunterMueller/Books-3/blob/master/Design%20Patterns%20Elements%20of%20Reusable%20Object-Oriented%20Software.pdf",
+    ]
 
-# Add local pdf file(s)
-file_path = "rag_data/pdfs/OWASPtop10forLLMS.pdf"
-loader = PyPDFLoader(file_path)
-pages = []
-for page in loader.lazy_load():
-    pages.append(page)
+    # Add local pdf file(s)
+    file_path = "rag_data/pdfs/OWASPtop10forLLMS.pdf"
+    loader = PyPDFLoader(file_path)
+    pages = []
+    for page in loader.lazy_load():
+        pages.append(page)
 
-# Add local py files
-pyfiles_path = "."
-pyfiles_loader = GenericLoader.from_filesystem(
-    pyfiles_path,
-    glob="*",
-    suffixes=[".py"],
-    parser=LanguageParser(),
-)
-pyfiles = pyfiles_loader.load()
+    # Add local py files
+    pyfiles_path = "."
+    pyfiles_loader = GenericLoader.from_filesystem(
+        pyfiles_path,
+        glob="*",
+        suffixes=[".py"],
+        parser=LanguageParser(),
+    )
+    pyfiles = pyfiles_loader.load()
 
-load_urls(urls)
-load_docs(pages)
-load_docs(pyfiles)
+    load_urls(urls)
+    load_docs(pages)
+    load_docs(pyfiles)
 
-retriever = list()
-for i in range(list_len):
-    retriever.append(
-        RunnableLambda(
-            lambda query=f"SELECT text FROM documents": query_database(query)
+    retriever = list()
+    for i in range(list_len):
+        retriever.append(
+            RunnableLambda(
+                lambda query=f"SELECT text FROM documents": query_database(query)
+            )
         )
-    )
-formatted_docs_runnable = RunnableLambda(format_docs)
+    formatted_docs_runnable = RunnableLambda(format_docs)
 
-rag_chain = list()
-prompt = hub.pull("rlm/rag-prompt")
+    rag_chain = list()
+    prompt = hub.pull("rlm/rag-prompt")
 
-for i in range(list_len):
-    rag_chain.append(
-        (retriever[i] | formatted_docs_runnable | prompt | llms[i] | StrOutputParser())
-    )
+    for i in range(list_len):
+        rag_chain.append(
+            (retriever[i] | formatted_docs_runnable | prompt | llms[i] | StrOutputParser())
+        )
 
-print("What kind of questions do you have about the following resources?")
-# iterate over documents and dump metadata
-document_data_sources = set()
-for i in range(list_len):
+    print("What kind of questions do you have about the following resources?")
+    # iterate over documents and dump metadata
+    document_data_sources = set()
+    for i in range(list_len):
 
-    for doc_metadata in query_database("SELECT metadata FROM documents"):
-        metadata_dict = json.loads(doc_metadata[0])  # JSON to dict
-        document_data_sources.add(metadata_dict.get("source", "Unknown"))
-for doc in document_data_sources:
-    print(f"  {doc}")
+        for doc_metadata in query_database("SELECT metadata FROM documents"):
+            metadata_dict = json.loads(doc_metadata[0])  # JSON to dict
+            document_data_sources.add(metadata_dict.get("source", "Unknown"))
+    for doc in document_data_sources:
+        print(f"  {doc}")
 
-while True:
-    line = input("llm>> ")
-    if line.strip().lower() == "quit":
-        print("Exiting the program...")
-        break
-    if line:
-        for i, agent in enumerate(agents):
-            try:
-                result = agent.invoke(line)
-                print(f"\nModel {i}: {result}")
-            except Exception as e:
-                print(f"Model {i} error: {e}")
-    else:
-        break
+    while True:
+        line = input("llm>> ")
+        if line.strip().lower() == "quit":
+            print("Exiting the program...")
+            break
+        if line:
+            for i, agent in enumerate(agents):
+                try:
+                    result = agent.invoke(line)
+                    print(f"\nModel {i}: {result}")
+                except Exception as e:
+                    print(f"Model {i} error: {e}")
+        else:
+            break
+
+if __name__ == "__main__":
+    main()
