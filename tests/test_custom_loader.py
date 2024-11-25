@@ -43,7 +43,9 @@ class TestCustomLoader(unittest.TestCase):
         """Test chunking function"""
         mock_splitter_instance = MagicMock()
         mock_splitter.return_value = mock_splitter_instance
-        mock_docs = [MagicMock()]
+        mock_doc = MagicMock()
+        mock_doc.page_content = "Test content"
+        mock_docs = [mock_doc]
         mock_chunks = [MagicMock()]
         mock_splitter_instance.split_documents.return_value = mock_chunks
 
@@ -83,7 +85,9 @@ class TestCustomLoader(unittest.TestCase):
         """Test scrape_main function"""
         mock_loader_instance = MagicMock()
         mock_loader.return_value = mock_loader_instance
-        mock_docs = [MagicMock()]
+        mock_doc = MagicMock()
+        mock_doc.page_content = "Test content"
+        mock_docs = [mock_doc]
         mock_loader_instance.load.return_value = mock_docs
 
         result = scrape_main("http://example.com", 2)
@@ -119,7 +123,7 @@ class TestCustomLoader(unittest.TestCase):
     def test_pdf_path_exists(self):
         """Test that the PDF file path is valid"""
         self.assertTrue(os.path.exists(PDF_PATH), f"PDF file not found at {PDF_PATH}")
-        self.assertTrue(PDF_PATH.startswith("./langchain_app/rag_data/"), 
+        self.assertTrue(str(PDF_PATH).startswith("./langchain_app/rag_data/"), 
                        "PDF path should be relative to langchain_app directory")
 
 if __name__ == '__main__':
