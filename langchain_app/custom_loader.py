@@ -59,8 +59,7 @@ def chunking(documents):
     :return: List of text chunks.
     :rtype: list
     """
-    #text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=1000)
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=1000)
     chunks = text_splitter.split_documents(documents)
     return chunks
 
@@ -164,16 +163,6 @@ def add_documents(vectorstore, chunks, n):
     :param n: Number of documents to add per batch.
     :type n: int
     """
-    #TODO, find out why is add_documents does not work
-    for i, chunk in enumerate(chunks[:5]):  # Test first 5 chunks
-        try:
-            embedding = vectorstore[0].embedding_function.embed_query(chunk.page_content)
-            print(f"Chunk {i} embedding: {embedding[:5]}")
-            print(f"Doc {i}: page_content={chunk.page_content}, metadata={chunk.metadata}")
-        except Exception as e:
-            print(f"Error embedding Chunk {i}: {e}")
-
-
     for i in range(0, len(chunks), n):
         vectorstore.add_documents(chunks[i : i + n])
 
@@ -193,10 +182,10 @@ def scrape_urls(url_list):
 def load_CCC():
         
         # Fetching document from CCC the save to for further process
-        #crawler.crawl()
+        crawler.crawl()#switch back 
 
         # Refine text, by removing meanless conent from the XML files
-        #refine_html.refine_text()
+        refine_html.refine_text()#switch back 
 
         # Load the content into vectorstored database
         script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -213,10 +202,10 @@ def main():
     Execute the document loading process by scraping web pages, reading PDFs, and loading local files.
     """
     try:
-        #load_urls(url_list)
-        #load_docs(pages)
-        #load_docs(local_files)
-        #scrape_urls(url_list_recursive)
+        load_urls(url_list)#switch back 
+        load_docs(pages)
+        load_docs(local_files)
+        scrape_urls(url_list_recursive)#switch back 
         load_CCC()
 
     except Exception as e:
@@ -235,7 +224,7 @@ url_list_recursive = [
     "https://www.multco.us/veterans",
     "https://www.multco.us/dd",
 ]
-"""
+
 # Add local pdf file(s)
 PDF_PATH = "./rag_data/pdf/LLM_Agents_Beginners.pdf"
 loader = PyPDFLoader(PDF_PATH)
@@ -253,7 +242,7 @@ local_loader = GenericLoader.from_filesystem(
     parser=LanguageParser(language="python"),
 )
 local_files = local_loader.load()
-"""
+
 # Create a list so program generates separate db's for different embedding types
 vectorstore = []
 # OpenAI embeddings
