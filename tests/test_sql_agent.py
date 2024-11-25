@@ -39,6 +39,8 @@ class TestSQLAgent(unittest.TestCase):
                 metadata TEXT
             );
         """)
+        # Ensure table is empty
+        cursor.execute("DELETE FROM documents")
         conn.commit()
         conn.close()
 
