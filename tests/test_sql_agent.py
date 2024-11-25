@@ -27,9 +27,11 @@ class TestSQLAgent(unittest.TestCase):
 
     def setUp(self):
         """Create fresh test database before each test"""
+        # Always start with a fresh database
         if os.path.exists(self.test_db_path):
             os.remove(self.test_db_path)
         
+        # Create new database and table
         conn = sqlite3.connect(self.test_db_path)
         cursor = conn.cursor()
         cursor.execute("""
@@ -39,8 +41,6 @@ class TestSQLAgent(unittest.TestCase):
                 metadata TEXT
             );
         """)
-        # Ensure table is empty
-        cursor.execute("DELETE FROM documents")
         conn.commit()
         conn.close()
 
