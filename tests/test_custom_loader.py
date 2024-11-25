@@ -107,7 +107,9 @@ class TestCustomLoader(unittest.TestCase):
         
         mock_docs = [MagicMock()]
         mock_loader_instance.load.return_value = mock_docs
-        mock_transformed_docs = [MagicMock()]
+        mock_transformed_doc = MagicMock()
+        mock_transformed_doc.page_content = "Test content"
+        mock_transformed_docs = [mock_transformed_doc]
         mock_transformer_instance.transform_documents.return_value = mock_transformed_docs
 
         result = scrape_articles(["http://example.com"])
