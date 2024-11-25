@@ -4,29 +4,26 @@ It loads local PDFs, Python files, and also checks web pages to scrape and consu
 It currently gets responses from Gpt4o, Gemini, and Claude, though more models could be added.
 """
 
+import json
+import os
+import sqlite3
+
 from langchain import hub
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_anthropic import ChatAnthropic
 from langchain_chroma import Chroma
-from langchain_community.document_loaders import PyPDFLoader, AsyncHtmlLoader
+from langchain_community.agent_toolkits import SQLDatabaseToolkit
+from langchain_community.agent_toolkits.sql.base import create_sql_agent
+from langchain_community.document_loaders import AsyncHtmlLoader, PyPDFLoader
 from langchain_community.document_loaders.generic import GenericLoader
 from langchain_community.document_loaders.parsers import LanguageParser
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnablePassthrough
-from langchain_google_genai import GoogleGenerativeAI, GoogleGenerativeAIEmbeddings
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-
-import os
 
 # sql
 from langchain_community.utilities import SQLDatabase
-from langchain_community.agent_toolkits.sql.base import create_sql_agent
-from langchain_community.agent_toolkits import SQLDatabaseToolkit
-from langchain_core.runnables import Runnable
-from langchain_core.runnables import RunnableLambda
-import sqlite3
-import json
-
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import Runnable, RunnableLambda, RunnablePassthrough
+from langchain_google_genai import GoogleGenerativeAI, GoogleGenerativeAIEmbeddings
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
 llms = [
     ChatOpenAI(model="gpt-4o"),

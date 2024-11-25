@@ -4,3 +4,6 @@ env
 __pycache__
 *.pyc
 docs/*
+**/html_files
+**/processed_text
+**/temp

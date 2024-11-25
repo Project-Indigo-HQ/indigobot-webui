@@ -4,26 +4,26 @@ It loads local PDFs, Python files, and also checks web pages to scrape and consu
 It currently gets responses from either Gpt4o, Gemini, or Claude, though more models could be added.
 """
 
+import json
+import os
 import re
 import ssl
-import os
-import json
+from pathlib import Path
+from pprint import pprint
 
 import unidecode
 from bs4 import BeautifulSoup
+from langchain.schema import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
-from langchain_community.document_loaders import JSONLoader
-from langchain_community.document_loaders import AsyncHtmlLoader, PyPDFLoader
+from langchain_community.document_loaders import AsyncHtmlLoader, JSONLoader, PyPDFLoader
 from langchain_community.document_loaders.generic import GenericLoader
 from langchain_community.document_loaders.parsers import LanguageParser
 from langchain_community.document_loaders.recursive_url_loader import RecursiveUrlLoader
 from langchain_community.document_transformers import BeautifulSoupTransformer
-from langchain.schema import Document
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_openai import OpenAIEmbeddings
-from pprint import pprint
-from pathlib import Path
+
 
 def clean_text(text):
     """
@@ -88,6 +88,7 @@ def load_urls(urls):
     :type urls: list
     """
     load_docs(AsyncHtmlLoader(urls).load())
+
 
 def scrape_articles(links):
     """
@@ -165,7 +166,7 @@ def add_documents(vectorstore, chunks, n):
     :param n: Number of documents to add per batch.
     :type n: int
     """
-    #FIXME vectorstore.add_documents has error
+    # FIXME vectorstore.add_documents has error
     for i in range(0, len(chunks), n):
         try:
             vectorstore.add_documents(chunks[i : i + n])
@@ -185,6 +186,7 @@ def scrape_urls(url_list):
         for i in range(NUM_EMBEDDINGS):
             add_documents(vectorstore[i], chunks, 300)
 
+
 def load_JSON_files(folder_path):
 
     JSON_files = []
@@ -195,28 +197,29 @@ def load_JSON_files(folder_path):
                 file_path=file_path,
                 jq_schema=".headers[].text",
                 text_content=False,
-                )
+            )
             data = loader.load()
-            #print(data[3].metadata)
+            # print(data[3].metadata)
             JSON_files.append(data)
 
     return JSON_files
+
 
 def main():
     """
     Execute the document loading process by scraping web pages, reading PDFs, and loading local files.
     """
     try:
-        #load_urls(urls)
+        # load_urls(urls)
         # load_docs(pages)
         script_dir = os.path.dirname(os.path.abspath(__file__))
         json_files_dir = os.path.join(script_dir, "processed_text")
         JSON_files = load_JSON_files(json_files_dir)
         for file in JSON_files:
             load_docs(file)
-        
-        #load_docs(local_files)
-        #scrape_urls(url_list_recursive)
+
+        # load_docs(local_files)
+        # scrape_urls(url_list_recursive)
     except Exception as e:
         print(e)
 

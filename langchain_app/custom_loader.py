@@ -4,12 +4,13 @@ It loads local PDFs, Python files, and also checks web pages to scrape and consu
 It currently gets responses from either Gpt4o, Gemini, or Claude, though more models could be added.
 """
 
+import os
 import re
 import ssl
-import os
 
 import unidecode
 from bs4 import BeautifulSoup
+from CCC_scraper import crawler, refine_html
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
 from langchain_community.document_loaders import AsyncHtmlLoader, PyPDFLoader
@@ -19,7 +20,39 @@ from langchain_community.document_loaders.recursive_url_loader import RecursiveU
 from langchain_community.document_transformers import BeautifulSoupTransformer
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_openai import OpenAIEmbeddings
-from CCC_scraper import refine_html, crawler
+
+# URL list for scraping JSON blob
+url_list = [
+    "https://rosecityresource.streetroots.org/api/query",
+]
+
+# URL list for recursively scraping
+url_list_recursive = [
+    "https://www.multco.us/food-assistance/get-food-guide",
+    "https://www.multco.us/dchs/rent-housing-shelter",
+    "https://www.multco.us/veterans",
+    "https://www.multco.us/dd",
+]
+
+# Create a list so program generates separate db's for different embedding types
+vectorstore = []
+# OpenAI embeddings
+vectorstore.append(
+    Chroma(
+        persist_directory="./rag_data/.chromadb/openai",
+        embedding_function=OpenAIEmbeddings(model="text-embedding-3-large"),
+    )
+)
+# Google embeddings
+vectorstore.append(
+    Chroma(
+        persist_directory="./rag_data/.chromadb/gemini",
+        embedding_function=GoogleGenerativeAIEmbeddings(
+            model="models/embedding-001", task_type="retrieval_query"
+        ),
+    )
+)
+NUM_EMBEDDINGS = len(vectorstore)
 
 
 def clean_text(text):
@@ -179,6 +212,7 @@ def scrape_urls(url_list):
         for i in range(NUM_EMBEDDINGS):
             add_documents(vectorstore[i], chunks, 300)
 
+
 def load_CCC():
         
         # Fetching document from CCC the save to for further process
@@ -187,14 +221,14 @@ def load_CCC():
         # Refine text, by removing meanless conent from the XML files
         refine_html.refine_text()#switch back 
 
-        # Load the content into vectorstored database
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        json_files_dir = os.path.join(script_dir, "./CCC_scraper/processed_text")
-        JSON_files = refine_html.load_JSON_files(json_files_dir)
-        print(f"Loaded {len(JSON_files)} documents.")
-        #for file in JSON_files:
-            #load_docs(file)
-        load_docs(JSON_files)
+    # Load the content into vectorstored database
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    json_files_dir = os.path.join(script_dir, "./CCC_scraper/processed_text")
+    JSON_files = refine_html.load_JSON_files(json_files_dir)
+    print(f"Loaded {len(JSON_files)} documents.")
+    # for file in JSON_files:
+    # load_docs(file)
+    load_docs(JSON_files)
 
 
 def main():
