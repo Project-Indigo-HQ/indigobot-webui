@@ -210,19 +210,19 @@ def main():
         load_urls(URLS)
         load_docs(pages)
         load_docs(local_files)
-        scrape_urls(url_list_recursive)
+        scrape_urls(R_URLS)
     except Exception as e:
         print(e)
 
 
-"""
+
 # Add local pdf file(s)
 PDF_PATH = Path(os.path.join(RAG_DIR, "pdfs/NavigatingLLMsBegginersGuide.pdf"))
 loader = PyPDFLoader(PDF_PATH)
 pages = []
 for page in loader.lazy_load():
     pages.append(page)
-"""
+
 # Add local files
 LOCALS_PATH = CURRENT_DIR
 local_loader = GenericLoader.from_filesystem(
