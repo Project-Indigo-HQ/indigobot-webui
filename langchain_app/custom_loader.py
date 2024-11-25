@@ -237,7 +237,7 @@ def main():
     """
     try:
         load_urls(url_list)#switch back 
-        load_docs(pages)
+        #load_docs(pages)
         load_docs(local_files)
         scrape_urls(url_list_recursive)#switch back 
         load_CCC()
@@ -246,26 +246,14 @@ def main():
         print(e)
 
 
-# URL list for scraping JSON blob
-url_list = [
-    "https://rosecityresource.streetroots.org/api/query",
-]
-
-# URL list for recursively scraping
-url_list_recursive = [
-    "https://www.multco.us/food-assistance/get-food-guide",
-    "https://www.multco.us/dchs/rent-housing-shelter",
-    "https://www.multco.us/veterans",
-    "https://www.multco.us/dd",
-]
-
+"""
 # Add local pdf file(s)
 PDF_PATH = "./rag_data/pdf/LLM_Agents_Beginners.pdf"
 loader = PyPDFLoader(PDF_PATH)
 pages = []
 for page in loader.lazy_load():
     pages.append(page)
-
+"""
 # Add local files
 LOCALS_PATH = "."
 local_loader = GenericLoader.from_filesystem(
