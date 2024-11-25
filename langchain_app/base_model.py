@@ -5,7 +5,7 @@ This is meant to be a starting point for the Indigo-CfSS model
 import readline  # need this to use arrow keys
 from typing import Sequence
 
-import custom_loader
+from langchain_app import custom_loader
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.tools.retriever import create_retriever_tool
@@ -171,18 +171,27 @@ for doc_metadata in retriever.vectorstore.get()["metadatas"]:
 for doc in document_data_sources:
     print(f"  {doc}")
 
-while True:
-    try:
-        print()
-        line = input("llm>> ")
-        if line:
-            result = app.invoke(
-                {"input": line},
-                config=config,
-            )
+
+def main():
+    while True:
+        try:
             print()
-            print(result["answer"])
-        else:
-            break
+            line = input("llm>> ")
+            if line:
+                result = app.invoke(
+                    {"input": line},
+                    config=config,
+                )
+                print()
+                print(result["answer"])
+            else:
+                break
+        except Exception as e:
+            print(e)
+
+
+if __name__ == "__main__":
+    try:
+        main()
     except Exception as e:
         print(e)

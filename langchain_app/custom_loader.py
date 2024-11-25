@@ -7,6 +7,8 @@ It currently gets responses from either Gpt4o, Gemini, or Claude, though more mo
 import os
 import re
 import ssl
+import os
+from pathlib import Path
 
 import unidecode
 from bs4 import BeautifulSoup
@@ -21,38 +23,7 @@ from langchain_community.document_transformers import BeautifulSoupTransformer
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_openai import OpenAIEmbeddings
 
-# URL list for scraping JSON blob
-url_list = [
-    "https://rosecityresource.streetroots.org/api/query",
-]
-
-# URL list for recursively scraping
-url_list_recursive = [
-    "https://www.multco.us/food-assistance/get-food-guide",
-    "https://www.multco.us/dchs/rent-housing-shelter",
-    "https://www.multco.us/veterans",
-    "https://www.multco.us/dd",
-]
-
-# Create a list so program generates separate db's for different embedding types
-vectorstore = []
-# OpenAI embeddings
-vectorstore.append(
-    Chroma(
-        persist_directory="./rag_data/.chromadb/openai",
-        embedding_function=OpenAIEmbeddings(model="text-embedding-3-large"),
-    )
-)
-# Google embeddings
-vectorstore.append(
-    Chroma(
-        persist_directory="./rag_data/.chromadb/gemini",
-        embedding_function=GoogleGenerativeAIEmbeddings(
-            model="models/embedding-001", task_type="retrieval_query"
-        ),
-    )
-)
-NUM_EMBEDDINGS = len(vectorstore)
+from langchain_app.config import RAG_DIR, CURRENT_DIR, URLS, R_URLS
 
 
 def clean_text(text):
@@ -236,26 +207,24 @@ def main():
     Execute the document loading process by scraping web pages, reading PDFs, and loading local files.
     """
     try:
-        load_urls(url_list)#switch back 
-        #load_docs(pages)
+        load_urls(URLS)
+        load_docs(pages)
         load_docs(local_files)
-        scrape_urls(url_list_recursive)#switch back 
-        load_CCC()
-
+        scrape_urls(url_list_recursive)
     except Exception as e:
         print(e)
 
 
 """
 # Add local pdf file(s)
-PDF_PATH = "./rag_data/pdf/LLM_Agents_Beginners.pdf"
+PDF_PATH = Path(os.path.join(RAG_DIR, "pdfs/NavigatingLLMsBegginersGuide.pdf"))
 loader = PyPDFLoader(PDF_PATH)
 pages = []
 for page in loader.lazy_load():
     pages.append(page)
 """
 # Add local files
-LOCALS_PATH = "."
+LOCALS_PATH = CURRENT_DIR
 local_loader = GenericLoader.from_filesystem(
     LOCALS_PATH,
     glob="*",
@@ -265,6 +234,25 @@ local_loader = GenericLoader.from_filesystem(
 )
 local_files = local_loader.load()
 
+# Create a list so program generates separate db's for different embedding types
+vectorstore = []
+# OpenAI embeddings
+vectorstore.append(
+    Chroma(
+        persist_directory=os.path.join(RAG_DIR, ".chromadb/openai"),
+        embedding_function=OpenAIEmbeddings(model="text-embedding-3-large"),
+    )
+)
+# Google embeddings
+vectorstore.append(
+    Chroma(
+        persist_directory=os.path.join(RAG_DIR, ".chromadb/gemini"),
+        embedding_function=GoogleGenerativeAIEmbeddings(
+            model="models/embedding-001", task_type="retrieval_query"
+        ),
+    )
+)
+NUM_EMBEDDINGS = len(vectorstore)
 
 if __name__ == "__main__":
     try:

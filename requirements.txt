@@ -1,4 +1,5 @@
 black
+bs4
 build
 isort
 langchain
@@ -7,13 +8,18 @@ langchain_anthropic
 langchain-chroma
 langchain-community
 langchain-experimental
-langchain_openai
 langchain_google_genai
+langchain_openai
+langgraph
 pylama[all]
 pylama[toml]
+pymupdf
+pypdf
 pyyaml
+requests
 setuptools
 setuptools-scm
 sphinx
 sphinx-rtd-theme
 types-pyyaml
+unidecode
