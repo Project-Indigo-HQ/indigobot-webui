@@ -64,7 +64,7 @@ class TestBaseModel(unittest.TestCase):
 
         # Verify START edge exists
         edges = workflow.edges
-        start_edges = [edge for edge in edges if edge[0] == "start"]
+        start_edges = [edge for edge in edges if edge[0] == START]
         self.assertTrue(any(edge[1] == "model" for edge in start_edges))
 
 
