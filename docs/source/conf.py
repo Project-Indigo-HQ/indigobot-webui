@@ -44,7 +44,7 @@ napoleon_type_aliases = None
 # Intersphinx settings
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
-    'langchain': ('https://python.langchain.com/en/latest/', None),
+    'langchain': ('https://api.python.langchain.com/en/latest/', None),
 }
 templates_path = ["_templates"]
 exclude_patterns = []

@@ -47,9 +47,6 @@ Components
    :caption: Contents:
 
    modules
-   api
-   examples
-   contributing
 
 API Reference
 ------------
