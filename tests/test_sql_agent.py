@@ -124,9 +124,61 @@ class TestSQLAgent(unittest.TestCase):
         conn.commit()
         conn.close()
         
-        results = query_database("SELECT text FROM documents")
+        # Test normal query
+        results = query_database("SELECT text FROM documents", params=())
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0][0], "Test text")
+
+    def test_query_database_with_params(self):
+        """Test parameterized database querying"""
+        # Insert test data
+        conn = sqlite3.connect(self.test_db_path)
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO documents (text, metadata) VALUES (?, ?)",
+            ("Test text", '{"source": "test.txt"}')
+        )
+        conn.commit()
+        conn.close()
+        
+        # Test parameterized query
+        results = query_database("SELECT text FROM documents WHERE text = ?", params=("Test text",))
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0][0], "Test text")
+
+    def test_query_database_injection_prevention(self):
+        """Test SQL injection prevention"""
+        # Insert test data
+        conn = sqlite3.connect(self.test_db_path)
+        cursor = conn.cursor()
+        cursor.execute(
+            "INSERT INTO documents (text, metadata) VALUES (?, ?)",
+            ("Safe text", '{"source": "test.txt"}')
+        )
+        conn.commit()
+        conn.close()
+        
+        # Attempt SQL injection
+        malicious_input = "' OR '1'='1"
+        results = query_database("SELECT text FROM documents WHERE text = ?", params=(malicious_input,))
+        self.assertEqual(len(results), 0)  # Should not match anything
+
+    def test_load_docs_with_malicious_content(self):
+        """Test handling of potentially malicious document content"""
+        malicious_docs = [
+            Document(
+                page_content="'; DROP TABLE documents; --",
+                metadata={"source": "malicious.txt"}
+            )
+        ]
+        
+        load_docs(malicious_docs)
+        
+        # Verify table still exists and data was properly escaped
+        results = query_database("SELECT text FROM documents WHERE text = ?", 
+                               params=("'; DROP TABLE documents; --",))
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0][0], "'; DROP TABLE documents; --")
 
 
 if __name__ == '__main__':
