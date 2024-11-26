@@ -12,14 +12,42 @@ class Mock(MagicMock):
     def __getattr__(cls, name):
         return MagicMock()
 
+    def __call__(self, *args, **kwargs):
+        return Mock()
+
 MOCK_MODULES = [
     'openai',
     'langchain_openai',
     'langchain_anthropic',
     'langchain_google_genai',
     'anthropic',
-    'google.generativeai'
+    'google.generativeai',
+    'langchain.schema',
+    'langchain.schema.language_model',
+    'langchain_core.language_models.base',
+    'langchain_core.language_models',
+    'langchain_core.pydantic_v1',
+    'langchain.agents',
+    'langchain_community.agent_toolkits',
+    'langchain_community.agent_toolkits.sql.base',
+    'langchain_community.utilities'
 ]
+
+# Create base class for language models
+class BaseLLM:
+    pass
+
+class BaseLanguageModel:
+    pass
+
+# Add the base classes to the mock system
+sys.modules['langchain_core.language_models.base'] = type(
+    'langchain_core.language_models.base',
+    (),
+    {'BaseLanguageModel': BaseLanguageModel, 'BaseLLM': BaseLLM}
+)
+
+# Update all mock modules
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 # -- Project information -----------------------------------------------------
