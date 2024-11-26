@@ -41,9 +41,8 @@ OAI_DB = Path(os.path.join(RAG_DIR, ".chromadb/openai/chroma.sqlite3"))
 # Ensure directory exists
 os.makedirs(os.path.dirname(GEM_DB), exist_ok=True)
 
-# check if the file exists and is a valid db
-if not os.path.exists(GEM_DB):
-    print("Database file does not exist, creating one...")
+def init_db():
+    """Initialize the SQLite database with required tables"""
     try:
         conn = sqlite3.connect(GEM_DB)
         cursor = conn.cursor()
@@ -54,37 +53,21 @@ if not os.path.exists(GEM_DB):
                 text TEXT,
                 metadata TEXT
             );
-        """
+            """
         )
         conn.commit()
         conn.close()
-    except sqlite3.DatabaseError as e:
-        print(f"Error initializing the database: {e}")
-        exit()
-else:
-    try:
-        conn = sqlite3.connect(GEM_DB)
-        cursor = conn.cursor()
-        cursor.execute(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name='documents';"
+        return SQLDatabase.from_uri(
+            f"sqlite:///{GEM_DB}",
+            include_tables=['documents'],
+            # Disable reflection since we know our schema
+            reflect_tables=False
         )
-        if not cursor.fetchone():
-            cursor.execute(
-                """
-                CREATE TABLE documents (
-                    id INTEGER PRIMARY KEY,
-                    text TEXT,
-                    metadata TEXT
-                );
-            """
-            )
-            conn.commit()
-        conn.close()
-    except sqlite3.DatabaseError as e:
-        print(f"Error opening or reading the database: {e}")
-        exit()
+    except Exception as e:
+        print(f"Error initializing database: {e}")
+        raise
 
-db = SQLDatabase.from_uri(f"sqlite:///{GEM_DB}")
+db = init_db()
 
 # create agents for each llm
 agents = []
