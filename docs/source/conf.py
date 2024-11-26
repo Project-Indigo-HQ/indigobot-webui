@@ -7,6 +7,7 @@ import os
 import sys
 from unittest.mock import MagicMock
 
+
 class Mock(MagicMock):
     @classmethod
     def __getattr__(cls, name):
@@ -15,36 +16,40 @@ class Mock(MagicMock):
     def __call__(self, *args, **kwargs):
         return Mock()
 
+
 MOCK_MODULES = [
-    'openai',
-    'langchain_openai',
-    'langchain_anthropic',
-    'langchain_google_genai',
-    'anthropic',
-    'google.generativeai',
-    'langchain.schema',
-    'langchain.schema.language_model',
-    'langchain_core.language_models.base',
-    'langchain_core.language_models',
-    'langchain_core.pydantic_v1',
-    'langchain.agents',
-    'langchain_community.agent_toolkits',
-    'langchain_community.agent_toolkits.sql.base',
-    'langchain_community.utilities'
+    "openai",
+    "langchain_openai",
+    "langchain_anthropic",
+    "langchain_google_genai",
+    "anthropic",
+    "google.generativeai",
+    "langchain.schema",
+    "langchain.schema.language_model",
+    "langchain_core.language_models.base",
+    "langchain_core.language_models",
+    "langchain_core.pydantic_v1",
+    "langchain.agents",
+    "langchain_community.agent_toolkits",
+    "langchain_community.agent_toolkits.sql.base",
+    "langchain_community.utilities",
 ]
+
 
 # Create base class for language models
 class BaseLLM:
     pass
 
+
 class BaseLanguageModel:
     pass
 
+
 # Add the base classes to the mock system
-sys.modules['langchain_core.language_models.base'] = type(
-    'langchain_core.language_models.base',
+sys.modules["langchain_core.language_models.base"] = type(
+    "langchain_core.language_models.base",
     (),
-    {'BaseLanguageModel': BaseLanguageModel, 'BaseLLM': BaseLLM}
+    {"BaseLanguageModel": BaseLanguageModel, "BaseLLM": BaseLLM},
 )
 
 # Update all mock modules
@@ -73,7 +78,7 @@ extensions = [
     "sphinx.ext.coverage",
     "sphinx_copybutton",
     "sphinx.ext.autodoc.typehints",
-    "myst_parser"
+    "myst_parser",
 ]
 
 # Napoleon settings
@@ -92,8 +97,8 @@ napoleon_type_aliases = None
 
 # Intersphinx settings
 intersphinx_mapping = {
-    'python': ('https://docs.python.org/3', None),
-    'langchain': ('https://api.python.langchain.com/en/latest/', None),
+    "python": ("https://docs.python.org/3", None),
+    "langchain": ("https://api.python.langchain.com/en/latest/", None),
 }
 templates_path = ["_templates"]
 exclude_patterns = []
@@ -105,3 +110,5 @@ exclude_patterns = []
 html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
 html_css_files = ["custom.css"]
+
+suppress_warnings = ["epub.unknown_project_files"]
