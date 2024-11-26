@@ -94,6 +94,16 @@ for llm in llms:
     agents.append(agent)
 
 
+def load_urls(urls):
+    """
+    Load documents from URLs into the SQL database
+
+    :param urls: List of URLs to load documents from.
+    :type urls: list
+    """
+    docs = AsyncHtmlLoader(urls).load()
+    load_docs(docs)
+
 def load_docs(docs):
     """
     Split text of arg documents and load them into the Chroma vector store
