@@ -1,0 +1,5 @@
+bs4
+jq
+langchain
+langchain-community
+requests
