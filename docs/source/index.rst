@@ -39,18 +39,6 @@ Features
 * SQL database integration
 * Web crawling capabilities
 
-Components
-----------
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-
-   modules
-
-API Reference
--------------
-
 .. toctree::
    :maxdepth: 2
    :caption: API Documentation:
