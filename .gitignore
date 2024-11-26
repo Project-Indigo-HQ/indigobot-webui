@@ -7,3 +7,7 @@ docs/*
 project_indigo.egg-info
 .aider*
 .env
+**/html_files
+**/processed_text
+**/temp
+**/extracted_urls
