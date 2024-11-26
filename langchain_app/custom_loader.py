@@ -23,11 +23,10 @@ from langchain_openai import OpenAIEmbeddings
 
 if __package__ is None or __package__ == "":
     # uses current directory visibility
-    import config
+    from config import CURRENT_DIR, R_URLS, RAG_DIR, URLS
 else:
     # uses current package visibility
-    from langchain_app import config
-
+    from langchain_app.config import CURRENT_DIR, R_URLS, RAG_DIR, URLS
 
 def clean_text(text):
     """
@@ -190,23 +189,23 @@ def main():
     Execute the document loading process by scraping web pages, reading PDFs, and loading local files.
     """
     try:
-        load_urls(config.URLS)
+        load_urls(URLS)
         load_docs(pages)
         load_docs(local_files)
-        scrape_urls(config.R_URLS)
+        scrape_urls(R_URLS)
     except Exception as e:
         print(e)
 
 
 # Add local pdf file(s)
-PDF_PATH = Path(os.path.join(config.RAG_DIR, "pdfs/NavigatingLLMsBegginersGuide.pdf"))
+PDF_PATH = Path(os.path.join(RAG_DIR, "pdfs/NavigatingLLMsBegginersGuide.pdf"))
 loader = PyPDFLoader(PDF_PATH)
 pages = []
 for page in loader.lazy_load():
     pages.append(page)
 
 # Add local files
-LOCALS_PATH = config.CURRENT_DIR
+LOCALS_PATH = CURRENT_DIR
 local_loader = GenericLoader.from_filesystem(
     LOCALS_PATH,
     glob="*",
@@ -221,14 +220,14 @@ vectorstore = []
 # OpenAI embeddings
 vectorstore.append(
     Chroma(
-        persist_directory=os.path.join(config.RAG_DIR, ".chromadb/openai"),
+        persist_directory=os.path.join(RAG_DIR, ".chromadb/openai"),
         embedding_function=OpenAIEmbeddings(model="text-embedding-3-large"),
     )
 )
 # Google embeddings
 vectorstore.append(
     Chroma(
-        persist_directory=os.path.join(config.RAG_DIR, ".chromadb/gemini"),
+        persist_directory=os.path.join(RAG_DIR, ".chromadb/gemini"),
         embedding_function=GoogleGenerativeAIEmbeddings(
             model="models/embedding-001", task_type="retrieval_query"
         ),

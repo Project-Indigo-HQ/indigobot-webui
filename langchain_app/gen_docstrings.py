@@ -1,6 +1,6 @@
 """
-This program provides an agent that generates Sphinx-style docstrings and a 
-summary when given a file path or name. It assumes the provided file is in the cwd.
+This program provides an agent that generates Sphinx-style docstrings, unit tests, and
+a summary when given a file path or name. It assumes the provided file is in the cwd.
 """
 
 import readline
@@ -23,7 +23,7 @@ These tasks are your only job. Do not make an API call if asked to do anything e
 and instead ask the user to provide a file. You will write docstrings for all 
 functions (including `main()`, if present) and classes defined in a file that is 
 given to you. The file given to you is in the current directory, unless specified.
-Also, provide a verbose general summary of the file and pertinents unit testing.
+Also, provide a verbose general summary of the file and pertinent unit testing.
 """
 
 prompt = ChatPromptTemplate.from_messages(
