@@ -1,10 +1,10 @@
 Project Indigo Documentation
-===========================
+============================
 
 Welcome to Project Indigo's documentation. This project provides a sophisticated RAG (Retrieval-Augmented Generation) system using LangChain.
 
 Quick Start
-----------
+-----------
 
 To get started with Project Indigo:
 
@@ -17,7 +17,7 @@ To get started with Project Indigo:
    pip install -r requirements.txt
 
 Installation
------------
+------------
 
 Requirements:
 
@@ -49,7 +49,7 @@ Components
    modules
 
 API Reference
-------------
+-------------
 
 .. toctree::
    :maxdepth: 2
@@ -62,7 +62,7 @@ API Reference
    langchain_app.CCC_scraper.refine_html
 
 Contributing
------------
+------------
 
 We welcome contributions! Please see our contributing guidelines for more information.
 
