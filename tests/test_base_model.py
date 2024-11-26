@@ -68,6 +68,16 @@ class TestBaseModel(unittest.TestCase):
         start_edges = [edge for edge in edges if edge[0] == START]
         self.assertTrue(any(edge[1] == "model" for edge in start_edges))
 
+    @patch('builtins.input')
+    def test_main_function(self, mock_input):
+        """Test main function with skip_loader"""
+        from langchain_app.base_model import main
+        # Test that main runs without error when skip_loader is True
+        try:
+            main(skip_loader=True)
+        except Exception as e:
+            self.fail(f"main() raised {type(e).__name__} unexpectedly!")
+
 
 if __name__ == '__main__':
     unittest.main()

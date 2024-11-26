@@ -166,25 +166,27 @@ tools = [retriever_tool]
 
 config = {"configurable": {"thread_id": "abc123"}}
 
-load_res = input("Would you like to execute the loader? (y/n) ")
-if load_res == "y":
-    custom_loader.main()
-
-print("What kind of questions do you have about the following resources?")
-# Iterate over documents and dump metadata
-document_data_sources = set()
-for doc_metadata in retriever.vectorstore.get()["metadatas"]:
-    document_data_sources.add(doc_metadata["source"])
-for doc in document_data_sources:
-    print(f"  {doc}")
-
-
-def main() -> None:
+def main(skip_loader: bool = False) -> None:
     """
     Main function that runs the interactive chat loop.
     Handles user input and displays model responses.
     Exits when user enters an empty line.
+
+    Args:
+        skip_loader (bool): If True, skips the loader prompt. Useful for testing.
     """
+    if not skip_loader:
+        load_res = input("Would you like to execute the loader? (y/n) ")
+        if load_res == "y":
+            custom_loader.main()
+
+    print("What kind of questions do you have about the following resources?")
+    # Iterate over documents and dump metadata 
+    document_data_sources = set()
+    for doc_metadata in retriever.vectorstore.get()["metadatas"]:
+        document_data_sources.add(doc_metadata["source"])
+    for doc in document_data_sources:
+        print(f"  {doc}")
     while True:
         try:
             print()
@@ -204,6 +206,6 @@ def main() -> None:
 
 if __name__ == "__main__":
     try:
-        main()
+        main(skip_loader=False)
     except Exception as e:
         print(e)
