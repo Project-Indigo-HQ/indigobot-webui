@@ -59,9 +59,7 @@ def init_db():
         conn.close()
         return SQLDatabase.from_uri(
             f"sqlite:///{GEM_DB}",
-            include_tables=['documents'],
-            # Disable reflection since we know our schema
-            reflect_tables=False
+            include_tables=['documents']
         )
     except Exception as e:
         print(f"Error initializing database: {e}")
