@@ -47,14 +47,16 @@ class TestBaseModel(unittest.TestCase):
         self.assertIn("context", result)
         self.assertIn("answer", result)
 
-        # Verify chat history format
+        # Verify chat history format and content
         self.assertEqual(len(result["chat_history"]), 2)
-        self.assertIsInstance(result["chat_history"][0], HumanMessage)
-        self.assertIsInstance(result["chat_history"][1], AIMessage)
         
-        # Verify content
-        self.assertEqual(result["chat_history"][0].content, "test question")
-        self.assertEqual(result["chat_history"][1].content, "test answer")
+        human_msg = result["chat_history"][0]
+        ai_msg = result["chat_history"][1]
+        
+        self.assertIsInstance(human_msg, HumanMessage)
+        self.assertIsInstance(ai_msg, AIMessage)
+        self.assertEqual(str(human_msg.content), "test question")
+        self.assertEqual(str(ai_msg.content), "test answer")
         self.assertEqual(result["context"], "test context")
         self.assertEqual(result["answer"], "test answer")
 
