@@ -72,7 +72,7 @@ def call_model(state: State):
 
 
 # currently not used
-def search_vectorstore(query):
+def search_vectorstore(query: str) -> None:
     """
     Perform a similarity search in the vector store with the given query.
 
@@ -88,15 +88,19 @@ def search_vectorstore(query):
 
 
 # Model to use
-llm = ChatOpenAI(model="gpt-4o")
+llm = ChatOpenAI(model="gpt-4")
 # llm = GoogleGenerativeAI(model="gemini-1.5-pro-latest", temperature=0)
 # llm = ChatAnthropic(model="claude-3-5-sonnet-latest")
 
 # OpenAI embeddings
-vectorstore = Chroma(
-    persist_directory="./rag_data/.chromadb/openai",
-    embedding_function=OpenAIEmbeddings(model="text-embedding-3-large"),
-)
+try:
+    vectorstore = Chroma(
+        persist_directory="./rag_data/.chromadb/openai",
+        embedding_function=OpenAIEmbeddings(model="text-embedding-3-large"),
+    )
+except Exception as e:
+    print(f"Error initializing vectorstore: {e}")
+    raise
 GPT_SQL_DB = "./rag_data/.chromadb/openai/chroma.sqlite3"
 
 # Google embeddings
@@ -175,7 +179,12 @@ for doc in document_data_sources:
     print(f"  {doc}")
 
 
-def main():
+def main() -> None:
+    """
+    Main function that runs the interactive chat loop.
+    Handles user input and displays model responses.
+    Exits when user enters an empty line.
+    """
     while True:
         try:
             print()
