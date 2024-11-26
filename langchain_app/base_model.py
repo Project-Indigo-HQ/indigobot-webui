@@ -71,26 +71,16 @@ def call_model(state: State):
     }
 
 
-# NOTE: Currently not used
-def search_vectorstore(query: str) -> None:
-    """
-    Perform a similarity search in the vector store with the given query.
 
-    :param query: The query to search for.
-    :type query: str
-    """
-    docs = vectorstore.similarity_search(query)
-    print(f"Query database for: {query}")
-    if docs:
-        print(f"Closest document match in database: {docs[0].metadata['source']}")
-    else:
-        print("No matching documents")
+# Model configuration
+def get_llm():
+    """Get the language model instance to use"""
+    # Uncomment the model you want to use
+    return ChatOpenAI(model="gpt-4")
+    # return GoogleGenerativeAI(model="gemini-1.5-pro-latest", temperature=0)
+    # return ChatAnthropic(model="claude-3-5-sonnet-latest")
 
-
-# Model to use
-llm = ChatOpenAI(model="gpt-4")
-# llm = GoogleGenerativeAI(model="gemini-1.5-pro-latest", temperature=0)
-# llm = ChatAnthropic(model="claude-3-5-sonnet-latest")
+llm = get_llm()
 
 # OpenAI embeddings
 try:
@@ -164,7 +154,8 @@ app = workflow.compile(checkpointer=memory)
 retriever_tool = create_retriever_tool(retriever, "my_retriever", "my_description")
 tools = [retriever_tool]
 
-config = {"configurable": {"thread_id": "abc123"}}
+# Configuration constants
+THREAD_CONFIG = {"configurable": {"thread_id": "abc123"}}
 
 
 def main(skip_loader: bool = False) -> None:
@@ -195,7 +186,7 @@ def main(skip_loader: bool = False) -> None:
             if line:
                 result = app.invoke(
                     {"input": line},
-                    config=config,
+                    config=THREAD_CONFIG,
                 )
                 print()
                 print(result["answer"])
@@ -208,5 +199,7 @@ def main(skip_loader: bool = False) -> None:
 if __name__ == "__main__":
     try:
         main(skip_loader=False)
+    except KeyboardInterrupt:
+        print("\nExiting...")
     except Exception as e:
-        print(e)
+        print(f"Error: {e}")
