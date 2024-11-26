@@ -1,5 +1,5 @@
 """
-Configuration settings for the Indigo-CfSS application.
+Configuration settings for the CfSS application.
 
 This module contains path configurations and URL lists for data scraping operations.
 All URL endpoints and file paths used across the application should be defined here.
@@ -22,7 +22,7 @@ URLS: Final[List[str]] = [
 # URLs for web pages that need recursive scraping
 R_URLS: Final[List[str]] = [
     "https://www.multco.us/food-assistance/get-food-guide",  # Food assistance guide
-    "https://www.multco.us/dchs/rent-housing-shelter",      # Housing and shelter
-    "https://www.multco.us/veterans",                       # Veterans services
-    "https://www.multco.us/dd",                            # Developmental disabilities
+    "https://www.multco.us/dchs/rent-housing-shelter",  # Housing and shelter
+    "https://www.multco.us/veterans",  # Veterans services
+    "https://www.multco.us/dd",  # Developmental disabilities
 ]

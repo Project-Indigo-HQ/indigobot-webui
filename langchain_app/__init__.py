@@ -1,18 +1,18 @@
 """
-LangChain application for Social Services Chatbot (Indigo-CfSS).
+LangChain application - Chatbot for Social Services (CfSS)
 
-This package provides a RAG-based chatbot that helps users find and access
-social services information. It includes web scraping, document processing,
-and a conversational interface powered by various LLM providers.
+This package provides a RAG-based chatbot that helps users find and access social 
+services information in the Portland, OR area. It includes web scraping, document 
+processing, and a conversational interface powered by various LLM providers.
 
-Author: CfSS Development Team
-License: MIT
+Author: Team Indigo
+License: GPL3
 """
 
 from typing import List
 
-__author__ = "CfSS Development Team"
-__license__ = "MIT"
+__author__ = "Team Indigo"
+__license__ = "GPL3"
 
 try:
     from ._version import version as __version__  # type: ignore

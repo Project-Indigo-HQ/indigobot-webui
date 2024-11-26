@@ -1,8 +1,8 @@
 """
-This is meant to be a starting point for the Indigo-CfSS model
+This is the main chatbot program with conversational capabilities and info distribution
 """
 
-import readline  # need this to use arrow keys
+import readline  # Needed to use arrow keys in CLI
 from typing import Sequence
 
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
@@ -71,7 +71,7 @@ def call_model(state: State):
     }
 
 
-# currently not used
+# NOTE: Currently not used
 def search_vectorstore(query: str) -> None:
     """
     Perform a similarity search in the vector store with the given query.
@@ -166,6 +166,7 @@ tools = [retriever_tool]
 
 config = {"configurable": {"thread_id": "abc123"}}
 
+
 def main(skip_loader: bool = False) -> None:
     """
     Main function that runs the interactive chat loop.
@@ -181,7 +182,7 @@ def main(skip_loader: bool = False) -> None:
             custom_loader.main()
 
     print("What kind of questions do you have about the following resources?")
-    # Iterate over documents and dump metadata 
+    # Iterate over documents and dump metadata
     document_data_sources = set()
     for doc_metadata in retriever.vectorstore.get()["metadatas"]:
         document_data_sources.add(doc_metadata["source"])

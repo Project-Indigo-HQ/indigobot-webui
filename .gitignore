@@ -3,7 +3,7 @@ env
 .chromadb
 __pycache__
 *.pyc
-docs/*
+docs/build
 project_indigo.egg-info
 .aider*
 .env
