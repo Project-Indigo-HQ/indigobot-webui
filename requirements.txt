@@ -2,6 +2,7 @@ black
 bs4
 build
 isort
+jq
 langchain
 langchainhub
 langchain_anthropic
@@ -13,7 +14,6 @@ langchain_openai
 langgraph
 pylama[all]
 pylama[toml]
-pymupdf
 pypdf
 pyyaml
 requests

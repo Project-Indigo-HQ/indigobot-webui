@@ -9,7 +9,6 @@ langchain_google_genai
 langchain-experimental
 langchain_openai
 langgraph
-pymupdf
 pypdf
 requests
 unidecode

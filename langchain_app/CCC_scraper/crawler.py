@@ -2,14 +2,14 @@ import os
 import random
 import time
 import xml.etree.ElementTree as ET
-import requests
 
+import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
 
 # create a REST session
-def start_sessionn():
+def start_session():
     """
     Create and configure a REST session with retry mechanisms.
 
@@ -119,8 +119,9 @@ def download_and_save_html(urls, session):
                 os.makedirs(html_files_dir)
 
             # save the content to html
-
-            with open(html_files_dir, "w", encoding="utf-8") as file:
+            with open(
+                os.path.join(html_files_dir, filename), "w", encoding="utf-8"
+            ) as file:
                 file.write(response.text)
                 print(f"Save html content to {html_files_dir}")
         else:
@@ -146,11 +147,11 @@ def parse_url_and_save(sitemap_url, target_file_name, session):
         print(url)
 
     # Ensure 'urls' directory exists
-    if not os.path.exists("urls"):
-        os.makedirs("urls")
+    if not os.path.exists("extracted_urls"):
+        os.makedirs("extracted_urls")
 
     # Save URLs to a file
-    with open(f"urls/{target_file_name}.txt", "w") as file:
+    with open(f"extracted_urls/{target_file_name}.txt", "w") as file:
         for url in urls:
             file.write(url + "\n")
     time.sleep(5)
@@ -178,6 +179,7 @@ def parse_url(sitemap_url, session):
 
     return urls
 
+
 def crawl():
     """
     Crawls a website starting from the given URL up to a specified depth.
@@ -188,7 +190,7 @@ def crawl():
     :type depth: int
     """
 
-    session = start_sessionn()
+    session = start_session()
     url_list = []
 
     # URL of the sitemap
@@ -199,7 +201,7 @@ def crawl():
         "https://centralcityconcern.org/jobs-sitemap.xml",
     ]
 
-    # Scrrape URLs from the sitemap
+    # Scrape URLs from the sitemap
     for page in sitemaps:
         url_list.extend(parse_url(page, session))
 
