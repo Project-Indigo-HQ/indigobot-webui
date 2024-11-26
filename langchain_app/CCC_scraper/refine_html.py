@@ -104,22 +104,25 @@ def load_JSON_files(folder_path):
     :rtype: list
     """
     JSON_files = []
-    # Load json file into the format needed for langchain
     for filename in os.listdir(folder_path):
-        file_path = os.path.join(folder_path, filename)
         if filename.endswith(".json"):
-            loader = JSONLoader(
-                file_path=file_path,
-                jq_schema=".headers[].text",
-                text_content=False,
-            )
-            data = loader.load()
-
-            for item in data:
-                JSON_files.append(
-                    Document(page_content=item.page_content, metadata=item.metadata)
-                )
-
+            file_path = os.path.join(folder_path, filename)
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    # Extract header texts from the JSON structure
+                    for header in data.get('headers', []):
+                        text = header.get('text', '')
+                        if text:
+                            JSON_files.append(
+                                Document(
+                                    page_content=text,
+                                    metadata={"source": filename}
+                                )
+                            )
+            except Exception as e:
+                print(f"Error loading {file_path}: {e}")
+                continue
     return JSON_files
 
 

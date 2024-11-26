@@ -85,15 +85,15 @@ class TestRefineHtml(unittest.TestCase):
             self.assertEqual(saved_data['title'], 'Test Page')
             self.assertEqual(len(saved_data['headers']), 3)  # h1, h2, h3
 
+    @patch('builtins.open', new_callable=mock_open, read_data='{"headers": [{"text": "Test Header"}]}')
     @patch('os.listdir')
-    @patch('langchain_community.document_loaders.JSONLoader.load')
-    def test_load_JSON_files(self, mock_load, mock_listdir):
+    def test_load_JSON_files(self, mock_listdir, mock_file):
         mock_listdir.return_value = ['test1.json', 'test2.json', 'other.txt']
-        mock_load.return_value = [
-            Document(page_content="Test content", metadata={"source": "test1.json"})
-        ]
         
         documents = load_JSON_files('/fake/path')
+        self.assertEqual(len(documents), 2)  # Two JSON files processed
+        self.assertEqual(documents[0].page_content, "Test Header")
+        self.assertEqual(documents[0].metadata["source"], "test1.json")
         self.assertTrue(all(isinstance(doc, Document) for doc in documents))
         self.assertEqual(len(documents), 2)  # One doc per JSON file
 
