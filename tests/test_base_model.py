@@ -71,14 +71,34 @@ class TestBaseModel(unittest.TestCase):
         self.assertTrue(any(edge[1] == "model" for edge in start_edges))
 
     @patch('builtins.input')
-    def test_main_function(self, mock_input):
+    @patch('langchain_app.base_model.app')
+    @patch('langchain_app.base_model.retriever')
+    def test_main_function(self, mock_retriever, mock_app, mock_input):
         """Test main function with skip_loader"""
         from langchain_app.base_model import main
+        
+        # Mock the retriever's vectorstore response
+        mock_retriever.vectorstore.get.return_value = {
+            "metadatas": [{"source": "test_source.pdf"}]
+        }
+        
+        # Mock the app's invoke response
+        mock_app.invoke.return_value = {
+            "answer": "test response"
+        }
+        
+        # Mock user input to exit after one iteration
+        mock_input.side_effect = ["test input", ""]
+        
         # Test that main runs without error when skip_loader is True
         try:
             main(skip_loader=True)
         except Exception as e:
             self.fail(f"main() raised {type(e).__name__} unexpectedly!")
+        
+        # Verify mocks were called correctly
+        mock_app.invoke.assert_called_once()
+        mock_retriever.vectorstore.get.assert_called_once()
 
 
 if __name__ == '__main__':
