@@ -34,18 +34,18 @@ llms = [
 list_len = len(llms)
 
 # init db
-DB_PATH = os.path.join(
+db_path = os.path.join(
     os.path.dirname(__file__), "..", "rag_data", "indigo_bot_db.sqlite"
 )
 
 # Ensure directory exists
-os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+os.makedirs(os.path.dirname(db_path), exist_ok=True)
 
 # check if the file exists and is a valid db
-if not os.path.exists(DB_PATH):
+if not os.path.exists(db_path):
     print("Database file does not exist, creating one...")
     try:
-        conn = sqlite3.connect(DB_PATH)
+        conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         cursor.execute(
             """
@@ -63,7 +63,7 @@ if not os.path.exists(DB_PATH):
         exit()
 else:
     try:
-        conn = sqlite3.connect(DB_PATH)
+        conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         cursor.execute(
             "SELECT name FROM sqlite_master WHERE type='table' AND name='documents';"
@@ -84,7 +84,7 @@ else:
         print(f"Error opening or reading the database: {e}")
         exit()
 
-db = SQLDatabase.from_uri(f"sqlite:///{DB_PATH}")
+db = SQLDatabase.from_uri(f"sqlite:///{db_path}")
 
 # create agents for each llm
 agents = []
@@ -149,7 +149,7 @@ def format_docs(docs):
 
 
 def query_database(query):
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute(query)
     results = cursor.fetchall()
