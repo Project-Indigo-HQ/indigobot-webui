@@ -7,6 +7,7 @@ It currently gets responses from Gpt4o, Gemini, and Claude, though more models c
 import json
 import os
 import sqlite3
+from pathlib import Path
 
 from langchain import hub
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -22,30 +23,29 @@ from langchain_community.document_loaders.parsers import LanguageParser
 from langchain_community.utilities import SQLDatabase
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import Runnable, RunnableLambda, RunnablePassthrough
-from langchain_google_genai import GoogleGenerativeAI, GoogleGenerativeAIEmbeddings
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
-llms = [
-    ChatOpenAI(model="gpt-4o"),
-    GoogleGenerativeAI(model="gemini-1.5-pro-latest", temperature=0),
-    ChatAnthropic(model="claude-3-5-sonnet-latest"),
-]
+if __package__ is None or __package__ == "":
+    from config import CURRENT_DIR, R_URLS, RAG_DIR, URLS
+else:
+    from langchain_app.config import CURRENT_DIR, R_URLS, RAG_DIR, URLS
+
+llms = [ChatAnthropic(model="claude-3-5-sonnet-latest")]
 
 list_len = len(llms)
 
 # init db
-DB_PATH = os.path.join(
-    os.path.dirname(__file__), "..", "rag_data", "indigo_bot_db.sqlite"
-)
+GEM_DB = Path(os.path.join(RAG_DIR, ".chromadb/gemini/chroma.sqlite3"))
+OAI_DB = Path(os.path.join(RAG_DIR, ".chromadb/openai/chroma.sqlite3"))
 
 # Ensure directory exists
-os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+os.makedirs(os.path.dirname(GEM_DB), exist_ok=True)
 
 # check if the file exists and is a valid db
-if not os.path.exists(DB_PATH):
+if not os.path.exists(GEM_DB):
     print("Database file does not exist, creating one...")
     try:
-        conn = sqlite3.connect(DB_PATH)
+        conn = sqlite3.connect(GEM_DB)
         cursor = conn.cursor()
         cursor.execute(
             """
@@ -63,7 +63,7 @@ if not os.path.exists(DB_PATH):
         exit()
 else:
     try:
-        conn = sqlite3.connect(DB_PATH)
+        conn = sqlite3.connect(GEM_DB)
         cursor = conn.cursor()
         cursor.execute(
             "SELECT name FROM sqlite_master WHERE type='table' AND name='documents';"
@@ -84,7 +84,7 @@ else:
         print(f"Error opening or reading the database: {e}")
         exit()
 
-db = SQLDatabase.from_uri(f"sqlite:///{DB_PATH}")
+db = SQLDatabase.from_uri(f"sqlite:///{GEM_DB}")
 
 # create agents for each llm
 agents = []
@@ -117,7 +117,7 @@ def load_docs(docs):
 
     conn = None
     try:
-        conn = sqlite3.connect(DB_PATH)
+        conn = sqlite3.connect(GEM_DB)
         cursor = conn.cursor()
 
         for doc in splits:
@@ -150,7 +150,7 @@ def format_docs(docs):
 
 
 def query_database(query):
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(GEM_DB)
     cursor = conn.cursor()
     cursor.execute(query)
     results = cursor.fetchall()

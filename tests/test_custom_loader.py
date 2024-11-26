@@ -10,14 +10,15 @@ from langchain_app.custom_loader import (
     extract_text,
     scrape_main,
     scrape_articles,
+    PDF_PATH,
 )
 
-PARENT_DIR = os.path.dirname("..")
-PDF_PATH = Path(
-    os.path.join(
-        PARENT_DIR, "langchain_app/rag_data/pdfs/NavigatingLLMsBegginersGuide.pdf"
-    )
-)
+# PARENT_DIR = os.path.dirname("..")
+# PDF_PATH = Path(
+#     os.path.join(
+#         PARENT_DIR, "langchain_app/rag_data/pdfs/NavigatingLLMsBegginersGuide.pdf"
+#     )
+# )
 
 
 class TestCustomLoader(unittest.TestCase):

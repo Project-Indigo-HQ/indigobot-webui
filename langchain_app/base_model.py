@@ -25,10 +25,8 @@ from langgraph.graph.message import add_messages
 from typing_extensions import Annotated, TypedDict
 
 if __package__ is None or __package__ == "":
-    # uses current directory visibility
     import custom_loader
 else:
-    # uses current package visibility
     from langchain_app import custom_loader
 
 

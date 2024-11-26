@@ -22,11 +22,10 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_openai import OpenAIEmbeddings
 
 if __package__ is None or __package__ == "":
-    # uses current directory visibility
     from config import CURRENT_DIR, R_URLS, RAG_DIR, URLS
 else:
-    # uses current package visibility
     from langchain_app.config import CURRENT_DIR, R_URLS, RAG_DIR, URLS
+
 
 def clean_text(text):
     """
