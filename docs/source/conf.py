@@ -18,7 +18,13 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
     "sphinx.ext.githubpages",
-    "sphinx.ext.intersphinx"
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.autosectionlabel",
+    "sphinx.ext.todo",
+    "sphinx.ext.coverage",
+    "sphinx_copybutton",
+    "sphinx.ext.autodoc.typehints",
+    "myst_parser"
 ]
 
 # Napoleon settings

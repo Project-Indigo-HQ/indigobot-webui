@@ -12,7 +12,24 @@ To get started with Project Indigo:
 
    git clone https://github.com/yourusername/project-indigo
    cd project-indigo
+   python -m venv venv
+   source venv/bin/activate  # On Windows use: venv\Scripts\activate
    pip install -r requirements.txt
+
+Installation
+-----------
+
+Requirements:
+
+* Python 3.12 or higher
+* pip package manager
+* Virtual environment (recommended)
+
+For development installation:
+
+.. code-block:: bash
+
+   pip install -r requirements-dev.txt
 
 Features
 --------
