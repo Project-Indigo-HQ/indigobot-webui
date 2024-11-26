@@ -5,7 +5,6 @@ This is meant to be a starting point for the Indigo-CfSS model
 import readline  # need this to use arrow keys
 from typing import Sequence
 
-from langchain_app import custom_loader
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.tools.retriever import create_retriever_tool
@@ -24,6 +23,13 @@ from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import START, StateGraph
 from langgraph.graph.message import add_messages
 from typing_extensions import Annotated, TypedDict
+
+if __package__ is None or __package__ == "":
+    # uses current directory visibility
+    import custom_loader
+else:
+    # uses current package visibility
+    from langchain_app import custom_loader
 
 
 class State(TypedDict):
@@ -93,6 +99,7 @@ vectorstore = Chroma(
     persist_directory="./rag_data/.chromadb/openai",
     embedding_function=OpenAIEmbeddings(model="text-embedding-3-large"),
 )
+
 GPT_SQL_DB = "./rag_data/.chromadb/openai/chroma.sqlite3"
 
 # Google embeddings

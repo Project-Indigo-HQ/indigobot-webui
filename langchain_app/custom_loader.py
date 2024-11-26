@@ -4,13 +4,14 @@ It loads local PDFs, Python files, and also checks web pages to scrape and consu
 It currently gets responses from either Gpt4o, Gemini, or Claude, though more models could be added.
 """
 
+import os
 import re
 import ssl
-import os
 from pathlib import Path
 
 import unidecode
 from bs4 import BeautifulSoup
+from CCC_scraper import crawler, refine_html
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
 from langchain_community.document_loaders import AsyncHtmlLoader, PyPDFLoader
@@ -21,7 +22,12 @@ from langchain_community.document_transformers import BeautifulSoupTransformer
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_openai import OpenAIEmbeddings
 
-from langchain_app.config import RAG_DIR, CURRENT_DIR, URLS, R_URLS
+if __package__ is None or __package__ == "":
+    # uses current directory visibility
+    from config import CURRENT_DIR, R_URLS, RAG_DIR, URLS
+else:
+    # uses current package visibility
+    from langchain_app.config import CURRENT_DIR, R_URLS, RAG_DIR, URLS
 
 
 def clean_text(text):
@@ -73,6 +79,7 @@ def load_docs(docs):
     :param docs: List of documents to load and split.
     :type docs: list
     """
+
     chunks = chunking(docs)
     for i in range(NUM_EMBEDDINGS):
         add_documents(vectorstore[i], chunks, 300)
@@ -181,15 +188,36 @@ def scrape_urls(url_list):
             add_documents(vectorstore[i], chunks, 300)
 
 
+def load_CCC():
+    """
+    Fetches and refines documents from the CCC source and loads them into the vector database.
+    """
+
+    # Fetching document from CCC the save to for further process
+    crawler.crawl()  # switch back
+
+    # Refine text, by removing meanless conent from the XML files
+    refine_html.refine_text()  # switch back
+
+    # Load the content into vectorstored database
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    json_files_dir = os.path.join(script_dir, "./CCC_scraper/processed_text")
+    JSON_files = refine_html.load_JSON_files(json_files_dir)
+    print(f"Loaded {len(JSON_files)} documents.")
+
+    load_docs(JSON_files)
+
+
 def main():
     """
     Execute the document loading process by scraping web pages, reading PDFs, and loading local files.
     """
     try:
         load_urls(URLS)
-        load_docs(pages)
+        load_docs(local_pdf)
         load_docs(local_files)
         scrape_urls(R_URLS)
+        load_CCC()
     except Exception as e:
         print(e)
 
@@ -197,9 +225,9 @@ def main():
 # Add local pdf file(s)
 PDF_PATH = Path(os.path.join(RAG_DIR, "pdfs/NavigatingLLMsBegginersGuide.pdf"))
 loader = PyPDFLoader(PDF_PATH)
-pages = []
+local_pdf = []
 for page in loader.lazy_load():
-    pages.append(page)
+    local_pdf.append(page)
 
 # Add local files
 LOCALS_PATH = CURRENT_DIR
