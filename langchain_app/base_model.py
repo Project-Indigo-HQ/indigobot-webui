@@ -46,7 +46,7 @@ class State(TypedDict):
     """
 
     input: str
-    chat_history: Annotated[Sequence[BaseMessage], add_messages]
+    chat_history: Sequence[BaseMessage]
     context: str
     answer: str
 

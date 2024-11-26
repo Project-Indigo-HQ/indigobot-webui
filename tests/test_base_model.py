@@ -14,12 +14,12 @@ class TestBaseModel(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures"""
-        self.test_state = State(
-            input="test question",
-            chat_history=[],
-            context="test context",
-            answer=""
-        )
+        self.test_state = {
+            "input": "test question",
+            "chat_history": [],
+            "context": "test context",
+            "answer": ""
+        }
 
     def test_state_class(self):
         """Test State class initialization and typing"""
