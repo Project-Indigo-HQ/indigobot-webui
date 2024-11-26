@@ -96,7 +96,7 @@ intersphinx_mapping = {
     'langchain': ('https://api.python.langchain.com/en/latest/', None),
 }
 templates_path = ["_templates"]
-exclude_patterns = []
+exclude_patterns = ['.nojekyll']
 
 
 # -- Options for HTML output -------------------------------------------------
