@@ -29,12 +29,17 @@ from langgraph.graph import START, StateGraph
 from langgraph.graph.message import add_messages
 from typing_extensions import Annotated, TypedDict
 
-if __package__ is None or __package__ == "":
-    # Use current directory visibility
-    import custom_loader
-else:
-    # Use package visibility
+try:
+    # Try package import first
     from langchain_app import custom_loader
+except ImportError:
+    # Fall back to local import if run directly
+    import sys
+    from pathlib import Path
+    file_path = Path(__file__).resolve()
+    parent_dir = file_path.parent.parent
+    sys.path.append(str(parent_dir))
+    import custom_loader
 
 
 # Define API models
@@ -258,8 +263,6 @@ if __name__ == "__main__":
     import os
     import sys
     
-    # Add the parent directory to Python path
-    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     
     # Optionally, execute custom loader before starting the server
     load_res = input("Would you like to execute the loader? (y/n) ")
