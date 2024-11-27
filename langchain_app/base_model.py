@@ -29,17 +29,11 @@ from langgraph.graph import START, StateGraph
 from langgraph.graph.message import add_messages
 from typing_extensions import Annotated, TypedDict
 
-try:
-    # Try package import first
-    from langchain_app import custom_loader
-except ImportError:
-    # Fall back to local import if run directly
-    import sys
-    from pathlib import Path
-    file_path = Path(__file__).resolve()
-    parent_dir = file_path.parent.parent
-    sys.path.append(str(parent_dir))
-    import custom_loader
+import sys
+from pathlib import Path
+file_path = Path(__file__).resolve()
+parent_dir = file_path.parent.parent
+sys.path.append(str(parent_dir))
 
 
 # Define API models
@@ -81,7 +75,7 @@ class State(BaseModel):
     Pydantic model for chat state validation
     """
     input: str
-    chat_history: list[dict] = []
+    chat_history: Annotated[Sequence[BaseMessage], add_messages] = []
     context: str = ""
     answer: str = ""
 
@@ -123,7 +117,7 @@ def search_vectorstore(query):
 
 
 # Model to use
-llm = ChatOpenAI(model="gpt-4o")
+llm = ChatOpenAI(model="gpt-4")
 # llm = GoogleGenerativeAI(model="gemini-1.5-pro-latest", temperature=0)
 # llm = ChatAnthropic(model="claude-3-5-sonnet-latest")
 
