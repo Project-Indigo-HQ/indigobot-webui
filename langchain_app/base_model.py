@@ -212,9 +212,16 @@ async def query_model(request: QueryRequest):
             "context": ""
         }
         response = rag_chain.invoke(state)
+        # Format context from documents into a string
+        context = ""
+        if isinstance(response.get("context"), list):
+            context = "\n".join(doc.page_content for doc in response["context"])
+        else:
+            context = str(response.get("context", "No context available"))
+            
         return QueryResponse(
             answer=response["answer"],
-            context=response.get("context", "No context available")
+            context=context
         )
     except Exception as e:
         raise HTTPException(
