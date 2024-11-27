@@ -51,13 +51,11 @@ class QueryRequest(BaseModel):
 class QueryResponse(BaseModel):
     """Response model for query endpoint"""
     answer: str
-    context: str
     
     class Config:
         json_schema_extra = {
             "example": {
-                "answer": "LLM agents are AI systems that can...",
-                "context": "Retrieved from documentation..."
+                "answer": "LLM agents are AI systems that can..."
             }
         }
 
@@ -247,8 +245,7 @@ async def query_model(request: QueryRequest):
                 context = context[:450] + "..."
             
         return QueryResponse(
-            answer=response["answer"],
-            context=f"Supporting context:\n• {context}"
+            answer=response["answer"]
         )
     except Exception as e:
         raise HTTPException(
