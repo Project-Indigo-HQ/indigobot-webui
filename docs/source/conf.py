@@ -3,7 +3,6 @@
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-import os
 import sys
 from unittest.mock import MagicMock
 
@@ -18,21 +17,68 @@ class Mock(MagicMock):
 
 
 MOCK_MODULES = [
-    "openai",
-    "langchain_openai",
-    "langchain_anthropic",
-    "langchain_google_genai",
+    "langchain_core.runnables.utils",
+    "langchain_core.utils",
+    "langchain_core.utils.input",
+    "langchain_core.utils.math",
+    "langchain_core.utils.parallel",
     "anthropic",
+    "bs4",
+    "chromadb",
+    "chromadb.config",
     "google.generativeai",
+    "langchain",
+    "langchain.agents",
+    "langchain.chains",
+    "langchain.chains.combine_documents",
     "langchain.schema",
     "langchain.schema.language_model",
-    "langchain_core.language_models.base",
-    "langchain_core.language_models",
-    "langchain_core.pydantic_v1",
-    "langchain.agents",
+    "langchain.text_splitter",
+    "langchain.tools",
+    "langchain.tools.retriever",
+    "langchain_anthropic",
+    "langchain_chroma",
+    "langchain_community",
     "langchain_community.agent_toolkits",
     "langchain_community.agent_toolkits.sql.base",
+    "langchain_community.agent_toolkits.load_tools",
+    "langchain_community.document_loaders",
+    "langchain_community.document_loaders.recursive_url_loader",
+    "langchain_community.document_transformers",
     "langchain_community.utilities",
+    "langchain_core",
+    "langchain_core.chat_history",
+    "langchain_core.documents",
+    "langchain_core.documents.base",
+    "langchain_core.language_models",
+    "langchain_core.language_models.base",
+    "langchain_core.load",
+    "langchain_core.messages",
+    "langchain_core.output_parsers",
+    "langchain_core.output_parsers.base",
+    "langchain_core.prompts",
+    "langchain_core.pydantic_v1",
+    "langchain_core.retrievers",
+    "langchain_core.runnables",
+    "langchain_core.runnables.base",
+    "langchain_core.runnables.config",
+    "langchain_core.runnables.history",
+    "langchain_core.vectorstores",
+    "langchain_core.callbacks",
+    "langchain_core.callbacks.manager",
+    "langchain_core.tools",
+    "langchain_core.tools.base",
+    "langchain_experimental",
+    "langchain_google_genai",
+    "langchain_openai",
+    "langgraph",
+    "langgraph.checkpoint",
+    "langchain_experimental.tools",
+    "openai",
+    "numpy",
+    "pandas",
+    "sqlalchemy",
+    "unidecode",
 ]
 
 
@@ -59,7 +105,7 @@ sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "Project Indigo"
-copyright = "2024, Kyle Klein, Avesta Mirashrafi, Melissa Shanks, Grace Trieu, Karl Rosenberg, JunFan Lin, Sam Nelson"
+copyright = "2024 - Kyle Klein, Avesta Mirashrafi, Melissa Shanks, Grace Trieu, Karl Rosenberg, JunFan Lin, Sam Nelson"
 author = "Kyle Klein, Avesta Mirashrafi, Melissa Stokes, Grace Trieu, Karl Rosenberg, JunFan Lin, Sam Nelson"
 version = "1.0.0"
 release = "1.0.0"
@@ -80,6 +126,12 @@ extensions = [
     "sphinx.ext.autodoc.typehints",
     "myst_parser",
 ]
+
+# Add source file mappings
+source_suffix = {
+    ".rst": "restructuredtext",
+    ".md": "markdown",
+}
 
 # Napoleon settings
 napoleon_google_docstring = True

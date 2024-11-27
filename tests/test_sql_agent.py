@@ -6,64 +6,68 @@ from unittest.mock import Mock, patch
 
 from langchain_core.documents import Document
 
-from langchain_app.sql_agent import (
-    load_docs,
-    load_urls,
-    format_docs,
-    query_database,
-    DB_PATH,
-)
+from indigobot.utils.sql_agent import format_docs, load_docs, load_urls, query_database
+from indigobot.config import GPT_DB
 
 
 class TestSQLAgent(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Set up test database"""
+        # Store original DB path
+        cls.original_db_path = GPT_DB
         cls.test_db_path = "test_indigo_bot_db.sqlite"
-        # Temporarily override DB_PATH
-        global DB_PATH
-        cls.original_db_path = DB_PATH
-        DB_PATH = cls.test_db_path
-
-    def setUp(self):
-        """Create fresh test database before each test"""
-        # Always start with a fresh database
-        if os.path.exists(self.test_db_path):
-            os.remove(self.test_db_path)
-
-        # Create new database and table
-        conn = sqlite3.connect(self.test_db_path)
+        # Remove existing test database if it exists
+        if os.path.exists(cls.test_db_path):
+            os.remove(cls.test_db_path)
+            
+        # Initialize the test database
+        conn = sqlite3.connect(cls.test_db_path)
         cursor = conn.cursor()
-        cursor.execute(
-            """
-            CREATE TABLE documents (
-                id INTEGER PRIMARY KEY,
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS documents (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 text TEXT,
                 metadata TEXT
             );
-        """
-        )
+        """)
         conn.commit()
         conn.close()
 
-        # Verify the table is empty
-        conn = sqlite3.connect(self.test_db_path)
-        cursor = conn.cursor()
-        cursor.execute("SELECT COUNT(*) FROM documents")
-        count = cursor.fetchone()[0]
-        assert count == 0, f"Database should be empty but contains {count} records"
-        conn.close()
+    def setUp(self):
+        """Create fresh test database before each test"""
+        # Clear all data before each test
+        try:
+            conn = sqlite3.connect(self.test_db_path, timeout=30)
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM documents")
+            conn.commit()
+        finally:
+            conn.close()
 
     def tearDown(self):
         """Clean up test database after each test"""
         if os.path.exists(self.test_db_path):
-            os.remove(self.test_db_path)
+            try:
+                conn = sqlite3.connect(self.test_db_path, timeout=30)
+                cursor = conn.cursor()
+                cursor.execute("DELETE FROM documents")
+                conn.commit()
+            finally:
+                conn.close()
 
     @classmethod
     def tearDownClass(cls):
-        """Restore original DB_PATH"""
-        global DB_PATH
-        DB_PATH = cls.original_db_path
+        """Clean up test database and restore original GPT_DB"""
+        global GPT_DB
+        GPT_DB = cls.original_db_path
+        
+        # Remove test database
+        if os.path.exists(cls.test_db_path):
+            try:
+                os.remove(cls.test_db_path)
+            except OSError:
+                pass
 
     def test_load_docs(self):
         """Test loading documents into database"""
@@ -72,15 +76,15 @@ class TestSQLAgent(unittest.TestCase):
             Document(page_content="Test content 2", metadata={"source": "test2.txt"}),
         ]
 
-        load_docs(test_docs)
+        load_docs(test_docs, db_path=self.test_db_path)
 
-        results = query_database("SELECT text, metadata FROM documents")
+        results = query_database("SELECT text, metadata FROM documents ORDER BY id", db_path=self.test_db_path)
         self.assertEqual(len(results), 2)
-        self.assertIn("Test content 1", results[0][0])
+        self.assertEqual(results[0][0], "Test content 1")
         metadata1 = json.loads(results[0][1])
         self.assertEqual(metadata1["source"], "test1.txt")
 
-    @patch("langchain_app.sql_agent.AsyncHtmlLoader")
+    @patch("indigobot.utils.sql_agent.AsyncHtmlLoader")
     def test_load_urls(self, mock_loader):
         """Test loading URLs"""
         mock_docs = [
@@ -91,9 +95,9 @@ class TestSQLAgent(unittest.TestCase):
         mock_loader.return_value.load.return_value = mock_docs
 
         test_urls = ["http://test1.com"]
-        load_urls(test_urls)
+        load_urls(test_urls, db_path=self.test_db_path)
 
-        results = query_database("SELECT text, metadata FROM documents")
+        results = query_database("SELECT text, metadata FROM documents", db_path=self.test_db_path)
         self.assertEqual(len(results), 1)
         self.assertIn("Web content 1", results[0][0])
 
@@ -120,7 +124,7 @@ class TestSQLAgent(unittest.TestCase):
         conn.close()
 
         # Test normal query
-        results = query_database("SELECT text FROM documents", params=())
+        results = query_database("SELECT text FROM documents", params=(), db_path=self.test_db_path)
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0][0], "Test text")
 
@@ -138,7 +142,9 @@ class TestSQLAgent(unittest.TestCase):
 
         # Test parameterized query
         results = query_database(
-            "SELECT text FROM documents WHERE text = ?", params=("Test text",)
+            "SELECT text FROM documents WHERE text = ?", 
+            params=("Test text",),
+            db_path=self.test_db_path
         )
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0][0], "Test text")
@@ -158,7 +164,9 @@ class TestSQLAgent(unittest.TestCase):
         # Attempt SQL injection
         malicious_input = "' OR '1'='1"
         results = query_database(
-            "SELECT text FROM documents WHERE text = ?", params=(malicious_input,)
+            "SELECT text FROM documents WHERE text = ?", 
+            params=(malicious_input,),
+            db_path=self.test_db_path
         )
         self.assertEqual(len(results), 0)  # Should not match anything
 
@@ -171,12 +179,13 @@ class TestSQLAgent(unittest.TestCase):
             )
         ]
 
-        load_docs(malicious_docs)
+        load_docs(malicious_docs, db_path=self.test_db_path)
 
         # Verify table still exists and data was properly escaped
         results = query_database(
             "SELECT text FROM documents WHERE text = ?",
             params=("'; DROP TABLE documents; --",),
+            db_path=self.test_db_path
         )
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0][0], "'; DROP TABLE documents; --")
