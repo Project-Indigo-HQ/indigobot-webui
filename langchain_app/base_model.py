@@ -255,11 +255,17 @@ async def list_sources():
 
 if __name__ == "__main__":
     import uvicorn
+    import os
+    import sys
+    
+    # Add the parent directory to Python path
+    sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    
     # Optionally, execute custom loader before starting the server
     load_res = input("Would you like to execute the loader? (y/n) ")
     if load_res == "y":
         custom_loader.main()
 
-    # Start LangServe
-    print("Starting LangServe API at http://0.0.0.0:8000")
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    # Start FastAPI
+    print("Starting FastAPI server at http://localhost:8000")
+    uvicorn.run("langchain_app.base_model:app", host="localhost", port=8000, reload=True)
