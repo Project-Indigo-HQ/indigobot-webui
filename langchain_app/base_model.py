@@ -215,22 +215,40 @@ async def query_model(request: QueryRequest):
         # Format context from documents into a concise string
         context = ""
         if isinstance(response.get("context"), list):
-            # Take only first 200 chars from each document
+            # Extract just the service descriptions from the documents
             contexts = []
             for doc in response["context"]:
-                text = doc.page_content
-                if len(text) > 200:
-                    text = text[:200] + "..."
-                contexts.append(text)
-            context = "\n\nSource: ".join(contexts)
+                content = doc.page_content
+                # Try to extract service description if it exists
+                if "service_description" in content:
+                    try:
+                        import json
+                        data = json.loads("{" + content.split("{", 1)[1])
+                        desc = data.get("service_description", "")
+                        if desc:
+                            if len(desc) > 150:
+                                desc = desc[:150] + "..."
+                            contexts.append(desc)
+                    except:
+                        # Fallback to simple truncation if JSON parsing fails
+                        if len(content) > 150:
+                            content = content[:150] + "..."
+                        contexts.append(content)
+                else:
+                    # Simple truncation for non-service content
+                    if len(content) > 150:
+                        content = content[:150] + "..."
+                    contexts.append(content)
+            
+            context = "\n• ".join(contexts)
         else:
             context = str(response.get("context", "No context available"))
-            if len(context) > 600:
-                context = context[:600] + "..."
+            if len(context) > 450:
+                context = context[:450] + "..."
             
         return QueryResponse(
             answer=response["answer"],
-            context=f"Supporting context:\n{context}"
+            context=f"Supporting context:\n• {context}"
         )
     except Exception as e:
         raise HTTPException(
