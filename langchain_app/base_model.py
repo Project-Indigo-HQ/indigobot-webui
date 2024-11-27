@@ -137,16 +137,18 @@ GPT_SQL_DB = "./rag_data/.chromadb/openai/chroma.sqlite3"
 # )
 # GOOGLE_SQL_DB = "./rag_data/.chromadb/gemini/chroma.sqlite3"
 
-# Create vectorstore retriever for accessing & displaying doc info & metadata
-retriever = vectorstore.as_retriever()
+# Create vectorstore retriever with limits to avoid context overflow
+retriever = vectorstore.as_retriever(
+    search_kwargs={
+        "k": 3,  # Limit to top 3 most relevant documents
+        "fetch_k": 4,  # Fetch 4 documents before selecting top 3
+    }
+)
 
 ### Contextualize question ###
 contextualize_q_system_prompt = (
-    "Given a chat history and the latest user question "
-    "which might reference context in the chat history, "
-    "formulate a standalone question which can be understood "
-    "without the chat history. Do NOT answer the question, "
-    "just reformulate it if needed and otherwise return it as is."
+    "Reformulate the user's question into a standalone question, "
+    "considering the chat history. Return the original question if no reformulation needed."
 )
 contextualize_q_prompt = ChatPromptTemplate.from_messages(
     [
@@ -161,13 +163,9 @@ history_aware_retriever = create_history_aware_retriever(
 
 ### Answer question ###
 system_prompt = (
-    "You are an assistant for question-answering tasks. "
-    "Use the following pieces of retrieved context to answer "
-    "the question. If you don't know the answer, say that you "
-    "don't know. Use three sentences maximum and keep the "
-    "answer concise."
-    "\n\n"
-    "{context}"
+    "Answer questions using the provided context. "
+    "Keep answers concise, max 3 sentences. "
+    "Say 'I don't know' if unsure.\n\n{context}"
 )
 qa_prompt = ChatPromptTemplate.from_messages(
     [
