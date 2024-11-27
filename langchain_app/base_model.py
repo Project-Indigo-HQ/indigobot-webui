@@ -24,10 +24,14 @@ from langgraph.graph import START, StateGraph
 from langgraph.graph.message import add_messages
 from typing_extensions import Annotated, TypedDict
 
+from config import CURRENT_DIR, R_URLS, RAG_DIR, URLS, LLMS
+
 if __package__ is None or __package__ == "":
     import custom_loader
 else:
     from langchain_app import custom_loader
+
+llm = LLMS.gpt
 
 
 class State(TypedDict):
@@ -71,18 +75,7 @@ def call_model(state: State):
     }
 
 
-
-# Model configuration
-def get_llm():
-    """Get the language model instance to use"""
-    # Uncomment the model you want to use
-    return ChatOpenAI(model="gpt-4")
-    # return GoogleGenerativeAI(model="gemini-1.5-pro-latest", temperature=0)
-    # return ChatAnthropic(model="claude-3-5-sonnet-latest")
-
-llm = get_llm()
-
-# OpenAI embeddings
+"""OpenAI embeddings"""
 try:
     vectorstore = Chroma(
         persist_directory="./rag_data/.chromadb/openai",
@@ -93,7 +86,7 @@ except Exception as e:
     raise
 GPT_SQL_DB = "./rag_data/.chromadb/openai/chroma.sqlite3"
 
-# Google embeddings
+"""Google embeddings"""
 # vectorstore = Chroma(
 #     persist_directory="./rag_data/.chromadb/gemini",
 #     embedding_function=GoogleGenerativeAIEmbeddings(

@@ -108,16 +108,15 @@ def load_JSON_files(folder_path):
         if filename.endswith(".json"):
             file_path = os.path.join(folder_path, filename)
             try:
-                with open(file_path, 'r', encoding='utf-8') as f:
+                with open(file_path, "r", encoding="utf-8") as f:
                     data = json.load(f)
                     # Extract header texts from the JSON structure
-                    for header in data.get('headers', []):
-                        text = header.get('text', '')
+                    for header in data.get("headers", []):
+                        text = header.get("text", "")
                         if text:
                             JSON_files.append(
                                 Document(
-                                    page_content=text,
-                                    metadata={"source": filename}
+                                    page_content=text, metadata={"source": filename}
                                 )
                             )
             except Exception as e:

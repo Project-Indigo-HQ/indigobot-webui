@@ -17,29 +17,21 @@ from langchain_community.agent_toolkits import SQLDatabaseToolkit
 from langchain_community.agent_toolkits.sql.base import create_sql_agent
 from langchain_community.document_loaders import AsyncHtmlLoader, PyPDFLoader
 from langchain_community.document_loaders.generic import GenericLoader
-from langchain_community.document_loaders.parsers import LanguageParser
-
-# sql
+from langchain_community.document_loaders.parsers import LanguageParsers
 from langchain_community.utilities import SQLDatabase
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import Runnable, RunnableLambda, RunnablePassthrough
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from config import GEM_DB, LLMS
 
-if __package__ is None or __package__ == "":
-    from config import CURRENT_DIR, R_URLS, RAG_DIR, URLS
-else:
-    from langchain_app.config import CURRENT_DIR, R_URLS, RAG_DIR, URLS
-
-llms = [ChatAnthropic(model="claude-3-5-sonnet-latest")]
-
-list_len = len(llms)
+llm = LLMS.claude
 
 # init db
-GEM_DB = Path(os.path.join(RAG_DIR, ".chromadb/gemini/chroma.sqlite3"))
-OAI_DB = Path(os.path.join(RAG_DIR, ".chromadb/openai/chroma.sqlite3"))
+
 
 # Ensure directory exists
 os.makedirs(os.path.dirname(GEM_DB), exist_ok=True)
+
 
 def init_db():
     """Initialize the SQLite database with required tables"""
@@ -57,22 +49,16 @@ def init_db():
         )
         conn.commit()
         conn.close()
-        return SQLDatabase.from_uri(
-            f"sqlite:///{GEM_DB}",
-            include_tables=['documents']
-        )
+        return SQLDatabase.from_uri(f"sqlite:///{GEM_DB}", include_tables=["documents"])
     except Exception as e:
         print(f"Error initializing database: {e}")
         raise
 
+
 db = init_db()
 
-# create agents for each llm
-agents = []
-for llm in llms:
-    toolkit = SQLDatabaseToolkit(db=db, llm=llm)  # create llm toolkit
-    agent = create_sql_agent(llm=llm, toolkit=toolkit, verbose=True)  # create agent
-    agents.append(agent)
+toolkit = SQLDatabaseToolkit(db=db, llm=llm)  # create llm toolkit
+agent = create_sql_agent(llm=llm, toolkit=toolkit, verbose=True)  # create agent
 
 
 def load_urls(urls):
@@ -140,37 +126,21 @@ def query_database(query):
 
 
 def main():
-    retriever = list()
-    for i in range(list_len):
-        retriever.append(
-            RunnableLambda(
-                lambda query=f"SELECT text FROM documents": query_database(query)
-            )
-        )
+    retriever = RunnableLambda(
+        lambda query=f"SELECT text FROM documents": query_database(query)
+    )
     formatted_docs_runnable = RunnableLambda(format_docs)
 
-    rag_chain = list()
     prompt = hub.pull("rlm/rag-prompt")
 
-    for i in range(list_len):
-        rag_chain.append(
-            (
-                retriever[i]
-                | formatted_docs_runnable
-                | prompt
-                | llms[i]
-                | StrOutputParser()
-            )
-        )
+    rag_chain = retriever | formatted_docs_runnable | prompt | llm | StrOutputParser()
 
     print("What kind of questions do you have about the following resources?")
     # iterate over documents and dump metadata
     document_data_sources = set()
-    for i in range(list_len):
-
-        for doc_metadata in query_database("SELECT metadata FROM documents"):
-            metadata_dict = json.loads(doc_metadata[0])  # JSON to dict
-            document_data_sources.add(metadata_dict.get("source", "Unknown"))
+    for doc_metadata in query_database("SELECT metadata FROM documents"):
+        metadata_dict = json.loads(doc_metadata[0])  # JSON to dict
+        document_data_sources.add(metadata_dict.get("source", "Unknown"))
     for doc in document_data_sources:
         print(f"  {doc}")
 
@@ -180,12 +150,11 @@ def main():
             print("Exiting the program...")
             break
         if line:
-            for i, agent in enumerate(agents):
-                try:
-                    result = agent.invoke(line)
-                    print(f"\nModel {i}: {result}")
-                except Exception as e:
-                    print(f"Model {i} error: {e}")
+            try:
+                result = agent.invoke(line)
+                print(f"\n{result}")
+            except Exception as e:
+                print(f"error: {e}")
         else:
             break
 

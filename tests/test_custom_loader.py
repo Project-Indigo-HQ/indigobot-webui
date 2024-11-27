@@ -1,16 +1,15 @@
 import os
-from pathlib import Path
 import unittest
-from unittest.mock import patch, MagicMock
-from bs4 import BeautifulSoup
+from unittest.mock import MagicMock, patch
+
 from langchain_app.custom_loader import (
-    clean_text,
-    clean_documents,
-    chunking,
-    extract_text,
-    scrape_main,
-    scrape_articles,
     PDF_PATH,
+    chunking,
+    clean_documents,
+    clean_text,
+    extract_text,
+    scrape_articles,
+    scrape_main,
 )
 
 # PARENT_DIR = os.path.dirname("..")

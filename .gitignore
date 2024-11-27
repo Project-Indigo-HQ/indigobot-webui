@@ -11,3 +11,4 @@ project_indigo.egg-info
 **/processed_text
 **/temp
 **/extracted_urls
+.vscode

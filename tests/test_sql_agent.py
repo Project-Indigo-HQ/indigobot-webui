@@ -7,11 +7,11 @@ from unittest.mock import Mock, patch
 from langchain_core.documents import Document
 
 from langchain_app.sql_agent import (
+    DB_PATH,
+    format_docs,
     load_docs,
     load_urls,
-    format_docs,
     query_database,
-    DB_PATH,
 )
 
 

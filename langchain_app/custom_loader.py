@@ -4,9 +4,9 @@ It uses PyPDFLoader as a PDF loader and Chroma as a vector database.
 It loads local PDFs, Python files, and also checks web pages to scrape and consume data.
 """
 
+import os
 import re
 import ssl
-import os
 from pathlib import Path
 
 import unidecode
@@ -24,7 +24,7 @@ from langchain_openai import OpenAIEmbeddings
 if __package__ is None or __package__ == "":
     from config import CURRENT_DIR, R_URLS, RAG_DIR, URLS
 else:
-    from langchain_app.config import CURRENT_DIR, R_URLS, RAG_DIR, URLS
+    from config import CURRENT_DIR, R_URLS, RAG_DIR, URLS
 
 
 def clean_text(text):

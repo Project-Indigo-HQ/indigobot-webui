@@ -12,8 +12,9 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_experimental.tools import PythonREPLTool
 from langchain_openai import ChatOpenAI
+from config import CURRENT_DIR, R_URLS, RAG_DIR, URLS, LLMS
 
-model = ChatOpenAI(model="gpt-4o")
+llm = LLMS.claude
 
 memory = InMemoryChatMessageHistory(session_id="test-session")
 
@@ -38,7 +39,7 @@ prompt = ChatPromptTemplate.from_messages(
 tools = load_tools(["terminal"], allow_dangerous_tools=True)
 tools.extend([PythonREPLTool()])
 
-agent = create_tool_calling_agent(model, tools, prompt)
+agent = create_tool_calling_agent(llm, tools, prompt)
 agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=False)
 
 agent_with_chat_history = RunnableWithMessageHistory(

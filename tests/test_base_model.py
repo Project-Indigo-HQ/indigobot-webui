@@ -18,7 +18,7 @@ class TestBaseModel(unittest.TestCase):
             "input": "test question",
             "chat_history": [],
             "context": "test context",
-            "answer": ""
+            "answer": "",
         }
 
     def test_state_class(self):
@@ -28,13 +28,13 @@ class TestBaseModel(unittest.TestCase):
         self.assertEqual(self.test_state["context"], "test context")
         self.assertEqual(self.test_state["answer"], "")
 
-    @patch('langchain_app.base_model.rag_chain')
+    @patch("langchain_app.base_model.rag_chain")
     def test_call_model(self, mock_rag_chain):
         """Test call_model function"""
         # Mock the rag_chain response
         mock_rag_chain.invoke.return_value = {
             "answer": "test answer",
-            "context": "test context"
+            "context": "test context",
         }
 
         result = call_model(self.test_state)
@@ -49,10 +49,10 @@ class TestBaseModel(unittest.TestCase):
 
         # Verify chat history format and content
         self.assertEqual(len(result["chat_history"]), 2)
-        
+
         human_msg = result["chat_history"][0]
         ai_msg = result["chat_history"][1]
-        
+
         self.assertIsInstance(human_msg, HumanMessage)
         self.assertIsInstance(ai_msg, AIMessage)
         self.assertEqual(str(human_msg.content), "test question")
@@ -70,36 +70,34 @@ class TestBaseModel(unittest.TestCase):
         start_edges = [edge for edge in edges if edge[0] == START]
         self.assertTrue(any(edge[1] == "model" for edge in start_edges))
 
-    @patch('builtins.input')
-    @patch('langchain_app.base_model.app')
-    @patch('langchain_app.base_model.retriever')
+    @patch("builtins.input")
+    @patch("langchain_app.base_model.app")
+    @patch("langchain_app.base_model.retriever")
     def test_main_function(self, mock_retriever, mock_app, mock_input):
         """Test main function with skip_loader"""
         from langchain_app.base_model import main
-        
+
         # Mock the retriever's vectorstore response
         mock_retriever.vectorstore.get.return_value = {
             "metadatas": [{"source": "test_source.pdf"}]
         }
-        
+
         # Mock the app's invoke response
-        mock_app.invoke.return_value = {
-            "answer": "test response"
-        }
-        
+        mock_app.invoke.return_value = {"answer": "test response"}
+
         # Mock user input to exit after one iteration
         mock_input.side_effect = ["test input", ""]
-        
+
         # Test that main runs without error when skip_loader is True
         try:
             main(skip_loader=True)
         except Exception as e:
             self.fail(f"main() raised {type(e).__name__} unexpectedly!")
-        
+
         # Verify mocks were called correctly
         mock_app.invoke.assert_called_once()
         mock_retriever.vectorstore.get.assert_called_once()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

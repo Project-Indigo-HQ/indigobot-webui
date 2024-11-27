@@ -3,7 +3,6 @@
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-import os
 import sys
 from unittest.mock import MagicMock
 
@@ -59,7 +58,7 @@ sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "Project Indigo"
-copyright = "2024, Kyle Klein, Avesta Mirashrafi, Melissa Shanks, Grace Trieu, Karl Rosenberg, JunFan Lin, Sam Nelson"
+copyright = "2024 - Kyle Klein, Avesta Mirashrafi, Melissa Shanks, Grace Trieu, Karl Rosenberg, JunFan Lin, Sam Nelson"
 author = "Kyle Klein, Avesta Mirashrafi, Melissa Stokes, Grace Trieu, Karl Rosenberg, JunFan Lin, Sam Nelson"
 version = "1.0.0"
 release = "1.0.0"
