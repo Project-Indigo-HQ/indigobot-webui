@@ -1,9 +1,13 @@
 """
 This is meant to be a starting point for the Indigo-CfSS model
+.............................................................
 """
 
 import readline  # need this to use arrow keys
 from typing import Sequence
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+
 
 import custom_loader
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
@@ -25,8 +29,24 @@ from langgraph.graph import START, StateGraph
 from langgraph.graph.message import add_messages
 from typing_extensions import Annotated, TypedDict
 
+if __package__ is None or __package__ == "":
+    # Use current directory visibility
+    import custom_loader
+else:
+    # Use package visibility
+    from langchain_app import custom_loader
 
-class State(TypedDict):
+
+# Define input and output models for the API
+class QueryRequest(BaseModel):
+    input: str
+
+
+class QueryResponse(BaseModel):
+    answer: str
+    context: str
+
+class State:
     """
     A dictionary that represents the state of a chat interaction/history.
 
@@ -145,7 +165,7 @@ qa_prompt = ChatPromptTemplate.from_messages(
 )
 question_answer_chain = create_stuff_documents_chain(llm, qa_prompt)
 rag_chain = create_retrieval_chain(history_aware_retriever, question_answer_chain)
-
+'''
 workflow = StateGraph(state_schema=State)
 workflow.add_edge(START, "model")
 workflow.add_node("model", call_model)
@@ -185,3 +205,40 @@ while True:
             break
     except Exception as e:
         print(e)
+        '''
+# FastAPI app initialization
+app = FastAPI()
+
+# Define API endpoints
+@app.post("/query", response_model=QueryResponse)
+async def query_model(request: QueryRequest):
+    """
+    API endpoint to query the RAG pipeline.
+    """
+    try:
+        # Call the RAG pipeline
+        response = rag_chain.invoke({"input": request.input})
+        return QueryResponse(answer=response["answer"], context=response["context"])
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/")
+async def root():
+    """
+    Health check endpoint.
+    """
+    return {"message": "RAG API is running!"}
+
+
+
+if __name__ == "__main__":
+    import uvicorn
+    # Optionally, execute custom loader before starting the server
+    load_res = input("Would you like to execute the loader? (y/n) ")
+    if load_res == "y":
+        custom_loader.main()
+
+    # Start LangServe
+    print("Starting LangServe API at http://0.0.0.0:8000")
+    uvicorn.run(app, host="0.0.0.0", port=8000)
