@@ -214,7 +214,13 @@ async def query_model(request: QueryRequest):
         raise HTTPException(status_code=400, detail="Input query cannot be empty")
         
     try:
-        response = rag_chain.invoke({"input": request.input})
+        # Initialize state with empty chat history if none provided
+        state = {
+            "input": request.input,
+            "chat_history": [],
+            "context": ""
+        }
+        response = rag_chain.invoke(state)
         return QueryResponse(
             answer=response["answer"],
             context=response.get("context", "No context available")
