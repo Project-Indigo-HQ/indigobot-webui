@@ -137,11 +137,10 @@ GPT_SQL_DB = "./rag_data/.chromadb/openai/chroma.sqlite3"
 # )
 # GOOGLE_SQL_DB = "./rag_data/.chromadb/gemini/chroma.sqlite3"
 
-# Create vectorstore retriever with limits to avoid context overflow
+# Create vectorstore retriever with limit to avoid context overflow
 retriever = vectorstore.as_retriever(
     search_kwargs={
-        "k": 3,  # Limit to top 3 most relevant documents
-        "fetch_k": 4,  # Fetch 4 documents before selecting top 3
+        "k": 3  # Limit to top 3 most relevant documents
     }
 )
 
