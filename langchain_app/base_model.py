@@ -212,16 +212,25 @@ async def query_model(request: QueryRequest):
             "context": ""
         }
         response = rag_chain.invoke(state)
-        # Format context from documents into a string
+        # Format context from documents into a concise string
         context = ""
         if isinstance(response.get("context"), list):
-            context = "\n".join(doc.page_content for doc in response["context"])
+            # Take only first 200 chars from each document
+            contexts = []
+            for doc in response["context"]:
+                text = doc.page_content
+                if len(text) > 200:
+                    text = text[:200] + "..."
+                contexts.append(text)
+            context = "\n\nSource: ".join(contexts)
         else:
             context = str(response.get("context", "No context available"))
+            if len(context) > 600:
+                context = context[:600] + "..."
             
         return QueryResponse(
             answer=response["answer"],
-            context=context
+            context=f"Supporting context:\n{context}"
         )
     except Exception as e:
         raise HTTPException(
