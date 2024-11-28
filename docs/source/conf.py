@@ -17,6 +17,11 @@ class Mock(MagicMock):
 
 
 MOCK_MODULES = [
+    "langchain_core.runnables.utils",
+    "langchain_core.utils",
+    "langchain_core.utils.input",
+    "langchain_core.utils.math",
+    "langchain_core.utils.parallel",
     "anthropic",
     "bs4",
     "chromadb",
