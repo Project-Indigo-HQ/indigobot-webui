@@ -65,10 +65,22 @@ def init_db(db_path=None):
         # Create the documents table if it doesn't exist
         cursor.execute(
             """
+            CREATE TABLE IF NOT EXISTS embeddings (
+                id INTEGER PRIMARY KEY AUTOINCREMENT
+            );
+        """
+        )
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS embedding_metadata (
-                id INTEGER PRIMARY KEY,
-                text TEXT,
-                metadata TEXT
+                id INTEGER,
+                key TEXT NOT NULL,
+                string_value TEXT,
+                int_value INTEGER,
+                float_value REAL,
+                bool_value INTEGER,
+                PRIMARY KEY (id, key),
+                FOREIGN KEY(id) REFERENCES embeddings (id)
             );
         """
         )
@@ -112,11 +124,38 @@ def load_docs(docs, db_path=None):
         cursor = conn.cursor()
 
         for doc in splits:
-            metadata_json = json.dumps(doc.metadata)  # dict to json string
+            # First insert into embeddings table to get an id
+            cursor.execute("INSERT INTO embeddings DEFAULT VALUES")
+            doc_id = cursor.lastrowid
+            
+            # Insert the document content
             cursor.execute(
-                "INSERT INTO embedding_metadata (text, metadata) VALUES (?, ?)",
-                (doc.page_content, metadata_json),
+                "INSERT INTO embedding_metadata (id, key, string_value) VALUES (?, ?, ?)",
+                (doc_id, "content", doc.page_content)
             )
+            
+            # Insert each metadata field
+            for key, value in doc.metadata.items():
+                if isinstance(value, str):
+                    cursor.execute(
+                        "INSERT INTO embedding_metadata (id, key, string_value) VALUES (?, ?, ?)",
+                        (doc_id, key, value)
+                    )
+                elif isinstance(value, bool):
+                    cursor.execute(
+                        "INSERT INTO embedding_metadata (id, key, bool_value) VALUES (?, ?, ?)",
+                        (doc_id, key, int(value))
+                    )
+                elif isinstance(value, int):
+                    cursor.execute(
+                        "INSERT INTO embedding_metadata (id, key, int_value) VALUES (?, ?, ?)",
+                        (doc_id, key, value)
+                    )
+                elif isinstance(value, float):
+                    cursor.execute(
+                        "INSERT INTO embedding_metadata (id, key, float_value) VALUES (?, ?, ?)",
+                        (doc_id, key, value)
+                    )
 
         conn.commit()
     except sqlite3.DatabaseError as e:
