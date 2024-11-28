@@ -96,7 +96,7 @@ def test_main_function(mock_retriever, mock_app, mock_input):
         try:
             main(skip_loader=True)
         except Exception as e:
-            self.fail(f"main() raised {type(e).__name__} unexpectedly!")
+            pytest.fail(f"main() raised {type(e).__name__} unexpectedly!")
 
         # Verify mocks were called correctly
         mock_app.invoke.assert_called_once()
