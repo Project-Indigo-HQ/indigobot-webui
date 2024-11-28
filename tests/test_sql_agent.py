@@ -26,27 +26,17 @@ class TestSQLAgent(unittest.TestCase):
         GPT_DB = cls.test_db_path
 
         # Initialize the test database
-        conn = sqlite3.connect(cls.test_db_path, timeout=20)
-        cursor = conn.cursor()
-        cursor.execute(
-            """
-            CREATE TABLE IF NOT EXISTS documents (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                text TEXT,
-                metadata TEXT
-            )
-        """
-        )
-        conn.commit()
-        conn.close()
+        from indigobot.utils.sql_agent import init_db
+        cls.db = init_db()
 
     def setUp(self):
         """Create fresh test database before each test"""
         conn = sqlite3.connect(self.test_db_path, timeout=20)
         cursor = conn.cursor()
-        # Clear all data
+        # Clear all data and reset sequences
         cursor.execute("DELETE FROM documents")
         cursor.execute("DELETE FROM sqlite_sequence WHERE name='documents'")
+        cursor.execute("VACUUM")  # Compact the database
         conn.commit()
         conn.close()
 
@@ -83,9 +73,9 @@ class TestSQLAgent(unittest.TestCase):
 
         load_docs(test_docs)
 
-        results = query_database("SELECT text, metadata FROM documents")
+        results = query_database("SELECT text, metadata FROM documents ORDER BY id")
         self.assertEqual(len(results), 2)
-        self.assertIn("Test content 1", results[0][0])
+        self.assertEqual(results[0][0], "Test content 1")
         metadata1 = json.loads(results[0][1])
         self.assertEqual(metadata1["source"], "test1.txt")
 
