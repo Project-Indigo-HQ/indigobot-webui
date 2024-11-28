@@ -64,20 +64,20 @@ def test_call_model(test_state, mock_rag_chain):
     assert result["context"] == "test context"
     assert result["answer"] == "test answer"
 
-    def test_workflow_structure(self):
-        """Test workflow graph structure"""
-        # Verify workflow has expected nodes
-        self.assertIn("model", workflow.nodes)
+def test_workflow_structure():
+    """Test workflow graph structure"""
+    # Verify workflow has expected nodes
+    assert "model" in workflow.nodes
 
-        # Verify START edge exists
-        edges = workflow.edges
-        start_edges = [edge for edge in edges if edge[0] == START]
-        self.assertTrue(any(edge[1] == "model" for edge in start_edges))
+    # Verify START edge exists
+    edges = workflow.edges
+    start_edges = [edge for edge in edges if edge[0] == START]
+    assert any(edge[1] == "model" for edge in start_edges)
 
-    @patch("builtins.input")
-    @patch("langchain_app.base_model.app")
-    @patch("langchain_app.base_model.retriever")
-    def test_main_function(self, mock_retriever, mock_app, mock_input):
+@patch("builtins.input")
+@patch("indigobot.__main__.app")
+@patch("indigobot.__main__.retriever")
+def test_main_function(mock_retriever, mock_app, mock_input):
         """Test main function with skip_loader"""
         from indigobot.__main__ import main
 

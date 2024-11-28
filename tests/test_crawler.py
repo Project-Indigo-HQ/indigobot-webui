@@ -9,7 +9,6 @@ from indigobot.utils.jf_crawler import (
     fetch_xml,
     load_urls,
     parse_url,
-    parse_url_and_save,
     start_session,
 )
 
