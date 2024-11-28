@@ -9,14 +9,11 @@ import os
 import readline
 import sqlite3
 
-from langchain import hub
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.agent_toolkits import SQLDatabaseToolkit
 from langchain_community.agent_toolkits.sql.base import create_sql_agent
 from langchain_community.document_loaders import AsyncHtmlLoader
 from langchain_community.utilities import SQLDatabase
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import Runnable, RunnableLambda
 
 from indigobot.config import GEM_DB, GPT_DB, llms
 
@@ -24,11 +21,7 @@ llm = llms["gpt"]
 
 
 def init_db(db_path=None):
-    """Initialize the SQLite database with required tables
-
-    Args:
-        db_path (str, optional): Override default database path. Defaults to None.
-    """
+    """Initialize the SQLite database with required tables"""
     try:
         # Use provided path or default
         db_file = db_path or GPT_DB
@@ -42,7 +35,7 @@ def init_db(db_path=None):
         # Create the documents table if it doesn't exist
         cursor.execute(
             """
-            CREATE TABLE IF NOT EXISTS documents (
+            CREATE TABLE IF NOT EXISTS embedding_metadata (
                 id INTEGER PRIMARY KEY,
                 text TEXT,
                 metadata TEXT
@@ -54,7 +47,7 @@ def init_db(db_path=None):
 
         # Return SQLDatabase instance
         return SQLDatabase.from_uri(
-            f"sqlite:///{db_file}", include_tables=["documents"]
+            f"sqlite:///{db_file}", include_tables=["embedding_metadata"]
         )
     except Exception as e:
         print(f"Error initializing database: {e}")
@@ -64,10 +57,6 @@ def init_db(db_path=None):
 def load_urls(urls, db_path=None):
     """
     Load documents from URLs into the SQL database
-
-    Args:
-        urls (list): List of URLs to load documents from
-        db_path (str, optional): Override default database path. Defaults to None.
     """
     loader = AsyncHtmlLoader(urls)
     docs = loader.load()
@@ -82,10 +71,6 @@ def load_urls(urls, db_path=None):
 def load_docs(docs, db_path=None):
     """
     Split text of arg documents and load them into the SQL database
-
-    Args:
-        docs (list): List of documents to load and split
-        db_path (str, optional): Override default database path. Defaults to None.
     """
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=10)
     splits = text_splitter.split_documents(docs)
@@ -99,7 +84,7 @@ def load_docs(docs, db_path=None):
         for doc in splits:
             metadata_json = json.dumps(doc.metadata)  # dict to json string
             cursor.execute(
-                "INSERT INTO documents (text, metadata) VALUES (?, ?)",
+                "INSERT INTO embedding_metadata (text, metadata) VALUES (?, ?)",
                 (doc.page_content, metadata_json),
             )
 
@@ -128,14 +113,6 @@ def format_docs(docs):
 def query_database(query, params=(), db_path=None):
     """
     Execute a SQL query with optional parameters and return results
-
-    Args:
-        query (str): SQL query string
-        params (tuple, optional): Query parameters. Defaults to ().
-        db_path (str, optional): Override default database path. Defaults to None.
-
-    Returns:
-        list: Query results
     """
     try:
         db_file = db_path or GPT_DB
@@ -159,22 +136,19 @@ def query_database(query, params=(), db_path=None):
 
 
 def main():
-    # Ensure directory exists
-    os.makedirs(os.path.dirname(GPT_DB), exist_ok=True)
-
     db = init_db(GPT_DB)
 
     toolkit = SQLDatabaseToolkit(db=db, llm=llm)  # create llm toolkit
     agent = create_sql_agent(llm=llm, toolkit=toolkit, verbose=True)  # create agent
 
-    retriever = RunnableLambda(
-        lambda query=f"SELECT text FROM documents": query_database(query)
-    )
-    formatted_docs_runnable = RunnableLambda(format_docs)
+    # retriever = RunnableLambda(
+    #     lambda query=f"SELECT text FROM embedding_metadata": query_database(query)
+    # )
+    # formatted_docs_runnable = RunnableLambda(format_docs)
 
-    prompt = hub.pull("rlm/rag-prompt")
+    # prompt = hub.pull("rlm/rag-prompt")
 
-    rag_chain = retriever | formatted_docs_runnable | prompt | llm | StrOutputParser()
+    # rag_chain = retriever | formatted_docs_runnable | prompt | llm | StrOutputParser()
 
     while True:
         line = input("llm>> ")
