@@ -212,7 +212,9 @@ def main():
         llm=llm,
         toolkit=toolkit,
         verbose=True,
-        handle_parsing_errors=True
+        handle_parsing_errors=True,
+        max_iterations=3,  # Limit retry attempts
+        early_stopping_method="generate"  # Use generate method for early stopping
     )  # create agent
 
     # retriever = RunnableLambda(
