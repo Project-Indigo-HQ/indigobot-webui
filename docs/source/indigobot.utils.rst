@@ -1,8 +1,8 @@
 indigobot.utils package
 =======================
 
-Submodules
-----------
+Utils Submodules
+---------------
 
 indigobot.utils.custom\_loader module
 -------------------------------------
@@ -44,8 +44,8 @@ indigobot.utils.sql\_agent module
    :undoc-members:
    :show-inheritance:
 
-Module contents
----------------
+Utils Module Contents
+--------------------
 
 .. automodule:: indigobot.utils
    :members:
