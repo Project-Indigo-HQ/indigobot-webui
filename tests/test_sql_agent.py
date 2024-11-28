@@ -17,20 +17,23 @@ class TestSQLAgent(unittest.TestCase):
         cls.test_db_path = "test_indigo_bot_db.sqlite"
         # Temporarily override GPT_DB
         from indigobot.utils.sql_agent import GPT_DB as original_db
+
         global GPT_DB
         cls.original_db_path = original_db
         GPT_DB = cls.test_db_path
-        
+
         # Initialize the test database
         conn = sqlite3.connect(cls.test_db_path)
         cursor = conn.cursor()
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS documents (
                 id INTEGER PRIMARY KEY,
                 text TEXT,
                 metadata TEXT
             )
-        """)
+        """
+        )
         conn.commit()
         conn.close()
 
