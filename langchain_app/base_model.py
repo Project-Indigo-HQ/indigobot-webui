@@ -1,6 +1,5 @@
 """
 This is meant to be a starting point for the Indigo-CfSS model
-.............................................................
 """
 
 import readline  # need this to use arrow keys
