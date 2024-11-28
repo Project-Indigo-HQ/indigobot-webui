@@ -25,33 +25,37 @@ llm = llms["gpt"]
 
 def init_db(db_path=None):
     """Initialize the SQLite database with required tables
-    
+
     Args:
         db_path (str, optional): Override default database path. Defaults to None.
     """
     try:
         # Use provided path or default
         db_file = db_path or GPT_DB
-        
+
         # Ensure the database directory exists
         os.makedirs(os.path.dirname(db_file), exist_ok=True)
-        
+
         conn = sqlite3.connect(db_file)
         cursor = conn.cursor()
-        
+
         # Create the documents table if it doesn't exist
-        cursor.execute("""
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS documents (
                 id INTEGER PRIMARY KEY,
                 text TEXT,
                 metadata TEXT
             );
-        """)
+        """
+        )
         conn.commit()
         conn.close()
-        
+
         # Return SQLDatabase instance
-        return SQLDatabase.from_uri(f"sqlite:///{db_file}", include_tables=["documents"])
+        return SQLDatabase.from_uri(
+            f"sqlite:///{db_file}", include_tables=["documents"]
+        )
     except Exception as e:
         print(f"Error initializing database: {e}")
         raise
@@ -68,7 +72,9 @@ def load_urls(urls, db_path=None):
     loader = AsyncHtmlLoader(urls)
     docs = loader.load()
     if docs:
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=10)
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=10000, chunk_overlap=10
+        )
         splits = text_splitter.split_documents(docs)
         load_docs(splits, db_path=db_path)
 
@@ -122,12 +128,12 @@ def format_docs(docs):
 def query_database(query, params=(), db_path=None):
     """
     Execute a SQL query with optional parameters and return results
-    
+
     Args:
         query (str): SQL query string
         params (tuple, optional): Query parameters. Defaults to ().
         db_path (str, optional): Override default database path. Defaults to None.
-    
+
     Returns:
         list: Query results
     """
@@ -144,11 +150,11 @@ def query_database(query, params=(), db_path=None):
         return results
     except sqlite3.Error as e:
         print(f"Database error: {e}")
-        if 'conn' in locals():
+        if "conn" in locals():
             conn.rollback()
         raise
     finally:
-        if 'conn' in locals():
+        if "conn" in locals():
             conn.close()
 
 
@@ -156,7 +162,7 @@ def main():
     # Ensure directory exists
     os.makedirs(os.path.dirname(GPT_DB), exist_ok=True)
 
-    db = init_db()
+    db = init_db(GPT_DB)
 
     toolkit = SQLDatabaseToolkit(db=db, llm=llm)  # create llm toolkit
     agent = create_sql_agent(llm=llm, toolkit=toolkit, verbose=True)  # create agent
