@@ -299,4 +299,15 @@ if __name__ == "__main__":
     # Start FastAPI
     # Get port from environment variable or use default 8000
     port = int(os.getenv("PORT", 8000))
-    uvicorn.run("langchain_app.base_model:app", host="0.0.0.0", port=port, reload=True)
+    host = "0.0.0.0"  # Explicitly bind to all interfaces
+    print(f"\nStarting server on http://{host}:{port}")
+    print("To access from another machine, use your VM's external IP address")
+    print("Make sure your GCP firewall allows incoming traffic on port {port}\n")
+    
+    uvicorn.run(
+        "langchain_app.base_model:app",
+        host=host,
+        port=port,
+        reload=True,
+        access_log=True  # Enable access logging
+    )
