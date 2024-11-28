@@ -9,20 +9,29 @@ Subpackages
 
    indigobot.utils
 
-Module contents
----------------
+Submodules
+----------
 
-.. automodule:: indigobot
+indigobot.config module
+----------------------
+
+.. automodule:: indigobot.config
    :members:
    :undoc-members:
    :show-inheritance:
+
+indigobot.main module
+--------------------
 
 .. automodule:: indigobot.__main__
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: indigobot.config
+Module contents
+--------------
+
+.. automodule:: indigobot
    :members:
    :undoc-members:
    :show-inheritance:
