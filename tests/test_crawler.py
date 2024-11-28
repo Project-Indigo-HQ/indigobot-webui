@@ -3,7 +3,7 @@ import unittest
 import xml.etree.ElementTree as ET
 from unittest.mock import Mock, patch
 
-from indigobot.CCC_scraper.crawler import (
+from indigobot.utils.CCC_scraper.crawler import (
     download_and_save_html,
     extract_xml,
     fetch_xml,

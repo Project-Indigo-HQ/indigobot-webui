@@ -14,9 +14,9 @@ from langchain_community.document_loaders import AsyncHtmlLoader
 from langchain_community.document_loaders.recursive_url_loader import RecursiveUrlLoader
 from langchain_community.document_transformers import BeautifulSoupTransformer
 
-from config import urls, r_urls, VectorStore
+from config import urls, r_urls, vectorstores
 
-vectorstores = (VectorStore.GPT, VectorStore.GEM)
+vectorstores = (vectorstores["gpt"], vectorstores["gemini"])
 
 
 def clean_text(text):
@@ -72,14 +72,14 @@ def load_docs(docs, vectorstore):
     add_documents(vectorstore, chunks, 300)
 
 
-def load_urls(urls):
+def load_urls(urls, vectorstore):
     """
     Use AsyncHtmlLoader library to check and scrape websites then load to Chroma
 
     :param urls: List of URLs to load documents from.
     :type urls: list
     """
-    load_docs(AsyncHtmlLoader(urls).load())
+    load_docs(AsyncHtmlLoader(urls).load(), vectorstore)
 
 
 def scrape_articles(links):
@@ -182,7 +182,7 @@ def main():
             scrape_urls(r_urls, vectorstore)
             load_urls(urls, vectorstore)
         except Exception as e:
-            print(f"Error loading {vectorstore}: {e}")
+            print(f"Error loading vectorstore: {e}")
             raise
 
 

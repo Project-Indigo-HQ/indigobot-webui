@@ -12,3 +12,4 @@ project_indigo.egg-info
 **/temp
 **/extracted_urls
 .vscode
+.coverage

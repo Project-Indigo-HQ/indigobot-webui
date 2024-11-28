@@ -3,6 +3,7 @@ Configuration settings for the CfSS application.
 
 This module contains path configurations and URL lists for data scraping operations.
 All URL endpoints and file paths used across the application should be defined here.
+It also defines dicts for LLMs and vector embeddings.
 """
 
 import os
@@ -12,18 +13,17 @@ from langchain_anthropic import ChatAnthropic
 from langchain_google_genai import GoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_chroma import Chroma
-from enum import Enum
 
 
-class Models(Enum):
-    GPT = ChatOpenAI(model="gpt-4o")
-    GEMINI = GoogleGenerativeAI(model="gemini-1.5-pro-latest", temperature=0)
-    CLAUDE = ChatAnthropic(model="claude-3-5-sonnet-latest")
-
+llms = {
+    "gpt": ChatOpenAI(model="gpt-4o"),
+    "gemini": GoogleGenerativeAI(model="gemini-1.5-pro-latest", temperature=0),
+    "claude": ChatAnthropic(model="claude-3-5-sonnet-latest"),
+}
 
 # Directory paths
 CURRENT_DIR: Final[str] = os.path.dirname(__file__)
-RAG_DIR: Final[str] = os.path.join(CURRENT_DIR, "src/indigobot", "rag_data")
+RAG_DIR: Final[str] = os.path.join(CURRENT_DIR, "rag_data")
 CHROMA_DIR: Final[str] = os.path.join(RAG_DIR, ".chromadb")
 GEM_DB: Final[str] = os.path.join(CHROMA_DIR, "gemini/chroma.sqlite3")
 GPT_DB: Final[str] = os.path.join(CHROMA_DIR, "openai/chroma.sqlite3")
@@ -51,10 +51,7 @@ except Exception as e:
     raise
 
 
-class VectorStore(Enum):
-    GPT = gpt_vstore
-    GEM = gem_vstore
-
+vectorstores = {"gpt": gpt_vstore, "gemini": gem_vstore}
 
 # URLs for API endpoints that return JSON data
 urls: List[str] = [
@@ -69,7 +66,7 @@ r_urls: List[str] = [
     "https://www.multco.us/dd",  # Developmental disabilities
 ]
 
-# URL of the sitemap
+# Sitemap URLs
 sitemaps: List[str] = [
     "https://centralcityconcern.org/housing-sitemap.xml",
     "https://centralcityconcern.org/healthcare-sitemap.xml",

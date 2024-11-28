@@ -1,8 +1,8 @@
 """
-This is the main chatbot program with conversational capabilities and info distribution
+This is the main chatbot program for conversational capabilities and info distribution.
 """
 
-import readline  # Needed to use arrow keys in CLI
+import readline  # Required for using arrow keys in CLI
 from typing import Sequence
 
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
@@ -16,10 +16,10 @@ from langgraph.graph import START, StateGraph
 from langgraph.graph.message import add_messages
 from typing_extensions import Annotated, TypedDict
 
-from indigobot.config import Models, VectorStore
-from indigobot import custom_loader
+from config import llms, vectorstores
+from utils import custom_loader
 
-llm = Models.GPT
+llm = llms["gpt"]
 
 
 class State(TypedDict):
@@ -64,7 +64,7 @@ def call_model(state: State):
 
 
 # Create vectorstore retriever for accessing & displaying doc info & metadata
-retriever = VectorStore.GPT
+retriever = vectorstores["gpt"].as_retriever()
 
 ### Contextualize question ###
 contextualize_q_system_prompt = (

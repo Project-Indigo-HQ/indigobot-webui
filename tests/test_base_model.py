@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 from langchain_core.messages import AIMessage, HumanMessage
 from langgraph.graph import START
 
-from indigobot.__main__ import State, call_model, workflow
+from indigobot import State, call_model, workflow
 
 
 class TestBaseModel(unittest.TestCase):

@@ -1,9 +1,7 @@
-import os
 import unittest
 from unittest.mock import MagicMock, patch
 
-from indigobot.custom_loader import (
-    PDF_PATH,
+from indigobot.utils.custom_loader import (
     chunking,
     clean_documents,
     clean_text,
@@ -11,13 +9,6 @@ from indigobot.custom_loader import (
     scrape_articles,
     scrape_main,
 )
-
-# PARENT_DIR = os.path.dirname("..")
-# PDF_PATH = Path(
-#     os.path.join(
-#         PARENT_DIR, "langchain_app/rag_data/pdfs/NavigatingLLMsBegginersGuide.pdf"
-#     )
-# )
 
 
 class TestCustomLoader(unittest.TestCase):
@@ -130,14 +121,6 @@ class TestCustomLoader(unittest.TestCase):
             documents=mock_docs, tags_to_extract=[]
         )
         self.assertEqual(result, mock_transformed_docs)
-
-    def test_pdf_path_exists(self):
-        """Test that the PDF file path is valid"""
-        self.assertTrue(os.path.exists(PDF_PATH), f"PDF file not found at {PDF_PATH}")
-        self.assertTrue(
-            str(PDF_PATH).find("/langchain_app/rag_data/"),
-            "PDF path should be relative to langchain_app directory",
-        )
 
 
 if __name__ == "__main__":

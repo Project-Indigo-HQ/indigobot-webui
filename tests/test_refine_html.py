@@ -5,7 +5,7 @@ from unittest.mock import mock_open, patch
 
 from langchain.schema import Document
 
-from indigobot.CCC_scraper.refine_html import (
+from indigobot.utils.CCC_scraper.refine_html import (
     load_html_files,
     load_JSON_files,
     parse_and_save,
