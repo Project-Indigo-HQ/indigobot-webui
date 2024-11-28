@@ -183,12 +183,10 @@ def parse_url(sitemap_url, session):
 
 def crawl():
     """
-    Crawls a website starting from the given URL up to a specified depth.
+    Crawls a website starting from the given sitemaps, downloading HTML content.
 
-    :param url: The starting URL for the crawl.
-    :type url: str
-    :param depth: The depth of the crawl.
-    :type depth: int
+    This function orchestrates the crawling process by initiating a session,
+    extracting URLs from sitemaps, and downloading the corresponding HTML pages.
     """
 
     session = start_session()
@@ -205,6 +203,9 @@ def crawl():
 
 
 def main():
+    """
+    The main entry point for the crawler script.
+    """
     crawl()
 
 

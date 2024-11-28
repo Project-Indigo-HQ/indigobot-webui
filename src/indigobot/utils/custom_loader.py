@@ -69,6 +69,8 @@ def load_docs(docs, vectorstore):
 
     :param docs: List of documents to load and split.
     :type docs: list
+    :param vectorstore: The vector store to load documents into.
+    :type vectorstore: object
     """
     chunks = chunking(docs)
     add_documents(vectorstore, chunks, 300)
@@ -80,6 +82,8 @@ def load_urls(urls, vectorstore):
 
     :param urls: List of URLs to load documents from.
     :type urls: list
+    :param vectorstore: The vector store to load documents into.
+    :type vectorstore: object
     """
     load_docs(AsyncHtmlLoader(urls).load(), vectorstore)
 
@@ -168,6 +172,9 @@ def scrape_urls(url_list, vectorstore):
     Processes a list of URLs, scrapes them, and adds them to the vector database.
 
     :param url_list: List of URLs to process and scrape.
+    :type url_list: list
+    :param vectorstore: The vector store to load documents into.
+    :type vectorstore: object
     """
     for url in url_list:
         docs = scrape_main(url, 12)

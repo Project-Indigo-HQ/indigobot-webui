@@ -17,68 +17,18 @@ class Mock(MagicMock):
 
 
 MOCK_MODULES = [
-    "langchain_core.runnables.utils",
-    "langchain_core.utils",
-    "langchain_core.utils.input",
-    "langchain_core.utils.math",
-    "langchain_core.utils.parallel",
-    "anthropic",
-    "bs4",
-    "chromadb",
-    "chromadb.config",
-    "google.generativeai",
     "langchain",
-    "langchain.agents",
-    "langchain.chains",
-    "langchain.chains.combine_documents",
-    "langchain.schema",
-    "langchain.schema.language_model",
-    "langchain.text_splitter",
-    "langchain.tools",
-    "langchain.tools.retriever",
-    "langchain_anthropic",
-    "langchain_chroma",
-    "langchain_community",
-    "langchain_community.agent_toolkits",
-    "langchain_community.agent_toolkits.sql.base",
-    "langchain_community.agent_toolkits.load_tools",
-    "langchain_community.document_loaders",
-    "langchain_community.document_loaders.recursive_url_loader",
-    "langchain_community.document_transformers",
-    "langchain_community.utilities",
     "langchain_core",
-    "langchain_core.chat_history",
-    "langchain_core.documents",
-    "langchain_core.documents.base",
-    "langchain_core.language_models",
-    "langchain_core.language_models.base",
-    "langchain_core.load",
-    "langchain_core.messages",
-    "langchain_core.output_parsers",
-    "langchain_core.output_parsers.base",
-    "langchain_core.prompts",
-    "langchain_core.pydantic_v1",
-    "langchain_core.retrievers",
-    "langchain_core.runnables",
-    "langchain_core.runnables.base",
-    "langchain_core.runnables.config",
-    "langchain_core.runnables.history",
-    "langchain_core.vectorstores",
-    "langchain_core.callbacks",
-    "langchain_core.callbacks.manager",
-    "langchain_core.tools",
-    "langchain_core.tools.base",
-    "langchain_experimental",
-    "langchain_google_genai",
+    "langchain_community",
+    "langchain_anthropic",
     "langchain_openai",
-    "langgraph",
-    "langgraph.checkpoint",
-    "langchain_experimental.tools",
+    "anthropic",
     "openai",
+    "chromadb",
+    "bs4",
     "numpy",
     "pandas",
     "sqlalchemy",
-    "unidecode",
 ]
 
 
@@ -114,17 +64,17 @@ release = "1.0.0"
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
+    "myst_parser",
     "sphinx.ext.autodoc",
-    "sphinx.ext.napoleon",
-    "sphinx.ext.viewcode",
+    "sphinx.ext.autodoc.typehints",
+    "sphinx.ext.autosectionlabel",
+    "sphinx.ext.coverage",
     "sphinx.ext.githubpages",
     "sphinx.ext.intersphinx",
-    "sphinx.ext.autosectionlabel",
+    # "sphinx.ext.napoleon",
+    "sphinx.ext.viewcode",
     "sphinx.ext.todo",
-    "sphinx.ext.coverage",
     "sphinx_copybutton",
-    "sphinx.ext.autodoc.typehints",
-    "myst_parser",
 ]
 
 # Add source file mappings
@@ -133,19 +83,19 @@ source_suffix = {
     ".md": "markdown",
 }
 
-# Napoleon settings
-napoleon_google_docstring = True
-napoleon_numpy_docstring = True
-napoleon_include_init_with_doc = False
-napoleon_include_private_with_doc = False
-napoleon_include_special_with_doc = True
-napoleon_use_admonition_for_examples = False
-napoleon_use_admonition_for_notes = False
-napoleon_use_admonition_for_references = False
-napoleon_use_ivar = False
-napoleon_use_param = True
-napoleon_use_rtype = True
-napoleon_type_aliases = None
+# # Napoleon settings
+# napoleon_google_docstring = True
+# napoleon_numpy_docstring = True
+# napoleon_include_init_with_doc = False
+# napoleon_include_private_with_doc = False
+# napoleon_include_special_with_doc = True
+# napoleon_use_admonition_for_examples = False
+# napoleon_use_admonition_for_notes = False
+# napoleon_use_admonition_for_references = False
+# napoleon_use_ivar = False
+# napoleon_use_param = True
+# napoleon_use_rtype = True
+# napoleon_type_aliases = None
 
 # Intersphinx settings
 intersphinx_mapping = {
@@ -163,4 +113,4 @@ html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
 html_css_files = ["custom.css"]
 
-suppress_warnings = ["epub.unknown_project_files"]
+# suppress_warnings = ["epub.unknown_project_files"]

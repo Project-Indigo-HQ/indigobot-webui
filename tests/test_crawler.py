@@ -1,7 +1,7 @@
 import os
 import unittest
 import xml.etree.ElementTree as ET
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, mock_open, patch
 
 from indigobot.utils.jf_crawler import (
     download_and_save_html,
@@ -57,20 +57,14 @@ class TestCrawler(unittest.TestCase):
         self.assertEqual(urls[0], "https://example.com/page1")
         self.assertEqual(urls[1], "https://example.com/page2")
 
-    def test_load_urls(self):
-        # Create a temporary test file
-        os.makedirs("test_urls", exist_ok=True)
-        with open("test_urls/test.txt", "w") as f:
-            f.write("https://example.com/test1\nhttps://example.com/test2")
-
-        urls = load_urls("test_urls")
-        self.assertEqual(len(urls), 2)
-        self.assertEqual(urls[0], "https://example.com/test1")
-        self.assertEqual(urls[1], "https://example.com/test2")
-
-        # Cleanup
-        os.remove("test_urls/test.txt")
-        os.rmdir("test_urls")
+    @patch("builtins.open", new_callable=mock_open, read_data="https://example.com/test1\nhttps://example.com/test2")
+    def test_load_urls(self, mock_file):
+        with patch("os.path.exists") as mock_exists:
+            mock_exists.return_value = True
+            urls = load_urls("test_urls")
+            self.assertEqual(len(urls), 2)
+            self.assertEqual(urls[0], "https://example.com/test1")
+            self.assertEqual(urls[1], "https://example.com/test2")
 
     @patch("requests.Session")
     def test_download_and_save_html(self, mock_session):

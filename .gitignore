@@ -1,12 +1,13 @@
 .DS_Store
 env
-.chromadb
+.env
 __pycache__
 *.pyc
+*.pytest_cache
 docs/build
+.chromadb
 project_indigo.egg-info
 .aider*
-.env
 **/rag_data
 .vscode
 .coverage
