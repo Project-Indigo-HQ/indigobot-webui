@@ -6,3 +6,12 @@ __pycache__
 docs/*
 .aider*
 *.aider
+aider.log
+.aider.chat.history
+
+**/html_files
+**/processed_text
+**/temp
+**/extracted_urls
+.vscode
+.coverage
