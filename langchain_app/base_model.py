@@ -300,5 +300,8 @@ if __name__ == "__main__":
     # Get port from environment variable or use default 8000
     port = int(os.getenv("PORT", 8000))
     print(f"Starting FastAPI server at http://0.0.0.0:{port}")
-    print("(Access from other machines using this machine's IP address)")
+    print("Server is accessible at:")
+    print(f"- Local: http://localhost:{port}")
+    print(f"- External: http://34.83.184.65:{port}")
+    print("\nSwagger UI available at /docs endpoint")
     uvicorn.run("langchain_app.base_model:app", host="0.0.0.0", port=port, reload=True)
