@@ -1,6 +1,6 @@
 """Unit tests for base_model.py"""
 
-import unittest
+import pytest
 from unittest.mock import Mock, patch
 
 from langchain_core.messages import AIMessage, HumanMessage
@@ -9,56 +9,57 @@ from langgraph.graph import START
 from indigobot import State, call_model, workflow
 
 
-class TestBaseModel(unittest.TestCase):
-    """Test cases for base_model.py functionality"""
+@pytest.fixture
+def test_state():
+    """Test state fixture"""
+    return {
+        "input": "test question",
+        "chat_history": [],
+        "context": "test context", 
+        "answer": "",
+    }
 
-    def setUp(self):
-        """Set up test fixtures"""
-        self.test_state = {
-            "input": "test question",
-            "chat_history": [],
-            "context": "test context",
-            "answer": "",
-        }
-
-    def test_state_class(self):
-        """Test State class initialization and typing"""
-        self.assertEqual(self.test_state["input"], "test question")
-        self.assertEqual(self.test_state["chat_history"], [])
-        self.assertEqual(self.test_state["context"], "test context")
-        self.assertEqual(self.test_state["answer"], "")
-
-    @patch("langchain_app.base_model.rag_chain")
-    def test_call_model(self, mock_rag_chain):
-        """Test call_model function"""
-        # Mock the rag_chain response
-        mock_rag_chain.invoke.return_value = {
+@pytest.fixture
+def mock_rag_chain():
+    """Mock RAG chain fixture"""
+    with patch("langchain_app.base_model.rag_chain") as mock:
+        mock.invoke.return_value = {
             "answer": "test answer",
             "context": "test context",
         }
+        yield mock
 
-        result = call_model(self.test_state)
+def test_state_class(test_state):
+    """Test State class initialization and typing"""
+    assert test_state["input"] == "test question"
+    assert test_state["chat_history"] == []
+    assert test_state["context"] == "test context"
+    assert test_state["answer"] == ""
 
-        # Verify rag_chain was called with correct state
-        mock_rag_chain.invoke.assert_called_once_with(self.test_state)
+def test_call_model(test_state, mock_rag_chain):
+    """Test call_model function"""
+    result = call_model(test_state)
 
-        # Check response structure
-        self.assertIn("chat_history", result)
-        self.assertIn("context", result)
-        self.assertIn("answer", result)
+    # Verify rag_chain was called with correct state
+    mock_rag_chain.invoke.assert_called_once_with(test_state)
 
-        # Verify chat history format and content
-        self.assertEqual(len(result["chat_history"]), 2)
+    # Check response structure
+    assert "chat_history" in result
+    assert "context" in result 
+    assert "answer" in result
 
-        human_msg = result["chat_history"][0]
-        ai_msg = result["chat_history"][1]
+    # Verify chat history format and content
+    assert len(result["chat_history"]) == 2
 
-        self.assertIsInstance(human_msg, HumanMessage)
-        self.assertIsInstance(ai_msg, AIMessage)
-        self.assertEqual(str(human_msg.content), "test question")
-        self.assertEqual(str(ai_msg.content), "test answer")
-        self.assertEqual(result["context"], "test context")
-        self.assertEqual(result["answer"], "test answer")
+    human_msg = result["chat_history"][0]
+    ai_msg = result["chat_history"][1]
+
+    assert isinstance(human_msg, HumanMessage)
+    assert isinstance(ai_msg, AIMessage)
+    assert str(human_msg.content) == "test question"
+    assert str(ai_msg.content) == "test answer"
+    assert result["context"] == "test context"
+    assert result["answer"] == "test answer"
 
     def test_workflow_structure(self):
         """Test workflow graph structure"""
