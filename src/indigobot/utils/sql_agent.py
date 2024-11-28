@@ -4,25 +4,7 @@ It loads local PDFs, Python files, and also checks web pages to scrape and consu
 It currently gets responses from Gpt4o, Gemini, and Claude, though more models could be added.
 
 Usage:
-    1. Direct execution:
-       python -m indigobot.utils.sql_agent
-       
-    2. As a module:
-       from indigobot.utils.sql_agent import init_db, load_urls, load_docs
-       
-       # Initialize database
-       db = init_db()
-       
-       # Load URLs into database
-       urls = ["https://example.com"]
-       load_urls(urls)
-       
-       # Load documents into database
-       from langchain_community.document_loaders import PyPDFLoader
-       loader = PyPDFLoader("path/to/doc.pdf")
-       docs = loader.load()
-       load_docs(docs)
-       
+
     The interactive prompt accepts natural language queries that will be processed
     by the SQL agent to search and analyze the loaded content.
     
@@ -34,7 +16,6 @@ Usage:
     Type 'quit' to exit the interactive prompt.
 """
 
-import json
 import os
 import readline
 import sqlite3
@@ -51,7 +32,15 @@ llm = llms["gpt"]
 
 
 def init_db(db_path=None):
-    """Initialize the SQLite database with required tables"""
+    """
+    Initialize the SQLite database with required tables
+
+    :param db_path: Path to the database file. If None, the default GPT_DB path is used.
+    :type db_path: str, optional
+    :return: An instance of SQLDatabase connected to the specified database path.
+    :rtype: SQLDatabase
+    :raises Exception: If there is an error initializing the database.
+    """
     try:
         # Use provided path or default
         db_file = db_path or GPT_DB
@@ -99,6 +88,11 @@ def init_db(db_path=None):
 def load_urls(urls, db_path=None):
     """
     Load documents from URLs into the SQL database
+
+    :param urls: List of URLs to load documents from.
+    :type urls: list
+    :param db_path: Path to the database file. If None, the default GPT_DB path is used.
+    :type db_path: str, optional
     """
     loader = AsyncHtmlLoader(urls)
     docs = loader.load()
@@ -113,6 +107,11 @@ def load_urls(urls, db_path=None):
 def load_docs(docs, db_path=None):
     """
     Split text of arg documents and load them into the SQL database
+
+    :param docs: Documents to be processed and loaded into the database.
+    :type docs: list
+    :param db_path: Path to the database file. If None, the default GPT_DB path is used.
+    :type db_path: str, optional
     """
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=10)
     splits = text_splitter.split_documents(docs)
@@ -182,6 +181,16 @@ def format_docs(docs):
 def query_database(query, params=(), db_path=None):
     """
     Execute a SQL query with optional parameters and return results
+
+    :param query: SQL query to execute.
+    :type query: str
+    :param params: Parameters to be used in the SQL query.
+    :type params: tuple, optional
+    :param db_path: Path to the database file. If None, the default GPT_DB path is used.
+    :type db_path: str, optional
+    :return: Results from the SQL query.
+    :rtype: list of tuples
+    :raises sqlite3.Error: If there is an error executing the query.
     """
     try:
         db_file = db_path or GPT_DB
@@ -214,15 +223,6 @@ def main():
         verbose=True,
         handle_parsing_errors=True,
     )  # create agent
-
-    # retriever = RunnableLambda(
-    #     lambda query=f"SELECT text FROM embedding_metadata": query_database(query)
-    # )
-    # formatted_docs_runnable = RunnableLambda(format_docs)
-
-    # prompt = hub.pull("rlm/rag-prompt")
-
-    # rag_chain = retriever | formatted_docs_runnable | prompt | llm | StrOutputParser()
 
     while True:
         line = input("llm>> ")

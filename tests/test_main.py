@@ -64,6 +64,7 @@ def test_call_model(test_state, mock_rag_chain):
     assert result["context"] == "test context"
     assert result["answer"] == "test answer"
 
+
 def test_workflow_structure():
     """Test workflow graph structure"""
     # Verify workflow has expected nodes
@@ -74,33 +75,34 @@ def test_workflow_structure():
     start_edges = [edge for edge in edges if edge[0] == START]
     assert any(edge[1] == "model" for edge in start_edges)
 
+
 @patch("builtins.input")
 @patch("indigobot.__main__.app")
 @patch("indigobot.__main__.retriever")
 def test_main_function(mock_retriever, mock_app, mock_input):
-        """Test main function with skip_loader"""
-        from indigobot.__main__ import main
+    """Test main function with skip_loader"""
+    from indigobot.__main__ import main
 
-        # Mock the retriever's vectorstore response
-        mock_retriever.vectorstore.get.return_value = {
-            "metadatas": [{"source": "test_source.pdf"}]
-        }
+    # Mock the retriever's vectorstore response
+    mock_retriever.vectorstore.get.return_value = {
+        "metadatas": [{"source": "test_source.pdf"}]
+    }
 
-        # Mock the app's invoke response
-        mock_app.invoke.return_value = {"answer": "test response"}
+    # Mock the app's invoke response
+    mock_app.invoke.return_value = {"answer": "test response"}
 
-        # Mock user input to exit after one iteration
-        mock_input.side_effect = ["test input", ""]
+    # Mock user input to exit after one iteration
+    mock_input.side_effect = ["test input", ""]
 
-        # Test that main runs without error when skip_loader is True
-        try:
-            main(skip_loader=True)
-        except Exception as e:
-            pytest.fail(f"main() raised {type(e).__name__} unexpectedly!")
+    # Test that main runs without error when skip_loader is True
+    try:
+        main(skip_loader=True)
+    except Exception as e:
+        pytest.fail(f"main() raised {type(e).__name__} unexpectedly!")
 
-        # Verify mocks were called correctly
-        mock_app.invoke.assert_called_once()
-        mock_retriever.vectorstore.get.assert_called_once()
+    # Verify mocks were called correctly
+    mock_app.invoke.assert_called_once()
+    mock_retriever.vectorstore.get.assert_called_once()
 
 
 if __name__ == "__main__":
