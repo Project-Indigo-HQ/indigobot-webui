@@ -26,7 +26,7 @@ class TestSQLAgent(unittest.TestCase):
         cursor = conn.cursor()
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS documents (
-                id INTEGER PRIMARY KEY,
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 text TEXT,
                 metadata TEXT
             );
@@ -37,18 +37,19 @@ class TestSQLAgent(unittest.TestCase):
     def setUp(self):
         """Create fresh test database before each test"""
         # Clear all data before each test
-        conn = sqlite3.connect(self.test_db_path)
-        cursor = conn.cursor()
-        cursor.execute("DELETE FROM documents")
-        cursor.execute("DELETE FROM sqlite_sequence WHERE name='documents'")
-        conn.commit()
-        conn.close()
+        try:
+            conn = sqlite3.connect(self.test_db_path, timeout=30)
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM documents")
+            conn.commit()
+        finally:
+            conn.close()
 
     def tearDown(self):
         """Clean up test database after each test"""
         if os.path.exists(self.test_db_path):
             try:
-                conn = sqlite3.connect(self.test_db_path, timeout=20)
+                conn = sqlite3.connect(self.test_db_path, timeout=30)
                 cursor = conn.cursor()
                 cursor.execute("DELETE FROM documents")
                 conn.commit()
