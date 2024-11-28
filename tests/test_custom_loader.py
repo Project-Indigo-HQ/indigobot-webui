@@ -2,7 +2,7 @@ import os
 import unittest
 from unittest.mock import MagicMock, patch
 
-from langchain_app.custom_loader import (
+from indigobot.custom_loader import (
     PDF_PATH,
     chunking,
     clean_documents,

@@ -3,7 +3,7 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
-from langchain_app.doctool import (
+from indigobot.doctool import (
     agent_executor,
     agent_with_chat_history,
     memory,

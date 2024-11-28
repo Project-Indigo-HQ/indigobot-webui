@@ -6,7 +6,7 @@ from unittest.mock import Mock, patch
 from langchain_core.messages import AIMessage, HumanMessage
 from langgraph.graph import START
 
-from langchain_app.base_model import State, call_model, workflow
+from indigobot.__main__ import State, call_model, workflow
 
 
 class TestBaseModel(unittest.TestCase):
@@ -75,7 +75,7 @@ class TestBaseModel(unittest.TestCase):
     @patch("langchain_app.base_model.retriever")
     def test_main_function(self, mock_retriever, mock_app, mock_input):
         """Test main function with skip_loader"""
-        from langchain_app.base_model import main
+        from indigobot.__main__ import main
 
         # Mock the retriever's vectorstore response
         mock_retriever.vectorstore.get.return_value = {
