@@ -26,19 +26,43 @@ class TestSQLAgent(unittest.TestCase):
         GPT_DB = cls.test_db_path
 
         # Initialize the test database
+        conn = sqlite3.connect(cls.test_db_path)
+        cursor = conn.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS documents (
+                id INTEGER PRIMARY KEY,
+                text TEXT,
+                metadata TEXT
+            );
+        """)
+        conn.commit()
+        conn.close()
+        
         from indigobot.utils.sql_agent import init_db
         cls.db = init_db()
 
     def setUp(self):
         """Create fresh test database before each test"""
-        conn = sqlite3.connect(self.test_db_path, timeout=20)
-        cursor = conn.cursor()
-        # Clear all data and reset sequences
-        cursor.execute("DELETE FROM documents")
-        cursor.execute("DELETE FROM sqlite_sequence WHERE name='documents'")
-        cursor.execute("VACUUM")  # Compact the database
-        conn.commit()
-        conn.close()
+        try:
+            conn = sqlite3.connect(self.test_db_path, timeout=20)
+            cursor = conn.cursor()
+            # Clear all data and reset sequences
+            cursor.execute("DELETE FROM documents")
+            cursor.execute("DELETE FROM sqlite_sequence WHERE name='documents'")
+            cursor.execute("VACUUM")  # Compact the database
+            conn.commit()
+        except sqlite3.OperationalError:
+            # If table doesn't exist, create it
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS documents (
+                    id INTEGER PRIMARY KEY,
+                    text TEXT,
+                    metadata TEXT
+                );
+            """)
+            conn.commit()
+        finally:
+            conn.close()
 
     def tearDown(self):
         """Clean up test database after each test"""

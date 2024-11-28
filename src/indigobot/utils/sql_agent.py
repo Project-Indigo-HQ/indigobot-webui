@@ -26,19 +26,24 @@ llm = llms["gpt"]
 def init_db():
     """Initialize the SQLite database with required tables"""
     try:
+        # Ensure the database directory exists
+        os.makedirs(os.path.dirname(GPT_DB), exist_ok=True)
+        
         conn = sqlite3.connect(GPT_DB)
         cursor = conn.cursor()
-        cursor.execute(
-            """
+        
+        # Create the documents table if it doesn't exist
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS documents (
                 id INTEGER PRIMARY KEY,
                 text TEXT,
                 metadata TEXT
             );
-            """
-        )
+        """)
         conn.commit()
         conn.close()
+        
+        # Return SQLDatabase instance
         return SQLDatabase.from_uri(f"sqlite:///{GPT_DB}", include_tables=["documents"])
     except Exception as e:
         print(f"Error initializing database: {e}")
