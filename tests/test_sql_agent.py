@@ -19,12 +19,6 @@ class TestSQLAgent(unittest.TestCase):
         if os.path.exists(cls.test_db_path):
             os.remove(cls.test_db_path)
             
-        # Temporarily override GPT_DB
-        from indigobot.utils.sql_agent import GPT_DB as original_db
-        global GPT_DB
-        cls.original_db_path = original_db
-        GPT_DB = cls.test_db_path
-
         # Initialize the test database
         conn = sqlite3.connect(cls.test_db_path)
         cursor = conn.cursor()
@@ -37,32 +31,16 @@ class TestSQLAgent(unittest.TestCase):
         """)
         conn.commit()
         conn.close()
-        
-        from indigobot.utils.sql_agent import init_db
-        cls.db = init_db()
 
     def setUp(self):
         """Create fresh test database before each test"""
-        try:
-            conn = sqlite3.connect(self.test_db_path, timeout=20)
-            cursor = conn.cursor()
-            # Clear all data and reset sequences
-            cursor.execute("DELETE FROM documents")
-            cursor.execute("DELETE FROM sqlite_sequence WHERE name='documents'")
-            cursor.execute("VACUUM")  # Compact the database
-            conn.commit()
-        except sqlite3.OperationalError:
-            # If table doesn't exist, create it
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS documents (
-                    id INTEGER PRIMARY KEY,
-                    text TEXT,
-                    metadata TEXT
-                );
-            """)
-            conn.commit()
-        finally:
-            conn.close()
+        # Clear all data before each test
+        conn = sqlite3.connect(self.test_db_path)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM documents")
+        cursor.execute("DELETE FROM sqlite_sequence WHERE name='documents'")
+        conn.commit()
+        conn.close()
 
     def tearDown(self):
         """Clean up test database after each test"""
@@ -95,7 +73,7 @@ class TestSQLAgent(unittest.TestCase):
             Document(page_content="Test content 2", metadata={"source": "test2.txt"}),
         ]
 
-        load_docs(test_docs)
+        load_docs(test_docs, db_path=self.test_db_path)
 
         results = query_database("SELECT text, metadata FROM documents ORDER BY id")
         self.assertEqual(len(results), 2)
@@ -114,7 +92,7 @@ class TestSQLAgent(unittest.TestCase):
         mock_loader.return_value.load.return_value = mock_docs
 
         test_urls = ["http://test1.com"]
-        load_urls(test_urls)
+        load_urls(test_urls, db_path=self.test_db_path)
 
         results = query_database("SELECT text, metadata FROM documents")
         self.assertEqual(len(results), 1)
@@ -143,7 +121,7 @@ class TestSQLAgent(unittest.TestCase):
         conn.close()
 
         # Test normal query
-        results = query_database("SELECT text FROM documents", params=())
+        results = query_database("SELECT text FROM documents", params=(), db_path=self.test_db_path)
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0][0], "Test text")
 
@@ -161,7 +139,9 @@ class TestSQLAgent(unittest.TestCase):
 
         # Test parameterized query
         results = query_database(
-            "SELECT text FROM documents WHERE text = ?", params=("Test text",)
+            "SELECT text FROM documents WHERE text = ?", 
+            params=("Test text",),
+            db_path=self.test_db_path
         )
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0][0], "Test text")
@@ -194,7 +174,7 @@ class TestSQLAgent(unittest.TestCase):
             )
         ]
 
-        load_docs(malicious_docs)
+        load_docs(malicious_docs, db_path=self.test_db_path)
 
         # Verify table still exists and data was properly escaped
         results = query_database(
