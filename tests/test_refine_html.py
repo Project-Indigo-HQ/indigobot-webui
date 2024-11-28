@@ -98,8 +98,8 @@ class TestRefineHtml(unittest.TestCase):
         self.assertTrue(all(isinstance(doc, Document) for doc in documents))
         self.assertEqual(len(documents), 2)  # One doc per JSON file
 
-    @patch("indigobot.utils.jf_crawler.refine_html.load_html_files")
-    @patch("indigobot.utils.jf_crawler.refine_html.parse_and_save")
+    @patch("indigobot.utils.refine_html.load_html_files")
+    @patch("indigobot.utils.refine_html.parse_and_save")
     def test_refine_text(self, mock_parse_save, mock_load_files):
         mock_load_files.return_value = ["test1.html", "test2.html"]
         refine_text()
