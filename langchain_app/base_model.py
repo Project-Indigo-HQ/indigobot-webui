@@ -297,5 +297,8 @@ if __name__ == "__main__":
         custom_loader.main()
 
     # Start FastAPI
-    print("Starting FastAPI server at http://localhost:8000")
-    uvicorn.run("langchain_app.base_model:app", host="0.0.0.0", port=8000, reload=True)
+    # Get port from environment variable or use default 8000
+    port = int(os.getenv("PORT", 8000))
+    print(f"Starting FastAPI server at http://0.0.0.0:{port}")
+    print("(Access from other machines using this machine's IP address)")
+    uvicorn.run("langchain_app.base_model:app", host="0.0.0.0", port=port, reload=True)
