@@ -7,3 +7,27 @@ myst-parser>=2.0.0
 
 # Mock imports for docs build
 mock>=4.0.3
+
+bs4
+build
+jq
+langchain
+langchainhub
+langchain_anthropic
+langchain-chroma
+langchain-community
+langchain-experimental
+langchain_google_genai
+langchain_openai
+langgraph
+pylama[all]
+pylama[toml]
+pymupdf
+pypdf
+pytest
+pyyaml
+requests
+setuptools
+setuptools-scm
+types-pyyaml
+unidecode
