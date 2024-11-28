@@ -127,34 +127,34 @@ def load_docs(docs, db_path=None):
             # First insert into embeddings table to get an id
             cursor.execute("INSERT INTO embeddings DEFAULT VALUES")
             doc_id = cursor.lastrowid
-            
+
             # Insert the document content
             cursor.execute(
                 "INSERT INTO embedding_metadata (id, key, string_value) VALUES (?, ?, ?)",
-                (doc_id, "content", doc.page_content)
+                (doc_id, "content", doc.page_content),
             )
-            
+
             # Insert each metadata field
             for key, value in doc.metadata.items():
                 if isinstance(value, str):
                     cursor.execute(
                         "INSERT INTO embedding_metadata (id, key, string_value) VALUES (?, ?, ?)",
-                        (doc_id, key, value)
+                        (doc_id, key, value),
                     )
                 elif isinstance(value, bool):
                     cursor.execute(
                         "INSERT INTO embedding_metadata (id, key, bool_value) VALUES (?, ?, ?)",
-                        (doc_id, key, int(value))
+                        (doc_id, key, int(value)),
                     )
                 elif isinstance(value, int):
                     cursor.execute(
                         "INSERT INTO embedding_metadata (id, key, int_value) VALUES (?, ?, ?)",
-                        (doc_id, key, value)
+                        (doc_id, key, value),
                     )
                 elif isinstance(value, float):
                     cursor.execute(
                         "INSERT INTO embedding_metadata (id, key, float_value) VALUES (?, ?, ?)",
-                        (doc_id, key, value)
+                        (doc_id, key, value),
                     )
 
         conn.commit()
@@ -213,8 +213,6 @@ def main():
         toolkit=toolkit,
         verbose=True,
         handle_parsing_errors=True,
-        max_iterations=3,  # Limit retry attempts
-        early_stopping_method="generate"  # Use generate method for early stopping
     )  # create agent
 
     # retriever = RunnableLambda(
