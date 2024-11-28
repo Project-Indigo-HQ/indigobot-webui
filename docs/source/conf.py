@@ -59,6 +59,8 @@ MOCK_MODULES = [
     "langchain_core.runnables.history",
     "langchain_core.vectorstores",
     "langchain_core.callbacks",
+    "langchain_core.callbacks.manager",
+    "langchain_core.load",
     "langchain_google_genai",
     "langchain_openai",
     "openai",
