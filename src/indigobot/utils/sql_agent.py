@@ -100,10 +100,10 @@ def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
 
-def query_database(query):
+def query_database(query, params=()):
     conn = sqlite3.connect(GPT_DB)
     cursor = conn.cursor()
-    cursor.execute(query)
+    cursor.execute(query, params)
     results = cursor.fetchall()
     conn.close()
     return results

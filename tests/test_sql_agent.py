@@ -75,7 +75,7 @@ class TestSQLAgent(unittest.TestCase):
         metadata1 = json.loads(results[0][1])
         self.assertEqual(metadata1["source"], "test1.txt")
 
-    @patch("langchain_app.sql_agent.AsyncHtmlLoader")
+    @patch("indigobot.utils.sql_agent.AsyncHtmlLoader")
     def test_load_urls(self, mock_loader):
         """Test loading URLs"""
         mock_docs = [
