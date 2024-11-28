@@ -78,7 +78,7 @@ class TestSQLAgent(unittest.TestCase):
 
         load_docs(test_docs, db_path=self.test_db_path)
 
-        results = query_database("SELECT text, metadata FROM documents ORDER BY id")
+        results = query_database("SELECT text, metadata FROM documents ORDER BY id", db_path=self.test_db_path)
         self.assertEqual(len(results), 2)
         self.assertEqual(results[0][0], "Test content 1")
         metadata1 = json.loads(results[0][1])
@@ -97,7 +97,7 @@ class TestSQLAgent(unittest.TestCase):
         test_urls = ["http://test1.com"]
         load_urls(test_urls, db_path=self.test_db_path)
 
-        results = query_database("SELECT text, metadata FROM documents")
+        results = query_database("SELECT text, metadata FROM documents", db_path=self.test_db_path)
         self.assertEqual(len(results), 1)
         self.assertIn("Web content 1", results[0][0])
 
