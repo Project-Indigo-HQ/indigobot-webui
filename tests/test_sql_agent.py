@@ -16,43 +16,40 @@ class TestSQLAgent(unittest.TestCase):
         """Set up test database"""
         cls.test_db_path = "test_indigo_bot_db.sqlite"
         # Temporarily override GPT_DB
+        from indigobot.utils.sql_agent import GPT_DB as original_db
         global GPT_DB
-        cls.original_db_path = GPT_DB
+        cls.original_db_path = original_db
         GPT_DB = cls.test_db_path
-
-    def setUp(self):
-        """Create fresh test database before each test"""
-        # Always start with a fresh database
-        if os.path.exists(self.test_db_path):
-            os.remove(self.test_db_path)
-
-        # Create new database and table
-        conn = sqlite3.connect(self.test_db_path)
+        
+        # Initialize the test database
+        conn = sqlite3.connect(cls.test_db_path)
         cursor = conn.cursor()
-        cursor.execute(
-            """
-            CREATE TABLE documents (
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS documents (
                 id INTEGER PRIMARY KEY,
                 text TEXT,
                 metadata TEXT
-            );
-        """
-        )
+            )
+        """)
         conn.commit()
         conn.close()
 
-        # Verify the table is empty
+    def setUp(self):
+        """Create fresh test database before each test"""
+        # Clear existing data
         conn = sqlite3.connect(self.test_db_path)
         cursor = conn.cursor()
-        cursor.execute("SELECT COUNT(*) FROM documents")
-        count = cursor.fetchone()[0]
-        assert count == 0, f"Database should be empty but contains {count} records"
+        cursor.execute("DELETE FROM documents")
+        conn.commit()
         conn.close()
 
     def tearDown(self):
         """Clean up test database after each test"""
-        if os.path.exists(self.test_db_path):
-            os.remove(self.test_db_path)
+        conn = sqlite3.connect(self.test_db_path)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM documents")
+        conn.commit()
+        conn.close()
 
     @classmethod
     def tearDownClass(cls):
