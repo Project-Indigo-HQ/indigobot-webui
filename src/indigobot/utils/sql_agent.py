@@ -2,6 +2,36 @@
 This program uses PyPDFLoader as a file loader and SQL as a vector database.
 It loads local PDFs, Python files, and also checks web pages to scrape and consume data.
 It currently gets responses from Gpt4o, Gemini, and Claude, though more models could be added.
+
+Usage:
+    1. Direct execution:
+       python -m indigobot.utils.sql_agent
+       
+    2. As a module:
+       from indigobot.utils.sql_agent import init_db, load_urls, load_docs
+       
+       # Initialize database
+       db = init_db()
+       
+       # Load URLs into database
+       urls = ["https://example.com"]
+       load_urls(urls)
+       
+       # Load documents into database
+       from langchain_community.document_loaders import PyPDFLoader
+       loader = PyPDFLoader("path/to/doc.pdf")
+       docs = loader.load()
+       load_docs(docs)
+       
+    The interactive prompt accepts natural language queries that will be processed
+    by the SQL agent to search and analyze the loaded content.
+    
+    Example queries:
+    - "What tables exist in the database?"
+    - "Show me the first 5 documents"
+    - "Find documents containing the word 'python'"
+    
+    Type 'quit' to exit the interactive prompt.
 """
 
 import json
