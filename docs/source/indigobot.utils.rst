@@ -1,11 +1,11 @@
 indigobot.utils package
-======================
+=======================
 
 Submodules
 ----------
 
 indigobot.utils.custom\_loader module
------------------------------------
+------------------------------------
 
 .. automodule:: indigobot.utils.custom_loader
    :members:
@@ -13,7 +13,7 @@ indigobot.utils.custom\_loader module
    :show-inheritance:
 
 indigobot.utils.doctool module
-----------------------------
+-----------------------------
 
 .. automodule:: indigobot.utils.doctool
    :members:
@@ -21,7 +21,7 @@ indigobot.utils.doctool module
    :show-inheritance:
 
 indigobot.utils.jf\_crawler module
---------------------------------
+---------------------------------
 
 .. automodule:: indigobot.utils.jf_crawler
    :members:
@@ -29,7 +29,7 @@ indigobot.utils.jf\_crawler module
    :show-inheritance:
 
 indigobot.utils.refine\_html module
----------------------------------
+----------------------------------
 
 .. automodule:: indigobot.utils.refine_html
    :members:
@@ -37,7 +37,7 @@ indigobot.utils.refine\_html module
    :show-inheritance:
 
 indigobot.utils.sql\_agent module
--------------------------------
+--------------------------------
 
 .. automodule:: indigobot.utils.sql_agent
    :members:
@@ -45,7 +45,7 @@ indigobot.utils.sql\_agent module
    :show-inheritance:
 
 Module contents
---------------
+---------------
 
 .. automodule:: indigobot.utils
    :members:
