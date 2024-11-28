@@ -101,4 +101,4 @@ def test_call_model(test_state, mock_rag_chain):
 
 
 if __name__ == "__main__":
-    unittest.main()
+    pytest.main([__file__])
