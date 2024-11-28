@@ -14,7 +14,7 @@ from langchain_community.document_loaders import AsyncHtmlLoader
 from langchain_community.document_loaders.recursive_url_loader import RecursiveUrlLoader
 from langchain_community.document_transformers import BeautifulSoupTransformer
 
-from config import urls, r_urls, vectorstores
+from indigobot.config import urls, r_urls, vectorstores
 
 vectorstores = (vectorstores["gpt"], vectorstores["gemini"])
 

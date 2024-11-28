@@ -86,8 +86,8 @@ class TestCrawler(unittest.TestCase):
         with patch("os.makedirs"), patch("builtins.open", unittest.mock.mock_open()):
             download_and_save_html(test_urls, session)
 
-    @patch("langchain_app.CCC_scraper.crawler.fetch_xml")
-    @patch("langchain_app.CCC_scraper.crawler.extract_xml")
+    @patch("indigobot.utils.CCC_scraper.crawler.fetch_xml")
+    @patch("indigobot.utils.CCC_scraper.crawler.extract_xml")
     def test_parse_url(self, mock_extract_xml, mock_fetch_xml):
         mock_extract_xml.return_value = ["https://example.com/page1"]
         mock_fetch_xml.return_value = self.test_xml.encode()
