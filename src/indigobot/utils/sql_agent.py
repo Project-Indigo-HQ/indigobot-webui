@@ -23,13 +23,20 @@ from indigobot.config import GEM_DB, GPT_DB, llms
 llm = llms["gpt"]
 
 
-def init_db():
-    """Initialize the SQLite database with required tables"""
+def init_db(db_path=None):
+    """Initialize the SQLite database with required tables
+    
+    Args:
+        db_path (str, optional): Override default database path. Defaults to None.
+    """
     try:
-        # Ensure the database directory exists
-        os.makedirs(os.path.dirname(GPT_DB), exist_ok=True)
+        # Use provided path or default
+        db_file = db_path or GPT_DB
         
-        conn = sqlite3.connect(GPT_DB)
+        # Ensure the database directory exists
+        os.makedirs(os.path.dirname(db_file), exist_ok=True)
+        
+        conn = sqlite3.connect(db_file)
         cursor = conn.cursor()
         
         # Create the documents table if it doesn't exist
@@ -44,40 +51,43 @@ def init_db():
         conn.close()
         
         # Return SQLDatabase instance
-        return SQLDatabase.from_uri(f"sqlite:///{GPT_DB}", include_tables=["documents"])
+        return SQLDatabase.from_uri(f"sqlite:///{db_file}", include_tables=["documents"])
     except Exception as e:
         print(f"Error initializing database: {e}")
         raise
 
 
-def load_urls(urls):
+def load_urls(urls, db_path=None):
     """
     Load documents from URLs into the SQL database
 
-    :param urls: List of URLs to load documents from.
-    :type urls: list
+    Args:
+        urls (list): List of URLs to load documents from
+        db_path (str, optional): Override default database path. Defaults to None.
     """
     loader = AsyncHtmlLoader(urls)
     docs = loader.load()
     if docs:
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=10)
         splits = text_splitter.split_documents(docs)
-        load_docs(splits)
+        load_docs(splits, db_path=db_path)
 
 
-def load_docs(docs):
+def load_docs(docs, db_path=None):
     """
-    Split text of arg documents and load them into the Chroma vector store
+    Split text of arg documents and load them into the SQL database
 
-    :param docs: List of documents to load and split.
-    :type docs: list
+    Args:
+        docs (list): List of documents to load and split
+        db_path (str, optional): Override default database path. Defaults to None.
     """
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=10)
     splits = text_splitter.split_documents(docs)
 
     conn = None
     try:
-        conn = sqlite3.connect(GPT_DB)
+        db_file = db_path or GPT_DB
+        conn = sqlite3.connect(db_file)
         cursor = conn.cursor()
 
         for doc in splits:
@@ -109,16 +119,21 @@ def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
 
-def query_database(query, params=()):
+def query_database(query, params=(), db_path=None):
     """
     Execute a SQL query with optional parameters and return results
     
-    :param query: SQL query string
-    :param params: Query parameters (optional)
-    :return: Query results
+    Args:
+        query (str): SQL query string
+        params (tuple, optional): Query parameters. Defaults to ().
+        db_path (str, optional): Override default database path. Defaults to None.
+    
+    Returns:
+        list: Query results
     """
     try:
-        conn = sqlite3.connect(GPT_DB, timeout=20)
+        db_file = db_path or GPT_DB
+        conn = sqlite3.connect(db_file, timeout=20)
         cursor = conn.cursor()
         if params:
             cursor.execute(query, params)
