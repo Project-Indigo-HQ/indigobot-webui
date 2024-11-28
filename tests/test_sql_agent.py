@@ -6,8 +6,8 @@ from unittest.mock import Mock, patch
 
 from langchain_core.documents import Document
 
-from indigobot.utils.sql_agent import format_docs, load_docs, load_urls, query_database
 from indigobot.config import GPT_DB
+from indigobot.utils.sql_agent import format_docs, load_docs, load_urls, query_database
 
 
 class TestSQLAgent(unittest.TestCase):
@@ -20,30 +20,112 @@ class TestSQLAgent(unittest.TestCase):
         # Remove existing test database if it exists
         if os.path.exists(cls.test_db_path):
             os.remove(cls.test_db_path)
-            
+
         # Initialize the test database
         conn = sqlite3.connect(cls.test_db_path)
         cursor = conn.cursor()
-        cursor.execute("""
+        
+        # Create documents table
+        cursor.execute(
+            """
             CREATE TABLE IF NOT EXISTS documents (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 text TEXT,
                 metadata TEXT
             );
-        """)
+        """
+        )
+        
+        # Create embeddings table
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS embeddings (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                document_id INTEGER,
+                embedding BLOB,
+                FOREIGN KEY (document_id) REFERENCES documents (id)
+            );
+        """
+        )
+
+        # Drop existing tables if they exist
+        cursor.execute("DROP TABLE IF EXISTS embedding_metadata")
+        cursor.execute("DROP TABLE IF EXISTS embeddings")
+        cursor.execute("DROP TABLE IF EXISTS documents")
+        
+        # Create embedding metadata table with explicit AUTOINCREMENT
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS embedding_metadata (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                document_id INTEGER,
+                key TEXT,
+                string_value TEXT,
+                metadata TEXT,
+                FOREIGN KEY (document_id) REFERENCES documents (id)
+            ) STRICT;
+        """
+        )
+        
         conn.commit()
         conn.close()
 
     def setUp(self):
         """Create fresh test database before each test"""
         # Clear all data before each test
-        try:
-            conn = sqlite3.connect(self.test_db_path, timeout=30)
-            cursor = conn.cursor()
-            cursor.execute("DELETE FROM documents")
-            conn.commit()
-        finally:
-            conn.close()
+        if os.path.exists(self.test_db_path):
+            try:
+                # Close any existing connections
+                conn = sqlite3.connect(self.test_db_path, timeout=30)
+                cursor = conn.cursor()
+                
+                # Drop and recreate tables to ensure clean state
+                cursor.execute("DROP TABLE IF EXISTS embedding_metadata")
+                cursor.execute("DROP TABLE IF EXISTS embeddings")
+                cursor.execute("DROP TABLE IF EXISTS documents")
+                
+                # Recreate tables
+                cursor.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS documents (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        text TEXT,
+                        metadata TEXT
+                    ) STRICT;
+                    """
+                )
+                
+                cursor.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS embeddings (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        document_id INTEGER,
+                        embedding BLOB,
+                        FOREIGN KEY (document_id) REFERENCES documents (id)
+                    ) STRICT;
+                    """
+                )
+                
+                cursor.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS embedding_metadata (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        document_id INTEGER,
+                        key TEXT,
+                        string_value TEXT,
+                        metadata TEXT,
+                        FOREIGN KEY (document_id) REFERENCES documents (id)
+                    ) STRICT;
+                    """
+                )
+                
+                conn.commit()
+                
+                # Vacuum database after schema changes
+                conn.execute("VACUUM")
+                conn.commit()
+            finally:
+                conn.close()
 
     def tearDown(self):
         """Clean up test database after each test"""
@@ -61,7 +143,7 @@ class TestSQLAgent(unittest.TestCase):
         """Clean up test database and restore original GPT_DB"""
         global GPT_DB
         GPT_DB = cls.original_db_path
-        
+
         # Remove test database
         if os.path.exists(cls.test_db_path):
             try:
@@ -78,7 +160,10 @@ class TestSQLAgent(unittest.TestCase):
 
         load_docs(test_docs, db_path=self.test_db_path)
 
-        results = query_database("SELECT text, metadata FROM documents ORDER BY id", db_path=self.test_db_path)
+        results = query_database(
+            "SELECT text, metadata FROM documents ORDER BY id",
+            db_path=self.test_db_path,
+        )
         self.assertEqual(len(results), 2)
         self.assertEqual(results[0][0], "Test content 1")
         metadata1 = json.loads(results[0][1])
@@ -97,7 +182,9 @@ class TestSQLAgent(unittest.TestCase):
         test_urls = ["http://test1.com"]
         load_urls(test_urls, db_path=self.test_db_path)
 
-        results = query_database("SELECT text, metadata FROM documents", db_path=self.test_db_path)
+        results = query_database(
+            "SELECT text, metadata FROM documents", db_path=self.test_db_path
+        )
         self.assertEqual(len(results), 1)
         self.assertIn("Web content 1", results[0][0])
 
@@ -124,7 +211,9 @@ class TestSQLAgent(unittest.TestCase):
         conn.close()
 
         # Test normal query
-        results = query_database("SELECT text FROM documents", params=(), db_path=self.test_db_path)
+        results = query_database(
+            "SELECT text FROM documents", params=(), db_path=self.test_db_path
+        )
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0][0], "Test text")
 
@@ -142,9 +231,9 @@ class TestSQLAgent(unittest.TestCase):
 
         # Test parameterized query
         results = query_database(
-            "SELECT text FROM documents WHERE text = ?", 
+            "SELECT text FROM documents WHERE text = ?",
             params=("Test text",),
-            db_path=self.test_db_path
+            db_path=self.test_db_path,
         )
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0][0], "Test text")
@@ -164,9 +253,9 @@ class TestSQLAgent(unittest.TestCase):
         # Attempt SQL injection
         malicious_input = "' OR '1'='1"
         results = query_database(
-            "SELECT text FROM documents WHERE text = ?", 
+            "SELECT text FROM documents WHERE text = ?",
             params=(malicious_input,),
-            db_path=self.test_db_path
+            db_path=self.test_db_path,
         )
         self.assertEqual(len(results), 0)  # Should not match anything
 
@@ -185,7 +274,7 @@ class TestSQLAgent(unittest.TestCase):
         results = query_database(
             "SELECT text FROM documents WHERE text = ?",
             params=("'; DROP TABLE documents; --",),
-            db_path=self.test_db_path
+            db_path=self.test_db_path,
         )
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0][0], "'; DROP TABLE documents; --")
