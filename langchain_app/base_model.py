@@ -298,4 +298,4 @@ if __name__ == "__main__":
 
     # Start FastAPI
     print("Starting FastAPI server at http://localhost:8000")
-    uvicorn.run("langchain_app.base_model:app", host="localhost", port=8000, reload=True)
+    uvicorn.run("langchain_app.base_model:app", host="0.0.0.0", port=8000, reload=True)
