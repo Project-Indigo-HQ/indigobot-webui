@@ -302,7 +302,7 @@ if __name__ == "__main__":
     host = "0.0.0.0"  # Explicitly bind to all interfaces
     print(f"\nStarting server on http://{host}:{port}")
     print("To access from another machine, use your VM's external IP address")
-    print("Make sure your GCP firewall allows incoming traffic on port {port}\n")
+    print(f"Make sure your GCP firewall allows incoming traffic on port {port}\n")
     
     uvicorn.run(
         "langchain_app.base_model:app",
