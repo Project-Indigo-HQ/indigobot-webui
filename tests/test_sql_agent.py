@@ -14,6 +14,8 @@ class TestSQLAgent(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Set up test database"""
+        # Store original DB path
+        cls.original_db_path = GPT_DB
         cls.test_db_path = "test_indigo_bot_db.sqlite"
         # Remove existing test database if it exists
         if os.path.exists(cls.test_db_path):
@@ -180,6 +182,7 @@ class TestSQLAgent(unittest.TestCase):
         results = query_database(
             "SELECT text FROM documents WHERE text = ?",
             params=("'; DROP TABLE documents; --",),
+            db_path=self.test_db_path
         )
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0][0], "'; DROP TABLE documents; --")
