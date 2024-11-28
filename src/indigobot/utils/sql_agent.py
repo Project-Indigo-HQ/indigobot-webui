@@ -113,20 +113,22 @@ def query_database(query, params=()):
     :return: Query results
     """
     try:
-        conn = sqlite3.connect(GPT_DB)
+        conn = sqlite3.connect(GPT_DB, timeout=20)
         cursor = conn.cursor()
         if params:
             cursor.execute(query, params)
         else:
             cursor.execute(query)
         results = cursor.fetchall()
+        conn.commit()  # Commit any changes
         return results
     except sqlite3.Error as e:
         print(f"Database error: {e}")
+        if 'conn' in locals():
+            conn.rollback()
         raise
     finally:
         if 'conn' in locals():
-            conn.commit()  # Commit any changes
             conn.close()
 
 

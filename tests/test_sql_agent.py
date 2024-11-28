@@ -23,29 +23,38 @@ class TestSQLAgent(unittest.TestCase):
         GPT_DB = cls.test_db_path
 
         # Initialize the test database
-        conn = sqlite3.connect(cls.test_db_path)
-        cursor = conn.cursor()
-        cursor.execute(
+        try:
+            conn = sqlite3.connect(cls.test_db_path, timeout=20)
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS documents (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    text TEXT,
+                    metadata TEXT
+                )
             """
-            CREATE TABLE IF NOT EXISTS documents (
-                id INTEGER PRIMARY KEY,
-                text TEXT,
-                metadata TEXT
             )
-        """
-        )
-        conn.commit()
-        conn.close()
+            conn.commit()
+        finally:
+            if 'conn' in locals():
+                conn.close()
 
     def setUp(self):
         """Create fresh test database before each test"""
         # Clear existing data and reset sequence
-        conn = sqlite3.connect(self.test_db_path)
-        cursor = conn.cursor()
-        cursor.execute("DELETE FROM documents")
-        cursor.execute("DELETE FROM sqlite_sequence WHERE name='documents'")
-        conn.commit()
-        conn.close()
+        try:
+            conn = sqlite3.connect(self.test_db_path, timeout=20)
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM documents")
+            try:
+                cursor.execute("DELETE FROM sqlite_sequence WHERE name='documents'")
+            except sqlite3.OperationalError:
+                pass  # sqlite_sequence might not exist yet
+            conn.commit()
+        finally:
+            if 'conn' in locals():
+                conn.close()
 
     def tearDown(self):
         """Clean up test database after each test"""
