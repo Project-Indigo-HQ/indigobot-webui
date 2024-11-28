@@ -61,6 +61,8 @@ MOCK_MODULES = [
     "langchain_core.callbacks",
     "langchain_core.callbacks.manager",
     "langchain_core.load",
+    "langchain_core.load.load",
+    "langchain_core.tools",
     "langchain_google_genai",
     "langchain_openai",
     "openai",
@@ -118,8 +120,8 @@ extensions = [
 
 # Add source file mappings
 source_suffix = {
-    '.rst': 'restructuredtext',
-    '.md': 'markdown',
+    ".rst": "restructuredtext",
+    ".md": "markdown",
 }
 
 # Napoleon settings
