@@ -6,7 +6,7 @@ import pytest
 from langchain_core.messages import AIMessage, HumanMessage
 from langgraph.graph import START
 
-from indigobot.__main__ import State, call_model, workflow
+from indigobot.__main__ import State, call_model, rag_chain, workflow
 
 
 @pytest.fixture
