@@ -39,10 +39,11 @@ class TestSQLAgent(unittest.TestCase):
 
     def setUp(self):
         """Create fresh test database before each test"""
-        # Clear existing data
+        # Clear existing data and reset sequence
         conn = sqlite3.connect(self.test_db_path)
         cursor = conn.cursor()
         cursor.execute("DELETE FROM documents")
+        cursor.execute("DELETE FROM sqlite_sequence WHERE name='documents'")
         conn.commit()
         conn.close()
 

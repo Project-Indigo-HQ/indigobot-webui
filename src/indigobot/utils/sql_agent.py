@@ -52,8 +52,12 @@ def load_urls(urls):
     :param urls: List of URLs to load documents from.
     :type urls: list
     """
-    docs = AsyncHtmlLoader(urls).load()
-    load_docs(docs)
+    loader = AsyncHtmlLoader(urls)
+    docs = loader.load()
+    if docs:
+        text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=10)
+        splits = text_splitter.split_documents(docs)
+        load_docs(splits)
 
 
 def load_docs(docs):
@@ -111,15 +115,18 @@ def query_database(query, params=()):
     try:
         conn = sqlite3.connect(GPT_DB)
         cursor = conn.cursor()
-        cursor.execute(query, params)
+        if params:
+            cursor.execute(query, params)
+        else:
+            cursor.execute(query)
         results = cursor.fetchall()
-        conn.commit()  # Ensure changes are committed
         return results
     except sqlite3.Error as e:
         print(f"Database error: {e}")
         raise
     finally:
         if 'conn' in locals():
+            conn.commit()  # Commit any changes
             conn.close()
 
 
