@@ -68,7 +68,7 @@ def load_docs(docs):
 
     conn = None
     try:
-        conn = sqlite3.connect(GEM_DB)
+        conn = sqlite3.connect(GPT_DB)
         cursor = conn.cursor()
 
         for doc in splits:
@@ -101,12 +101,26 @@ def format_docs(docs):
 
 
 def query_database(query, params=()):
-    conn = sqlite3.connect(GPT_DB)
-    cursor = conn.cursor()
-    cursor.execute(query, params)
-    results = cursor.fetchall()
-    conn.close()
-    return results
+    """
+    Execute a SQL query with optional parameters and return results
+    
+    :param query: SQL query string
+    :param params: Query parameters (optional)
+    :return: Query results
+    """
+    try:
+        conn = sqlite3.connect(GPT_DB)
+        cursor = conn.cursor()
+        cursor.execute(query, params)
+        results = cursor.fetchall()
+        conn.commit()  # Ensure changes are committed
+        return results
+    except sqlite3.Error as e:
+        print(f"Database error: {e}")
+        raise
+    finally:
+        if 'conn' in locals():
+            conn.close()
 
 
 def main():
