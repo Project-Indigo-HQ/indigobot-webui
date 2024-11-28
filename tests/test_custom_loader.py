@@ -37,7 +37,7 @@ class TestCustomLoader(unittest.TestCase):
         self.assertEqual(cleaned_docs[0].page_content, "Hello World")
         self.assertEqual(cleaned_docs[1].page_content, "Cafe")
 
-    @patch("langchain_app.custom_loader.RecursiveCharacterTextSplitter")
+    @patch("indigo.utils.custom_loader.RecursiveCharacterTextSplitter")
     def test_chunking(self, mock_splitter):
         """Test chunking function"""
         mock_splitter_instance = MagicMock()
@@ -79,7 +79,7 @@ class TestCustomLoader(unittest.TestCase):
         result = extract_text(html_content_no_main)
         self.assertEqual(result, "Other content")
 
-    @patch("langchain_app.custom_loader.RecursiveUrlLoader")
+    @patch("indigo.utils.custom_loader.RecursiveUrlLoader")
     def test_scrape_main(self, mock_loader):
         """Test scrape_main function"""
         mock_loader_instance = MagicMock()
@@ -95,8 +95,8 @@ class TestCustomLoader(unittest.TestCase):
         mock_loader_instance.load.assert_called_once()
         self.assertEqual(result, mock_docs)
 
-    @patch("langchain_app.custom_loader.AsyncHtmlLoader")
-    @patch("langchain_app.custom_loader.BeautifulSoupTransformer")
+    @patch("indigo.utils.custom_loader.AsyncHtmlLoader")
+    @patch("indigo.utils.custom_loader.BeautifulSoupTransformer")
     def test_scrape_articles(self, mock_transformer, mock_loader):
         """Test scrape_articles function"""
         mock_loader_instance = MagicMock()

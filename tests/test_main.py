@@ -1,12 +1,12 @@
 """Unit tests for base_model.py"""
 
-import pytest
 from unittest.mock import Mock, patch
 
+import pytest
 from langchain_core.messages import AIMessage, HumanMessage
 from langgraph.graph import START
 
-from indigobot import State, call_model, workflow
+from indigobot.__main__ import State, call_model, workflow
 
 
 @pytest.fixture
@@ -15,9 +15,10 @@ def test_state():
     return {
         "input": "test question",
         "chat_history": [],
-        "context": "test context", 
+        "context": "test context",
         "answer": "",
     }
+
 
 @pytest.fixture
 def mock_rag_chain():
@@ -29,12 +30,14 @@ def mock_rag_chain():
         }
         yield mock
 
+
 def test_state_class(test_state):
     """Test State class initialization and typing"""
     assert test_state["input"] == "test question"
     assert test_state["chat_history"] == []
     assert test_state["context"] == "test context"
     assert test_state["answer"] == ""
+
 
 def test_call_model(test_state, mock_rag_chain):
     """Test call_model function"""
@@ -45,7 +48,7 @@ def test_call_model(test_state, mock_rag_chain):
 
     # Check response structure
     assert "chat_history" in result
-    assert "context" in result 
+    assert "context" in result
     assert "answer" in result
 
     # Verify chat history format and content

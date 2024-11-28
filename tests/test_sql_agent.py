@@ -6,13 +6,8 @@ from unittest.mock import Mock, patch
 
 from langchain_core.documents import Document
 
-from indigobot.utils.sql_agent import (
-    DB_PATH,
-    format_docs,
-    load_docs,
-    load_urls,
-    query_database,
-)
+from indigobot.utils.sql_agent import format_docs, load_docs, load_urls, query_database
+from indigobot.config import GPT_DB
 
 
 class TestSQLAgent(unittest.TestCase):
@@ -20,10 +15,10 @@ class TestSQLAgent(unittest.TestCase):
     def setUpClass(cls):
         """Set up test database"""
         cls.test_db_path = "test_indigo_bot_db.sqlite"
-        # Temporarily override DB_PATH
-        global DB_PATH
-        cls.original_db_path = DB_PATH
-        DB_PATH = cls.test_db_path
+        # Temporarily override GPT_DB
+        global GPT_DB
+        cls.original_db_path = GPT_DB
+        GPT_DB = cls.test_db_path
 
     def setUp(self):
         """Create fresh test database before each test"""
@@ -61,9 +56,9 @@ class TestSQLAgent(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        """Restore original DB_PATH"""
-        global DB_PATH
-        DB_PATH = cls.original_db_path
+        """Restore original GPT_DB"""
+        global GPT_DB
+        GPT_DB = cls.original_db_path
 
     def test_load_docs(self):
         """Test loading documents into database"""

@@ -3,7 +3,8 @@ import os
 
 from bs4 import BeautifulSoup
 from langchain.schema import Document
-from langchain_community.document_loaders import JSONLoader
+
+from indigobot.config import RAG_DIR
 
 
 # Load each of the .html files under the "html_files/" folder
@@ -79,9 +80,7 @@ def parse_and_save(file_path):
 
     # Save extracted data as .json
     json_filename = os.path.basename(file_path).replace(".html", ".json")
-    json_folder = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "processed_text"
-    )
+    json_folder = os.path.join(RAG_DIR, "crawl_temp/processed_text")
     if not os.path.exists(json_folder):
         os.makedirs(json_folder)
     json_path = os.path.join(json_folder, json_filename)
@@ -133,8 +132,7 @@ def refine_text():
     :return: None
     """
     # Load HTML files from "html_files" directory
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    html_files_dir = os.path.join(script_dir, "html_files")
+    html_files_dir = os.path.join(RAG_DIR, "crawl_temp/html_files")
     html_files = load_html_files(html_files_dir)
 
     # Parse and save JSON content for each HTML file individually

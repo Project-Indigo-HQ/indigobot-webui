@@ -6,6 +6,7 @@ It currently gets responses from Gpt4o, Gemini, and Claude, though more models c
 
 import json
 import os
+import readline
 import sqlite3
 
 from langchain import hub
@@ -16,18 +17,16 @@ from langchain_community.document_loaders import AsyncHtmlLoader
 from langchain_community.utilities import SQLDatabase
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import Runnable, RunnableLambda
-from indigobot.config import GEM_DB, Models
 
-llm = Models.CLAUDE
+from indigobot.config import GEM_DB, GPT_DB, llms
 
-# Ensure directory exists
-os.makedirs(os.path.dirname(GEM_DB), exist_ok=True)
+llm = llms["gpt"]
 
 
 def init_db():
     """Initialize the SQLite database with required tables"""
     try:
-        conn = sqlite3.connect(GEM_DB)
+        conn = sqlite3.connect(GPT_DB)
         cursor = conn.cursor()
         cursor.execute(
             """
@@ -40,16 +39,10 @@ def init_db():
         )
         conn.commit()
         conn.close()
-        return SQLDatabase.from_uri(f"sqlite:///{GEM_DB}", include_tables=["documents"])
+        return SQLDatabase.from_uri(f"sqlite:///{GPT_DB}", include_tables=["documents"])
     except Exception as e:
         print(f"Error initializing database: {e}")
         raise
-
-
-db = init_db()
-
-toolkit = SQLDatabaseToolkit(db=db, llm=llm)  # create llm toolkit
-agent = create_sql_agent(llm=llm, toolkit=toolkit, verbose=True)  # create agent
 
 
 def load_urls(urls):
@@ -108,7 +101,7 @@ def format_docs(docs):
 
 
 def query_database(query):
-    conn = sqlite3.connect(GEM_DB)
+    conn = sqlite3.connect(GPT_DB)
     cursor = conn.cursor()
     cursor.execute(query)
     results = cursor.fetchall()
@@ -117,6 +110,14 @@ def query_database(query):
 
 
 def main():
+    # Ensure directory exists
+    os.makedirs(os.path.dirname(GPT_DB), exist_ok=True)
+
+    db = init_db()
+
+    toolkit = SQLDatabaseToolkit(db=db, llm=llm)  # create llm toolkit
+    agent = create_sql_agent(llm=llm, toolkit=toolkit, verbose=True)  # create agent
+
     retriever = RunnableLambda(
         lambda query=f"SELECT text FROM documents": query_database(query)
     )
@@ -125,15 +126,6 @@ def main():
     prompt = hub.pull("rlm/rag-prompt")
 
     rag_chain = retriever | formatted_docs_runnable | prompt | llm | StrOutputParser()
-
-    print("What kind of questions do you have about the following resources?")
-    # iterate over documents and dump metadata
-    document_data_sources = set()
-    for doc_metadata in query_database("SELECT metadata FROM documents"):
-        metadata_dict = json.loads(doc_metadata[0])  # JSON to dict
-        document_data_sources.add(metadata_dict.get("source", "Unknown"))
-    for doc in document_data_sources:
-        print(f"  {doc}")
 
     while True:
         line = input("llm>> ")

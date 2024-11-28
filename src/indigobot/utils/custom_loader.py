@@ -4,6 +4,7 @@ It uses PyPDFLoader as a PDF loader and Chroma as a vector database.
 It loads local PDFs, Python files, and also checks web pages to scrape and consume data.
 """
 
+import os
 import re
 import ssl
 
@@ -14,7 +15,8 @@ from langchain_community.document_loaders import AsyncHtmlLoader
 from langchain_community.document_loaders.recursive_url_loader import RecursiveUrlLoader
 from langchain_community.document_transformers import BeautifulSoupTransformer
 
-from indigobot.config import urls, r_urls, vectorstores
+from indigobot.config import CRAWLER_DIR, r_urls, urls, vectorstores
+from indigobot.utils import jf_crawler, refine_html
 
 vectorstores = (vectorstores["gpt"], vectorstores["gemini"])
 
@@ -171,6 +173,25 @@ def scrape_urls(url_list, vectorstore):
         docs = scrape_main(url, 12)
         chunks = chunking(docs)
         add_documents(vectorstore, chunks, 300)
+
+
+def jf_loader():
+    """
+    Fetches and refines documents from the CCC source and loads them into the vector database.
+    """
+
+    # Fetching document from CCC the save to for further process
+    jf_crawler.crawl()  # switch back
+
+    # Refine text, by removing meanless conent from the XML files
+    refine_html.refine_text()  # switch back
+
+    # Load the content into vectorstored database
+    json_files_dir = os.path.join(CRAWLER_DIR, "processed_text")
+    JSON_files = refine_html.load_JSON_files(json_files_dir)
+    print(f"Loaded {len(JSON_files)} documents.")
+
+    load_docs(JSON_files)
 
 
 def main():

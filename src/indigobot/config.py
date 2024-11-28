@@ -10,10 +10,9 @@ import os
 from typing import Final, List
 
 from langchain_anthropic import ChatAnthropic
+from langchain_chroma import Chroma
 from langchain_google_genai import GoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-from langchain_chroma import Chroma
-
 
 llms = {
     "gpt": ChatOpenAI(model="gpt-4o"),
@@ -27,6 +26,7 @@ RAG_DIR: Final[str] = os.path.join(CURRENT_DIR, "rag_data")
 CHROMA_DIR: Final[str] = os.path.join(RAG_DIR, ".chromadb")
 GEM_DB: Final[str] = os.path.join(CHROMA_DIR, "gemini/chroma.sqlite3")
 GPT_DB: Final[str] = os.path.join(CHROMA_DIR, "openai/chroma.sqlite3")
+CRAWLER_DIR: Final[str] = os.path.join(CURRENT_DIR, "utils/jf_crawler")
 
 # OpenAI embeddings
 try:

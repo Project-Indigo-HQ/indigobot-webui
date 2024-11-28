@@ -10,14 +10,13 @@ from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.tools.retriever import create_retriever_tool
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import START, StateGraph
 from langgraph.graph.message import add_messages
 from typing_extensions import Annotated, TypedDict
 
 from indigobot.config import llms, vectorstores
-from utils import custom_loader
+from indigobot.utils import custom_loader
 
 llm = llms["gpt"]
 

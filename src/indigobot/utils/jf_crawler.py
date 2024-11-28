@@ -6,7 +6,8 @@ import xml.etree.ElementTree as ET
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
-from indigobot.config import sitemaps
+
+from indigobot.config import RAG_DIR, sitemaps
 
 
 # create a REST session
@@ -114,8 +115,7 @@ def download_and_save_html(urls, session):
             # Extract last section of url as file name
             filename = url.rstrip("/").split("/")[-1] + ".html"
 
-            script_dir = os.path.dirname(os.path.abspath(__file__))
-            html_files_dir = os.path.join(script_dir, "html_files")
+            html_files_dir = os.path.join(RAG_DIR, "crawl_temp/html_files")
             if not os.path.exists(html_files_dir):
                 os.makedirs(html_files_dir)
 
@@ -148,11 +148,11 @@ def parse_url_and_save(sitemap_url, target_file_name, session):
         print(url)
 
     # Ensure 'urls' directory exists
-    if not os.path.exists("extracted_urls"):
-        os.makedirs("extracted_urls")
+    if not os.path.exists(os.path.join(RAG_DIR, "crawl_temp/extracted_urls")):
+        os.makedirs("crawl_temp/extracted_urls")
 
     # Save URLs to a file
-    with open(f"extracted_urls/{target_file_name}.txt", "w") as file:
+    with open(f"crawl_temp/extracted_urls/{target_file_name}.txt", "w") as file:
         for url in urls:
             file.write(url + "\n")
     time.sleep(5)

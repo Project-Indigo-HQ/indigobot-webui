@@ -11,9 +11,10 @@ from langchain_core.chat_history import InMemoryChatMessageHistory
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_experimental.tools import PythonREPLTool
-from indigobot.config import Models
 
-llm = Models.CLAUDE
+from indigobot.config import llms
+
+llm = llms["gpt"]
 
 memory = InMemoryChatMessageHistory(session_id="test-session")
 
