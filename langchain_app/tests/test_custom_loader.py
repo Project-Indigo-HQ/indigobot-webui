@@ -40,11 +40,11 @@ def test_clean_documents():
 def test_chunking():
     """Test the chunking function"""
     # Create a test document with content longer than chunk size
-    long_text = " ".join(["word"] * 2000)  # Create text longer than chunk size
+    long_text = " ".join(["word"] * 20000)  # Create much longer text
     docs = [Document(page_content=long_text, metadata={})]
-    
+        
     chunks = chunking(docs)
-    
+        
     assert len(chunks) > 1  # Should split into multiple chunks
     assert all(len(chunk.page_content) <= 10000 for chunk in chunks)  # Check chunk sizes
 
