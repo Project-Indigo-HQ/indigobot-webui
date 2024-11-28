@@ -13,7 +13,7 @@ Submodules
 ----------
 
 indigobot.config module
-----------------------
+-----------------------
 
 .. automodule:: indigobot.config
    :members:
@@ -21,7 +21,7 @@ indigobot.config module
    :show-inheritance:
 
 indigobot.main module
---------------------
+---------------------
 
 .. automodule:: indigobot.__main__
    :members:
@@ -29,7 +29,7 @@ indigobot.main module
    :show-inheritance:
 
 Module contents
---------------
+---------------
 
 .. automodule:: indigobot
    :members:
