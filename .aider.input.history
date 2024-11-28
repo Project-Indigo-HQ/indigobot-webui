@@ -1,0 +1,567 @@
+
+# 2024-11-27 19:11:08.360648
++Y
+
+# 2024-11-27 19:11:56.850056
++N
+
+# 2024-11-27 19:12:38.422643
++examine the base_model.py application. I've been attempting to add a restapi to the application
+
+# 2024-11-27 19:12:54.469735
++Y
+
+# 2024-11-27 19:15:04.215333
++N
+
+# 2024-11-27 19:15:10.500644
++examine the base_model.py application. I've been attempting to add a restapi to the application
+
+# 2024-11-27 19:15:12.779776
++Y
+
+# 2024-11-27 19:16:28.831673
++examine the base_model.py application. I've been attempting to add a restapi to the application
+
+# 2024-11-27 19:16:31.279572
++Y
+
+# 2024-11-27 19:17:18.577805
++/run uvicorn langchain_app.base_model:app --reload
+
+# 2024-11-27 19:17:18.577883
++/run uvicorn langchain_app.base_model:app --reload
+
+# 2024-11-27 19:17:40.322478
++Y
+
+# 2024-11-27 19:17:49.240207
++/run curl -X POST "http://localhost:8000/query" -H "Content-Type: application/json" -d '{"input":"What are LLM agents?"}'
+
+# 2024-11-27 19:17:49.240286
++/run curl -X POST "http://localhost:8000/query" -H "Content-Type: application/json" -d '{"input":"What are LLM agents?"}'
+
+# 2024-11-27 19:18:01.298107
++Y
+
+# 2024-11-27 19:20:45.310747
++run the application
+
+# 2024-11-27 19:21:39.041161
++N
+
+# 2024-11-27 19:21:52.811509
++which directory are we in?
+
+# 2024-11-27 19:22:02.651297
++Y
+
+# 2024-11-27 19:22:02.658112
++/run pwd && ls
+
+# 2024-11-27 19:22:02.658188
++/run pwd && ls
+
+# 2024-11-27 19:22:14.127571
++N
+
+# 2024-11-27 19:22:19.189797
++Run the app directly
+
+# 2024-11-27 19:22:29.559818
++N
+
+# 2024-11-27 19:22:38.182562
++Run python base_model.py
+
+# 2024-11-27 19:22:59.666695
++Y
+
+# 2024-11-27 19:22:59.673318
++/run cd langchain_app && python base_model.py
+
+# 2024-11-27 19:22:59.673397
++/run cd langchain_app && python base_model.py
+
+# 2024-11-27 19:23:09.763005
++N
+
+# 2024-11-27 19:23:32.620385
++you are confused about the directory lineup.View the whole directory.
+
+# 2024-11-27 19:23:50.258221
++Y
+
+# 2024-11-27 19:23:50.265314
++/run pwd && tree -L 2
+
+# 2024-11-27 19:23:50.265386
++/run pwd && tree -L 2
+
+# 2024-11-27 19:24:01.550562
++Y
+
+# 2024-11-27 19:29:13.307537
++i ran this python base_model.py. I checked a browser and it said this {"status":"healthy","message":"RAG API is running!","version":"1.0.0"}. I curled with this curl -X POST "http://127.0.0.1:8000/query" \
++-H "Content-Type: application/json" \
++-d '{"input": "What is the purpose of this system?", "chat_history": []}' and got this back {"detail":"Error processing query: \"Input to ChatPromptTemplate is missing variables {'chat_history'}.  Expected: ['chat_history', 'context', 'input'] Received: ['input', 'context']\\nNote: if you intended {chat_history} to be part of the string and not a variable, please escape it with double curly braces like: '{{chat_history}}'.\\nFor troubleshooting, visit: https://python.langchain.com/docs/troubleshooting/errors/INVALID_PROMPT_INPUT \""}
+
+# 2024-11-27 19:29:17.552894
++Y
+
+# 2024-11-27 19:30:50.814435
++N
+
+# 2024-11-27 19:31:11.498632
++run python base_model.py
+
+# 2024-11-27 19:31:42.418985
++Y
+
+# 2024-11-27 19:31:42.425830
++/run python base_model.py
+
+# 2024-11-27 19:31:42.425911
++/run python base_model.py
+
+# 2024-11-27 19:32:19.191988
++n
+
+# 2024-11-27 19:32:26.369400
++/run python base_model.py
+
+# 2024-11-27 19:34:31.480771
++Y
+
+# 2024-11-27 19:35:06.205456
++/run python base_model.py
+
+# 2024-11-27 19:36:38.780924
++Y
+
+# 2024-11-27 19:37:05.276571
++So I ran the curl command in another terminal: curl -X POST "http://127.0.0.1:8000/query" -H "Content-Type: application/json" -d '{"input": "What is the purpose of this system?"}'
++{"detail":"Error processing query: Error code: 400 - {'error': {'message': \"This model's maximum context length is 8192 tokens. However, your messages resulted in 10006 tokens. Please reduce the length of the messages.\", 'type': 'invalid_request_error', 'param': 'messages', 'code': 'context_length_exceeded'}}"}
+
+# 2024-11-27 19:37:09.157245
++Y
+
+# 2024-11-27 19:37:47.999737
++/run python base_model.py
+
+# 2024-11-27 19:37:47.999820
++/run python base_model.py
+
+# 2024-11-27 19:38:42.908182
++n
+
+# 2024-11-27 19:38:54.944182
++curl -X POST "http://127.0.0.1:8000/query" -H "Content-Type: application/json" -d '{"input": "What is the purpose of this system?"}'
++{"detail":"Error processing query: Collection.query() got an unexpected keyword argument 'fetch_k'"}
+
+# 2024-11-27 19:39:00.749393
++D
+
+# 2024-11-27 19:41:26.829108
++Y
+
+# 2024-11-27 19:41:26.835856
++/run python base_model.py
+
+# 2024-11-27 19:41:26.835922
++/run python base_model.py
+
+# 2024-11-27 19:42:15.973907
++n
+
+# 2024-11-27 19:42:28.598910
++d
+
+# 2024-11-27 19:42:52.321871
++curl -X POST "http://127.0.0.1:8000/query" -H "Content-Type: application/json" -d '{"input": "What is the purpose of this system?"}'
++{"detail":"Error processing query: 1 validation error for QueryResponse\ncontext\n  Input should be a valid string [type=string_type, input_value=[Document(metadata={'sour...176019\",\"phone\":\"Main')], input_type=list]\n    For further information visit https://errors.pydantic.dev/2.10/v/string_type"}
+
+# 2024-11-27 19:43:00.480038
++Y
+
+# 2024-11-27 19:43:14.246023
++/run python base_model.py
+
+# 2024-11-27 19:43:14.246100
++/run python base_model.py
+
+# 2024-11-27 19:47:31.423984
++n
+
+# 2024-11-27 19:48:12.798269
++so it worked that time but it printed all the context: curl -X POST "http://127.0.0.1:8000/query" -H "Content-Type: application/json" -d '{"input": "What is the purpose of this system?"}'
++{"answer":"The system provides information about various services and organizations in Portland, such as health and wellness centers, housing and shelter facilities, legal services, food assistance, and specialized resources for specific communities like veterans or LGBTQ+ individuals. It includes details like the service descriptions, operation hours, contact details, and locations of these organizations.","context":"Intergroup\",\"listing\":\"Portland Area Intergroup\",\"service_description\":\"Available 24/7 for those seeking help. Learn more about AA and find a meeting. \",\"street\":null,\"street2\":\"\",\"city\":null,\"postal_code\":null,\"website\":\"http://home.pdxaa.org/\",\"hours\":\"Hours: 24/7\",\"lon\":\"N/A\",\"lat\":\"\",\"phone\":\"Main Line:503-223-8569\",\"id\":324},{\"general_category\":\"Housing & Shelter\",\"main_category\":\"Shelters\",\"parent_organization\":\"Portland Homeless Family Solutions\",\"listing\":\"Portland Homeless Family Solutions\",\"service_description\":\"Previously known as Portland Homeless Family Solutions Family Village for homeless families. Path Homes Family Village is a shelter for 17 homeless families with children open every day of the year, 24 hours a day. Meals, showers, laundry, computers, internet, and rapid re-housing support in addition to family recreation spaces and child play areas. Designed using trauma-informed design & architecture, the shelter is a very calm and peaceful environment. Families must have children under age 18 in their care to qualify, and must be experiencing homelessness. To access this shelter program, call 211 to be put on the Homeless Family System Waitlist. \",\"street\":\"6220 SE 92nd Ave\",\"street2\":\"\",\"city\":\"\",\"postal_code\":\"\",\"website\":\"https://www.path-home.org/\",\"hours\":\"\",\"lon\":\"-122.568361\",\"lat\":\"45.4779838\",\"phone\":\"Main Line:503-915-8306\",\"id\":325},{\"general_category\":\"Health & Wellness\",\"main_category\":\"Health Care\",\"parent_organization\":\"Portland Peoples Outreach Project\",\"listing\":\"Portland Peoples Outreach Project\",\"service_description\":\"Provides syringes, injection supplies, Naloxone and other items. Dirty syringes not required\\nto receive supplies.\",\"street\":null,\"street2\":\"\",\"city\":null,\"postal_code\":null,\"website\":\"www.portlandpeoplesoutreach.org\",\"hours\":\"Bicycle outreach on inner East side and downtown, hours: 5:45-8:30 p.m. Fri.; outreach in St. Johns at bike trail near N Lombard St. and N Macrum Rd, hours: 1-4 p.m. Sat.; foot outreach in Hollywood, Old Town and South Park Blocks, hours: 2:30- 5:30 p.m. Sun.\",\"lon\":\"-122.6780076\",\"lat\":\"45.5158686\",\"phone\":\"Main Line:503-765-7767\",\"id\":326},{\"general_category\":\"Health & Wellness\",\"main_category\":\"Syringe Exchange\",\"parent_organization\":\"Portland Peoples Outreach Project\",\"listing\":\"Portland Peoples Outreach Project\",\"service_description\":\"Provides syringes, injection supplies, Naloxone and other items. Used syringes not required to receive supplies. Bicycle, driving and foot outreach:\\nPortland and downtown. Friday Evenings - Drop-in and Bike Outreach:\\n6- 9 p.m.: Warehouse drop-in open (call (503) 765-7767 for address)\\n7:25 -7:50 p.m.: Greyhound/Bud Clark NW 6th & Hoyt\\n8-8:30 p.m.: NW 19th & Couch in McDonalds\\nSaturday Afternoons - St. Johns Site:\\n1-4 p.m.: St. Johns - The Cut (Peninsula Crossing Trail), on the bike path just west of N. Lombard & Macrum\\nSunday Afternoons - Driving/Foot Outreach:\\n2:30-3:15 p.m.: Hollywood Transit Center – end of NE Weidler off 42nd\\n3-4:30 p.m.: South Park Blocks - SW Park & Jefferson\\n4-5:30 p.m.PM: Greyhound/Bud Clark\\nVisit www.portlandpeoplesoutreach.org for outreach schedule.\\n\",\"street\":null,\"street2\":\"\",\"city\":null,\"postal_code\":null,\"website\":\"www.portlandpeoplesoutreach.org\",\"hours\":\"\",\"lon\":\"N/A\",\"lat\":\"\",\"phone\":\"Main Line:503-765-7767\",\"id\":327},{\"general_category\":\"Health & Wellness\",\"main_category\":\"Recovery Services\",\"parent_organization\":\"Portland Rescue Mission \",\"listing\":\"Portland Rescue Mission, New Life Recovery\",\"service_description\":\"Five week to 12-month residential recovery and discipleship program. For intake information for women (children younger than 10 welcome), Shepherds Door Womens Recovery Program 13207 NE Halsey Blvd, , call intake line: 503-746-9743. For men, The Harbor, Mens Recovery Program 10336 NE Wygant, call 503-746-9664 or visit 9-11 a.m., Tuesday or Thursday at Burnside location 111 W. Burnside. \",\"street\":\"111 W Burnside St.\",\"street2\":\"\",\"city\":\"Portland\",\"postal_code\":\"97209\",\"website\":\"www.portlandrescuemission.org\",\"hours\":\"\",\"lon\":\"-122.671646\",\"lat\":\"45.5233677\",\"phone\":\"Main Line:503-906-7690,Mens Recovery Line:503-746-9664,Womens Intake Line:503-746-9743\",\"id\":329},{\"general_category\":\"Day Services\",\"main_category\":\"Day Services / Hospitality\",\"parent_organization\":\"Portland Rescue Mission \",\"listing\":\"Portland Rescue Mission, New Life Recovery\",\"service_description\":\"24/7 drop-in services for any individual. Restrooms, sinks, hygiene products, socks, water fountain and water bottle filling station, crisis care, and information about houseless services available in the city. Mail services available 24/7. \",\"street\":\"111 W Burnside St.\",\"street2\":\"\",\"city\":\"Portland\",\"postal_code\":\"97209\",\"website\":\"www.portlandrescuemission.org\",\"hours\":\"Drop-in hours: 24/7\",\"lon\":\"-122.671646\",\"lat\":\"45.5233677\",\"phone\":null,\"id\":330},{\"general_category\":\"Housing & Shelter\",\"main_category\":\"Shelters\",\"parent_organization\":\"Portland Rescue Mission \",\"listing\":\"Portland Rescue Mission, New Life Recovery\",\"service_description\":\"Free overnight emergency shelter for men. Open space provided nightly, as available. Spaces are maintained for guests who return nightly. Showers and clothing provided daily from 2:00pm-4:00pm to those staying in the shelter. Requests for available space can be made from 8:00am-4:30pm. All requests are randomized, and selections are announced by 5:00pm. Check- in at 8:00pm nightly. \",\"street\":\"111 W Burnside St.\",\"street2\":\"\",\"city\":\"Portland\",\"postal_code\":\"97209\",\"website\":\"www.portlandrescuemission.org\",\"hours\":\"Requests for available space can be made\\nfrom 8:00am-4:30pm. All requests are randomized, and selections are\\nannounced by 5:00pm. Shower and clothing provided daily from 2:00pm-4:00pm. \",\"lon\":\"-122.671646\",\"lat\":\"45.5233677\",\"phone\":\"Main Line:503-906-7690\",\"id\":331},{\"general_category\":\"Day Services\",\"main_category\":\"Portland Restrooms\",\"parent_organization\":\"Portland Rescue Mission \",\"listing\":\"Portland Rescue Mission, New Life Recovery\",\"service_description\":\"24/7 drop-in services for any individual. Restrooms, sinks, hygiene products, socks, water fountain and water bottle filling station, crisis care, and information about houseless services available in the city. \",\"street\":\"111 W Burnside St.\",\"street2\":\"\",\"city\":\"Portland\",\"postal_code\":\"97209\",\"website\":\"www.portlandrescuemission.org\",\"hours\":\"Hours: 24/7\",\"lon\":\"-122.671646\",\"lat\":\"45.5233677\",\"phone\":null,\"id\":332},{\"general_category\":\"Food\",\"main_category\":\"Meals\",\"parent_organization\":\"Portland Rescue Mission \",\"listing\":\"Portland Rescue Mission, New Life Recovery\",\"service_description\":\"Meals offered: Dining Room hosting breakfast. Robust, hot meals provided, with an indoor waiting area.\",\"street\":\"111 W Burnside St.\",\"street2\":\"\",\"city\":\"Portland\",\"postal_code\":\"97209\",\"website\":\"www.portlandrescuemission.org\",\"hours\":\"(7-8AM) and dinner (6-7PM) - 7 days a week, 365 days a year\",\"lon\":\"-122.671646\",\"lat\":\"45.5233677\",\"phone\":\"Main Line:503-906-7690\",\"id\":333},{\"general_category\":\"Housing & Shelter\",\"main_category\":\"Housing Services\",\"parent_organization\":\"Portland Rescue Mission \",\"listing\":\"Portland Rescue Mission, New Life Recovery\",\"service_description\":\"Clean and sober transitional housing programs for men. \",\"street\":\"111 W Burnside St.\",\"street2\":\"\",\"city\":\"Portland\",\"postal_code\":\"97209\",\"website\":\"www.portlandrescuemission.org\",\"hours\":\"Orientation Hours: 1 p.m. Mon., Wed.\",\"lon\":\"-122.671646\",\"lat\":\"45.5233677\",\"phone\":\"Main Line:503-906-7690\",\"id\":334},{\"general_category\":\"Goods\",\"main_category\":\"Clothing\",\"parent_organization\":\"Portland Rescue Mission \",\"listing\":\"Portland Rescue Mission, New Life Recovery\",\"service_description\":\"Mens clothing provided from 1-2 p.m. on Tuesday, must sign up between 8 a.m.-12 p.m.Tues. Clothing  also offered as needed to overnight dormitory guests and in emergency situations, 24/7. \\n\",\"street\":\"111 W Burnside St.\",\"street2\":\"\",\"city\":\"Portland\",\"postal_code\":\"97209\",\"website\":\"www.portlandrescuemission.org\",\"hours\":\"Hours: Clothing 1-2 p.m. on Tuesday\\nMeal Hours: breakfast 7 a.m; dinner 6 p.m. Socks and general hygiene items available 24/7.\",\"lon\":\"-122.671646\",\"lat\":\"45.5233677\",\"phone\":\"Main Line:503-906-7690\",\"id\":335},{\"general_category\":\"\",\"main_category\":\"\",\"parent_organization\":\"Portland Street Response\",\"listing\":\"Portland Street Response\",\"service_description\":\"Call 911 or the non-emergency Line: 503-833-3333\\nPortland Street Response is a mobile crisis //and much more of this
+
+# 2024-11-27 19:48:17.437897
++N
+
+# 2024-11-27 19:48:55.042918
++run
+
+# 2024-11-27 19:49:12.192089
++/run python base_model.py
+
+# 2024-11-27 19:51:29.632505
++N
+
+# 2024-11-27 19:52:50.388239
++what part of the program is making it print all the context info? curl -X POST "http://127.0.0.1:8000/query" -H "Content-Type: application/json" -d '{"input": "What is the purpose of this system?"}'
++{"answer":"The purpose of this system is to provide information about various resources and services available in Portland, Oregon. These services range across multiple categories including housing & shelter, health & wellness, legal assistance, employment & training, food assistance, and specialized assistance for groups like veterans or the LGBTQ+ community.","context":"Supporting context:\nIntergroup\",\"listing\":\"Portland Area Intergroup\",\"service_description\":\"Available 24/7 for those seeking help. Learn more about AA and find a meeting. \",\"street\":null,\"street2\":\"\",\"city\":null,\"postal_...\n\nSource: through Friday 9:30 a.m.-6 p.m.\",\"lon\":\"N/A\",\"lat\":\"\",\"phone\":\"503-833-3333,:911\",\"id\":336},{\"general_category\":\"Specialized Assistance\",\"main_category\":\"Veterans Services\",\"parent_organization\":\"Port...\n\nSource: 10 a.m.-7 p.m. Mon.-Sun.\",\"lon\":\"-122.652601\",\"lat\":\"45.5792351\",\"phone\":\"Main Line:503-285-7722\",\"id\":297},{\"general_category\":\"Care & Safety\",\"main_category\":\"
+
+# 2024-11-27 19:54:53.934082
++I don't know if I want context display back to me
+
+# 2024-11-27 19:55:22.721860
++/run python base_model.py
+
+# 2024-11-28 01:46:20.051744
++how would I test base_model.py from another machine? This is an ubuntu vm.
+
+# 2024-11-28 01:46:23.019302
++Y
+
+# 2024-11-28 01:46:45.529405
++n
+
+# 2024-11-28 02:32:13.771150
++I want to test the base_model.py app from a different machine. We are on an ubuntu vm fyi/
+
+# 2024-11-28 02:32:16.776468
++y
+
+# 2024-11-28 02:32:52.899878
++Y
+
+# 2024-11-28 02:32:52.905686
++/run ip addr show | grep -w inet
+
+# 2024-11-28 02:32:52.905761
++/run ip addr show | grep -w inet
+
+# 2024-11-28 02:32:53.028188
++/run python -m langchain_app.base_model
+
+# 2024-11-28 02:32:53.028285
++/run python -m langchain_app.base_model
+
+# 2024-11-28 02:32:53.167823
++/run PORT=8080 python -m langchain_app.base_model
+
+# 2024-11-28 02:32:53.167914
++/run PORT=8080 python -m langchain_app.base_model
+
+# 2024-11-28 02:33:10.666549
++Y
+
+# 2024-11-28 02:33:51.516072
++run the program
+
+# 2024-11-28 02:34:08.740196
++PORT=8080 python langchain_app/base_model.py 
+
+# 2024-11-28 02:34:39.019575
++Y
+
+# 2024-11-28 02:34:46.090523
++/run pip install -r requirements.txt
+
+# 2024-11-28 02:34:46.090603
++/run pip install -r requirements.txt
+
+# 2024-11-28 02:34:52.244208
++Y
+
+# 2024-11-28 02:34:56.314925
++/run PORT=8080 python langchain_app/base_model.py
+
+# 2024-11-28 02:34:56.315043
++/run PORT=8080 python langchain_app/base_model.py
+
+# 2024-11-28 02:35:08.223809
++Y
+
+# 2024-11-28 02:35:13.567103
++N
+
+# 2024-11-28 02:35:32.497468
++We are in the langchain_app directory. just run the program normally.
+
+# 2024-11-28 02:35:40.433403
++Y
+
+# 2024-11-28 02:35:40.438654
++/run PORT=8080 python base_model.py
+
+# 2024-11-28 02:35:40.438732
++/run PORT=8080 python base_model.py
+
+# 2024-11-28 02:37:43.737590
++N
+
+# 2024-11-28 02:37:56.667981
++how should I test this application from another machine?
+
+# 2024-11-28 02:38:10.538855
++N
+
+# 2024-11-28 02:38:13.981588
++/run PORT=8080 python base_model.py
+
+# 2024-11-28 02:39:06.875593
++n
+
+# 2024-11-28 02:39:08.795879
++/run PORT=8080 python base_model.py
+
+# 2024-11-28 02:40:24.627340
++n
+
+# 2024-11-28 02:40:26.526003
++/run PORT=8080 python base_model.py
+
+# 2024-11-28 02:41:44.644172
++n
+
+# 2024-11-28 02:41:45.921852
++/run PORT=8080 python base_model.py
+
+# 2024-11-28 02:42:15.743031
++n
+
+# 2024-11-28 02:42:26.159097
++/run python base_model.py
+
+# 2024-11-28 02:43:52.564521
++n
+
+# 2024-11-28 02:44:07.267366
++attempting to curl from a different machine is not working.
+
+# 2024-11-28 02:44:44.045395
++y
+
+# 2024-11-28 02:44:44.052152
++/run sudo ufw status
+
+# 2024-11-28 02:44:44.052235
++/run sudo ufw status
+
+# 2024-11-28 02:44:44.197429
++/run sudo ufw allow 8080/tcp
+
+# 2024-11-28 02:44:44.197538
++/run sudo ufw allow 8080/tcp
+
+# 2024-11-28 02:44:44.321108
++/run sudo ufw status
+
+# 2024-11-28 02:44:44.321208
++/run sudo ufw status
+
+# 2024-11-28 02:44:52.690665
++y
+
+# 2024-11-28 02:45:00.165894
++/run PORT=8080 python base_model.py
+
+# 2024-11-28 02:45:00.165975
++/run PORT=8080 python base_model.py
+
+# 2024-11-28 02:45:19.788629
++y
+
+# 2024-11-28 02:45:25.780670
++s
+
+# 2024-11-28 02:45:38.692235
++revert the last itteration of changes
+
+# 2024-11-28 02:45:56.310783
++n
+
+# 2024-11-28 02:45:58.279723
++s
+
+# 2024-11-28 02:46:03.929168
++this is a gcp vm. 
+
+# 2024-11-28 02:46:22.584816
++n
+
+# 2024-11-28 02:46:28.612868
++34.83.184.65 this is the external IP
+
+# 2024-11-28 02:46:58.085046
++y
+
+# 2024-11-28 02:46:58.091847
++/run curl http://34.83.184.65:8080/
+
+# 2024-11-28 02:46:58.091929
++/run curl http://34.83.184.65:8080/
+
+# 2024-11-28 02:47:41.716616
++/run curl -X POST http://34.83.184.65:8080/query \
+
+# 2024-11-28 02:47:41.716747
++/run curl -X POST http://34.83.184.65:8080/query \
+
+# 2024-11-28 02:47:45.905958
++/run -H "Content-Type: application/json" \
+
+# 2024-11-28 02:47:45.906053
++/run -H "Content-Type: application/json" \
+
+# 2024-11-28 02:47:46.023873
++/run -d '{"input": "What are the key concepts of LLM agents?"}'
+
+# 2024-11-28 02:47:46.023984
++/run -d '{"input": "What are the key concepts of LLM agents?"}'
+
+# 2024-11-28 02:47:46.140553
++/run curl http://34.83.184.65:8080/sources
+
+# 2024-11-28 02:47:46.140659
++/run curl http://34.83.184.65:8080/sources
+
+# 2024-11-28 02:47:54.173310
++n
+
+# 2024-11-28 02:47:56.005841
++y
+
+# 2024-11-28 02:47:56.011444
++/run gcloud compute firewall-rules create allow-fastapi \
+
+# 2024-11-28 02:47:56.011526
++/run gcloud compute firewall-rules create allow-fastapi \
+
+# 2024-11-28 02:47:59.177728
++/run --direction=INGRESS \
+
+# 2024-11-28 02:47:59.177834
++/run --direction=INGRESS \
+
+# 2024-11-28 02:47:59.292502
++/run --priority=1000 \
+
+# 2024-11-28 02:47:59.292600
++/run --priority=1000 \
+
+# 2024-11-28 02:47:59.406604
++/run --network=default \
+
+# 2024-11-28 02:47:59.406692
++/run --network=default \
+
+# 2024-11-28 02:47:59.521228
++/run --action=ALLOW \
+
+# 2024-11-28 02:47:59.521317
++/run --action=ALLOW \
+
+# 2024-11-28 02:47:59.635885
++/run --rules=tcp:8080 \
+
+# 2024-11-28 02:47:59.635986
++/run --rules=tcp:8080 \
+
+# 2024-11-28 02:47:59.751100
++/run --source-ranges=0.0.0.0/0
+
+# 2024-11-28 02:47:59.751208
++/run --source-ranges=0.0.0.0/0
+
+# 2024-11-28 02:48:07.287581
++gcloud compute firewall-rules create allow-fastapi \
++    --direction=INGRESS \                           
++    --priority=1000 \                               
++    --network=default \                             
++    --action=ALLOW \                                
++    --rules=tcp:8080 \                              
++    --source-ranges=0.0.0.0/0    
+
+# 2024-11-28 02:48:14.967097
++y
+
+# 2024-11-28 02:48:14.973863
++/run gcloud compute firewall-rules create allow-fastapi --direction=INGRESS --priority=1000 --network=default --action=ALLOW --rules=tcp:8080 --source-ranges=0.0.0.0/0
+
+# 2024-11-28 02:48:14.973954
++/run gcloud compute firewall-rules create allow-fastapi --direction=INGRESS --priority=1000 --network=default --action=ALLOW --rules=tcp:8080 --source-ranges=0.0.0.0/0
+
+# 2024-11-28 02:48:19.863271
++y
+
+# 2024-11-28 02:48:24.819914
++/run gcloud compute firewall-rules describe allow-fastapi
+
+# 2024-11-28 02:48:24.819987
++/run gcloud compute firewall-rules describe allow-fastapi
+
+# 2024-11-28 02:48:28.559885
++y
+
+# 2024-11-28 03:19:48.997481
++base_model.py is only accessible locally or using the internal IP. We are currently working on a gcp ubuntu vm. Could it be a firewall issue?
+
+# 2024-11-28 03:19:55.227596
++Y
+
+# 2024-11-28 03:20:37.795573
++n
+
+# 2024-11-28 03:20:54.671102
++# Tag your VM instance to apply the firewall rule                                                                     
++ gcloud compute instances add-tags $(hostname) --tags=fastapi-server     run this
+
+# 2024-11-28 03:21:17.651932
++y
+
+# 2024-11-28 03:21:17.657820
++/run gcloud compute instances add-tags $(hostname) --tags=fastapi-server
+
+# 2024-11-28 03:21:17.657897
++/run gcloud compute instances add-tags $(hostname) --tags=fastapi-server
+
+# 2024-11-28 03:21:35.610802
++Y
+
+# 2024-11-28 03:21:37.868285
++n
+
+# 2024-11-28 03:23:10.643211
++/run python base_model.py
+
+# 2024-11-28 03:26:52.663027
++n
+
+# 2024-11-28 03:27:18.145769
++ C:\Users\Avesta>curl http://34.83.184.65:8000/
++{"status":"healthy","message":"RAG API is running!","version":"1.0.0"}
++C:\Users\Avesta>curl -X POST "http://34.83.184.65:8000/query" -H "Content-Type: application/json" -d '{"input": "Where can I get food?", "chat_history": []}'
++{"detail":[{"type":"json_invalid","loc":["body",0],"msg":"JSON decode error","input":{},"ctx":{"error":"Expecting value"}}]}curl: (3) URL rejected: Malformed input to a URL function
++curl: (3) URL rejected: Port number was not a decimal number between 0 and 65535
++curl: (3) unmatched close brace/bracket in URL position 1:
++[]}'
++ ^ //this was on a different machine
+
+# 2024-11-28 03:27:23.978151
++n
+
+# 2024-11-28 03:27:56.695221
++no, just run the script
+
+# 2024-11-28 03:28:01.128900
++n
+
+# 2024-11-28 03:28:15.117224
++/run python base_model.py
+
+# 2024-11-28 03:41:57.608919
++n
