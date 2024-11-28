@@ -67,6 +67,8 @@ MOCK_MODULES = [
     "langchain_google_genai",
     "langchain_openai",
     "langgraph",
+    "langgraph.checkpoint",
+    "langchain_experimental.tools",
     "openai",
     "numpy",
     "pandas",
