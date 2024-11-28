@@ -163,7 +163,9 @@ class TestSQLAgent(unittest.TestCase):
         # Attempt SQL injection
         malicious_input = "' OR '1'='1"
         results = query_database(
-            "SELECT text FROM documents WHERE text = ?", params=(malicious_input,)
+            "SELECT text FROM documents WHERE text = ?", 
+            params=(malicious_input,),
+            db_path=self.test_db_path
         )
         self.assertEqual(len(results), 0)  # Should not match anything
 
