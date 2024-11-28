@@ -32,6 +32,16 @@ MOCK_MODULES = [
     "langchain_community.agent_toolkits",
     "langchain_community.agent_toolkits.sql.base",
     "langchain_community.utilities",
+    "langchain_core.messages",
+    "langchain_core.output_parsers",
+    "langchain_core.runnables",
+    "langchain_core.documents",
+    "langchain.text_splitter",
+    "bs4",
+    "chromadb",
+    "sqlalchemy",
+    "pandas",
+    "numpy"
 ]
 
 
