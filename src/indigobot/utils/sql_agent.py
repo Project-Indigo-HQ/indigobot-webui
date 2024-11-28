@@ -208,7 +208,12 @@ def main():
     db = init_db(GPT_DB)
 
     toolkit = SQLDatabaseToolkit(db=db, llm=llm)  # create llm toolkit
-    agent = create_sql_agent(llm=llm, toolkit=toolkit, verbose=True)  # create agent
+    agent = create_sql_agent(
+        llm=llm,
+        toolkit=toolkit,
+        verbose=True,
+        handle_parsing_errors=True
+    )  # create agent
 
     # retriever = RunnableLambda(
     #     lambda query=f"SELECT text FROM embedding_metadata": query_database(query)
