@@ -47,6 +47,7 @@ MOCK_MODULES = [
     "langchain_core.documents.base",
     "langchain_core.language_models",
     "langchain_core.language_models.base",
+    "langchain_core.load",
     "langchain_core.messages",
     "langchain_core.output_parsers",
     "langchain_core.output_parsers.base",
