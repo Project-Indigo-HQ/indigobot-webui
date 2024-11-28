@@ -203,11 +203,11 @@ async def query_model(request: QueryRequest):
         
     try:
         # Initialize state with empty chat history if none provided
-        state = {
-            "input": request.input,
-            "chat_history": [],
-            "context": ""
-        }
+        state = State(
+            input=request.input,
+            chat_history=[],
+            context=""
+        ).dict()
         response = rag_chain.invoke(state)
         # Format context from documents into a concise string
         context = ""
