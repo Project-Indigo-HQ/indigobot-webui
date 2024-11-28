@@ -16,7 +16,7 @@ from langgraph.graph import START, StateGraph
 from langgraph.graph.message import add_messages
 from typing_extensions import Annotated, TypedDict
 
-from config import llms, vectorstores
+from indigobot.config import llms, vectorstores
 from utils import custom_loader
 
 llm = llms["gpt"]
