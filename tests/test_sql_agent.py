@@ -15,60 +15,64 @@ class TestSQLAgent(unittest.TestCase):
     def setUpClass(cls):
         """Set up test database"""
         cls.test_db_path = "test_indigo_bot_db.sqlite"
+        # Remove existing test database if it exists
+        if os.path.exists(cls.test_db_path):
+            os.remove(cls.test_db_path)
+            
         # Temporarily override GPT_DB
         from indigobot.utils.sql_agent import GPT_DB as original_db
-
         global GPT_DB
         cls.original_db_path = original_db
         GPT_DB = cls.test_db_path
 
         # Initialize the test database
-        try:
-            conn = sqlite3.connect(cls.test_db_path, timeout=20)
-            cursor = conn.cursor()
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS documents (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    text TEXT,
-                    metadata TEXT
-                )
-            """
-            )
-            conn.commit()
-        finally:
-            if 'conn' in locals():
-                conn.close()
-
-    def setUp(self):
-        """Create fresh test database before each test"""
-        # Clear existing data and reset sequence
-        try:
-            conn = sqlite3.connect(self.test_db_path, timeout=20)
-            cursor = conn.cursor()
-            cursor.execute("DELETE FROM documents")
-            try:
-                cursor.execute("DELETE FROM sqlite_sequence WHERE name='documents'")
-            except sqlite3.OperationalError:
-                pass  # sqlite_sequence might not exist yet
-            conn.commit()
-        finally:
-            if 'conn' in locals():
-                conn.close()
-
-    def tearDown(self):
-        """Clean up test database after each test"""
-        conn = sqlite3.connect(self.test_db_path)
+        conn = sqlite3.connect(cls.test_db_path, timeout=20)
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM documents")
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS documents (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                text TEXT,
+                metadata TEXT
+            )
+        """
+        )
         conn.commit()
         conn.close()
 
+    def setUp(self):
+        """Create fresh test database before each test"""
+        conn = sqlite3.connect(self.test_db_path, timeout=20)
+        cursor = conn.cursor()
+        # Clear all data
+        cursor.execute("DELETE FROM documents")
+        cursor.execute("DELETE FROM sqlite_sequence WHERE name='documents'")
+        conn.commit()
+        conn.close()
+
+    def tearDown(self):
+        """Clean up test database after each test"""
+        if os.path.exists(self.test_db_path):
+            try:
+                conn = sqlite3.connect(self.test_db_path, timeout=20)
+                cursor = conn.cursor()
+                cursor.execute("DELETE FROM documents")
+                conn.commit()
+            finally:
+                conn.close()
+
     @classmethod
     def tearDownClass(cls):
-        """Restore original GPT_DB"""
+        """Clean up test database and restore original GPT_DB"""
         global GPT_DB
         GPT_DB = cls.original_db_path
+        
+        # Remove test database
+        if os.path.exists(cls.test_db_path):
+            try:
+                os.remove(cls.test_db_path)
+            except OSError:
+                pass
 
     def test_load_docs(self):
         """Test loading documents into database"""
