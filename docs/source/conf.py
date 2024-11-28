@@ -35,6 +35,7 @@ MOCK_MODULES = [
     "langchain_core.output_parsers",
     "langchain_core.output_parsers.base",
     "langchain_core.runnables",
+    "langchain_core.runnables.config",
     "langchain_core.documents",
     "langchain_core.documents.base",
     "langchain_google_genai",
