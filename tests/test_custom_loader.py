@@ -79,7 +79,7 @@ class TestCustomLoader(unittest.TestCase):
         result = extract_text(html_content_no_main)
         self.assertEqual(result, "Other content")
 
-    @patch("indigo.utils.custom_loader.RecursiveUrlLoader")
+    @patch("indigbot.utils.custom_loader.RecursiveUrlLoader")
     def test_scrape_main(self, mock_loader):
         """Test scrape_main function"""
         mock_loader_instance = MagicMock()
