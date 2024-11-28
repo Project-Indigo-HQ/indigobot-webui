@@ -1,5 +1,5 @@
 indigobot package
-================
+=================
 
 Subpackages
 -----------
@@ -10,7 +10,7 @@ Subpackages
    indigobot.utils
 
 Module contents
---------------
+---------------
 
 .. automodule:: indigobot
    :members:
