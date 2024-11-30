@@ -12,3 +12,4 @@ pymupdf
 pypdf
 requests
 unidecode
+slack-bolt
