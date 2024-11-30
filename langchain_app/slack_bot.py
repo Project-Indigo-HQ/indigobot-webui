@@ -41,7 +41,11 @@ def handle_ask_command(ack, command, say):
         say(f"Q: {question}\nA: {response['answer']}")
         
     except Exception as e:
-        say(f"Sorry, I encountered an error: {str(e)}")
+        error_message = str(e)
+        if "not_in_channel" in error_message:
+            say("I need to be invited to this channel first! Please add me using /invite @YourBotName")
+        else:
+            say(f"Sorry, I encountered an error: {error_message}")
 
 @slack_app.event("app_mention")
 def handle_mention(event, say):
