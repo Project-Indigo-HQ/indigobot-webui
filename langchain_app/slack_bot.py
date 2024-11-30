@@ -86,7 +86,7 @@ if __name__ == "__main__":
     # Run the Flask app on all interfaces with SSL
     flask_app.run(
         host='0.0.0.0', 
-        port=3000,
+        port=8000,
         ssl_context=('/etc/letsencrypt/live/your-domain/fullchain.pem',
                     '/etc/letsencrypt/live/your-domain/privkey.pem')
     )
