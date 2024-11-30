@@ -84,6 +84,7 @@ MOCK_MODULES = [
     "numpy",
     "pandas",
     "sqlalchemy",
+    "langchain_core.tracers._streaming",
 ]
 
 
@@ -91,14 +92,18 @@ MOCK_MODULES = [
 class BaseMeta(type):
     pass
 
+
 class BaseLLM(metaclass=BaseMeta):
     pass
+
 
 class BaseLanguageModel(metaclass=BaseMeta):
     pass
 
+
 class BaseGoogleGenerativeAI(metaclass=BaseMeta):
     pass
+
 
 # Add the base classes to the mock system
 sys.modules["langchain_core.language_models.base"] = type(
