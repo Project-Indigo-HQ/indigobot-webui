@@ -15,10 +15,15 @@ from langchain_community.document_loaders import AsyncHtmlLoader
 from langchain_community.document_loaders.recursive_url_loader import RecursiveUrlLoader
 from langchain_community.document_transformers import BeautifulSoupTransformer
 
+import os
 from indigobot.config import CRAWLER_DIR, r_urls, urls, vectorstores
 from indigobot.utils import jf_crawler, refine_html
 
-vectorstores = (vectorstores["gpt"], vectorstores["gemini"])
+# Only initialize vectorstores tuple if not in documentation build
+if not os.environ.get("SPHINX_BUILD"):
+    vectorstores_tuple = (vectorstores.get("gpt"), vectorstores.get("gemini"))
+else:
+    vectorstores_tuple = (None, None)
 
 
 def clean_text(text):
