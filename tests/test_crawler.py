@@ -57,7 +57,11 @@ class TestCrawler(unittest.TestCase):
         self.assertEqual(urls[0], "https://example.com/page1")
         self.assertEqual(urls[1], "https://example.com/page2")
 
-    @patch("builtins.open", new_callable=mock_open, read_data="https://example.com/test1\nhttps://example.com/test2")
+    @patch(
+        "builtins.open",
+        new_callable=mock_open,
+        read_data="https://example.com/test1\nhttps://example.com/test2",
+    )
     def test_load_urls(self, mock_file):
         with patch("os.path.exists") as mock_exists:
             mock_exists.return_value = True

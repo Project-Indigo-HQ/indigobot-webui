@@ -24,7 +24,7 @@ class TestSQLAgent(unittest.TestCase):
         # Initialize the test database
         conn = sqlite3.connect(cls.test_db_path)
         cursor = conn.cursor()
-        
+
         # Create documents table
         cursor.execute(
             """
@@ -35,7 +35,7 @@ class TestSQLAgent(unittest.TestCase):
             );
         """
         )
-        
+
         # Create embeddings table
         cursor.execute(
             """
@@ -52,7 +52,7 @@ class TestSQLAgent(unittest.TestCase):
         cursor.execute("DROP TABLE IF EXISTS embedding_metadata")
         cursor.execute("DROP TABLE IF EXISTS embeddings")
         cursor.execute("DROP TABLE IF EXISTS documents")
-        
+
         # Create embedding metadata table with explicit AUTOINCREMENT
         cursor.execute(
             """
@@ -66,7 +66,7 @@ class TestSQLAgent(unittest.TestCase):
             ) STRICT;
         """
         )
-        
+
         conn.commit()
         conn.close()
 
@@ -78,12 +78,12 @@ class TestSQLAgent(unittest.TestCase):
                 # Close any existing connections
                 conn = sqlite3.connect(self.test_db_path, timeout=30)
                 cursor = conn.cursor()
-                
+
                 # Drop and recreate tables to ensure clean state
                 cursor.execute("DROP TABLE IF EXISTS embedding_metadata")
                 cursor.execute("DROP TABLE IF EXISTS embeddings")
                 cursor.execute("DROP TABLE IF EXISTS documents")
-                
+
                 # Recreate tables
                 cursor.execute(
                     """
@@ -94,7 +94,7 @@ class TestSQLAgent(unittest.TestCase):
                     ) STRICT;
                     """
                 )
-                
+
                 cursor.execute(
                     """
                     CREATE TABLE IF NOT EXISTS embeddings (
@@ -105,7 +105,7 @@ class TestSQLAgent(unittest.TestCase):
                     ) STRICT;
                     """
                 )
-                
+
                 cursor.execute(
                     """
                     CREATE TABLE IF NOT EXISTS embedding_metadata (
@@ -118,9 +118,9 @@ class TestSQLAgent(unittest.TestCase):
                     ) STRICT;
                     """
                 )
-                
+
                 conn.commit()
-                
+
                 # Vacuum database after schema changes
                 conn.execute("VACUUM")
                 conn.commit()

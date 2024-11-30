@@ -5,7 +5,7 @@ This package provides a RAG-based chatbot that helps users find and access socia
 services information in the Portland, OR area. It includes web scraping, document 
 processing, and a conversational interface powered by various LLM providers.
 
-Author: Team Indigo
+Author: Team Indigo,
 License: GPL3
 """
 

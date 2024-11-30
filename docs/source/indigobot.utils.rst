@@ -35,11 +35,3 @@ indigobot.utils.sql\_agent module
    :members:
    :undoc-members:
    :show-inheritance:
-
-Utils Module Contents
----------------------
-
-.. automodule:: indigobot.utils
-   :members:
-   :undoc-members:
-   :show-inheritance:

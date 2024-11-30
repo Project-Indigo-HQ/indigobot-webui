@@ -25,12 +25,6 @@ Requirements:
 * pip package manager
 * Virtual environment (recommended)
 
-For development installation:
-
-.. code-block:: bash
-
-   pip install -r requirements-dev.txt
-
 Features
 --------
 

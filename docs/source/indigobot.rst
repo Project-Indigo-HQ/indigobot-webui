@@ -20,14 +20,6 @@ indigobot.config module
    :undoc-members:
    :show-inheritance:
 
-indigobot.main module
----------------------
-
-.. automodule:: indigobot.__main__
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 Module contents
 ---------------
 

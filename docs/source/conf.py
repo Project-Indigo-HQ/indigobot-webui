@@ -23,11 +23,6 @@ class Mock(MagicMock):
 # Set environment variable to indicate documentation build
 os.environ["SPHINX_BUILD"] = "1"
 
-# Additional type hints for documentation
-import typing
-
-if typing.TYPE_CHECKING:
-    from typing import Any, Dict, List, Optional, Tuple, Union
 
 MOCK_MODULES = [
     "typing_extensions",

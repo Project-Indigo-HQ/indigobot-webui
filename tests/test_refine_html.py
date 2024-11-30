@@ -39,8 +39,9 @@ class TestRefineHtml(unittest.TestCase):
         }
 
     def test_load_html_files(self):
-        with patch("os.listdir") as mock_listdir, \
-             patch("os.path.isfile") as mock_isfile:
+        with patch("os.listdir") as mock_listdir, patch(
+            "os.path.isfile"
+        ) as mock_isfile:
             mock_listdir.return_value = ["test1.html", "test2.html", "other.txt"]
             mock_isfile.return_value = True
             files = load_html_files("/fake/path")

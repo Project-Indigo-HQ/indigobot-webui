@@ -94,8 +94,8 @@ def test_main_function(mock_custom_loader, mock_retriever, mock_app, mock_input)
         "answer": "test response",
         "chat_history": [
             HumanMessage(content="test input"),
-            AIMessage(content="test response")
-        ]
+            AIMessage(content="test response"),
+        ],
     }
 
     # Mock user input sequence
