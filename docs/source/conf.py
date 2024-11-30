@@ -20,7 +20,11 @@ class Mock(MagicMock):
         return Mock()
 
 
+# Set environment variable to indicate documentation build
+os.environ["SPHINX_BUILD"] = "1"
+
 MOCK_MODULES = [
+    "langchain_chroma",
     "langchain",
     "langchain.chains",
     "langchain.chains.combine_documents",
@@ -85,7 +89,23 @@ MOCK_MODULES = [
     "pandas",
     "sqlalchemy",
     "langchain_core.tracers._streaming",
+    "langchain_core.tracers.base",
+    "langchain_core.tracers.schemas",
+    "langchain_core.tracers.stdout",
+    "langchain_core.tracers.langchain",
+    "langchain_core.tracers.context",
 ]
+
+# Create mock classes for Chroma
+class MockChroma:
+    def __init__(self, *args, **kwargs):
+        pass
+
+sys.modules["langchain_chroma"] = type(
+    "langchain_chroma",
+    (),
+    {"Chroma": MockChroma},
+)
 
 
 # Create base classes for language models with metaclass support
