@@ -6,6 +6,7 @@ build:
     python: "3.10"
   apt_packages:
     - graphviz
+
   jobs:
     pre_build:
       - pip install --upgrade pip
@@ -24,5 +25,3 @@ formats:
 python:
   install:
     - requirements: docs/requirements.txt
-    - method: pip
-      path: .
