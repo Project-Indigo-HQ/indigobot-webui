@@ -15,6 +15,7 @@ langgraph
 pylama[all]
 pylama[toml]
 pypdf
+pytest
 pyyaml
 requests
 setuptools

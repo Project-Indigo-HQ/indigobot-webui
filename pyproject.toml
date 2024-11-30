@@ -18,6 +18,10 @@ dependencies = [
 
 [tool.setuptools.packages.find]
 exclude = ["docs*", "tests*"]
+where = ["src"] 
+
+#[tool.setuptools.package-data]
+
 
 [tool.pylama]
 format = "pylint"
