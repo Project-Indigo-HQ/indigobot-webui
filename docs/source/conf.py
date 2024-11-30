@@ -181,6 +181,20 @@ class BaseMock(MagicMock):
     @classmethod
     def __getattr__(cls, name):
         return MagicMock()
+    
+    def __call__(self, *args, **kwargs):
+        return self
+
+# Create mock for Pydantic ConfigDict
+class ConfigDict(BaseMock):
+    pass
+
+# Register ConfigDict mock
+sys.modules["pydantic._internal._config"] = type(
+    "pydantic._internal._config",
+    (),
+    {"ConfigDict": ConfigDict},
+)
 
 # Create specific mock classes inheriting from BaseMock
 class BaseLanguageModel(BaseMock):
