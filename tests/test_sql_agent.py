@@ -48,7 +48,12 @@ class TestSQLAgent(unittest.TestCase):
         """
         )
 
-        # Create embedding metadata table
+        # Drop existing tables if they exist
+        cursor.execute("DROP TABLE IF EXISTS embedding_metadata")
+        cursor.execute("DROP TABLE IF EXISTS embeddings")
+        cursor.execute("DROP TABLE IF EXISTS documents")
+        
+        # Create embedding metadata table with explicit AUTOINCREMENT
         cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS embedding_metadata (
@@ -58,7 +63,7 @@ class TestSQLAgent(unittest.TestCase):
                 string_value TEXT,
                 metadata TEXT,
                 FOREIGN KEY (document_id) REFERENCES documents (id)
-            );
+            ) STRICT;
         """
         )
         
@@ -70,19 +75,54 @@ class TestSQLAgent(unittest.TestCase):
         # Clear all data before each test
         if os.path.exists(self.test_db_path):
             try:
+                # Close any existing connections
                 conn = sqlite3.connect(self.test_db_path, timeout=30)
                 cursor = conn.cursor()
-                # Clear all tables
-                # Clear all tables
-                cursor.execute("DELETE FROM embedding_metadata")
-                cursor.execute("DELETE FROM embeddings")
-                cursor.execute("DELETE FROM documents")
-                # Reset all sequences
-                cursor.execute("DELETE FROM sqlite_sequence")
-                # Commit transaction before VACUUM
+                
+                # Drop and recreate tables to ensure clean state
+                cursor.execute("DROP TABLE IF EXISTS embedding_metadata")
+                cursor.execute("DROP TABLE IF EXISTS embeddings")
+                cursor.execute("DROP TABLE IF EXISTS documents")
+                
+                # Recreate tables
+                cursor.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS documents (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        text TEXT,
+                        metadata TEXT
+                    ) STRICT;
+                    """
+                )
+                
+                cursor.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS embeddings (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        document_id INTEGER,
+                        embedding BLOB,
+                        FOREIGN KEY (document_id) REFERENCES documents (id)
+                    ) STRICT;
+                    """
+                )
+                
+                cursor.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS embedding_metadata (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        document_id INTEGER,
+                        key TEXT,
+                        string_value TEXT,
+                        metadata TEXT,
+                        FOREIGN KEY (document_id) REFERENCES documents (id)
+                    ) STRICT;
+                    """
+                )
+                
                 conn.commit()
-                # Vacuum to clean up space and reset file
-                cursor.execute("VACUUM")
+                
+                # Vacuum database after schema changes
+                conn.execute("VACUUM")
                 conn.commit()
             finally:
                 conn.close()
