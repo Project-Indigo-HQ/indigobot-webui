@@ -65,8 +65,8 @@ release = "1.0.0"
 
 extensions = [
     "myst_parser",
-    # "sphinx.ext.autodoc",
-    # "sphinx.ext.autodoc.typehints",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autodoc.typehints",
     "sphinx.ext.autosectionlabel",
     "sphinx.ext.coverage",
     "sphinx.ext.githubpages",
