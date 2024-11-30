@@ -91,6 +91,7 @@ MOCK_MODULES = [
     "langchain_core.documents",
     "langchain_core.embeddings",
     "langchain_core.utils",
+    "requests.packages",
     "langchain_core.chat_history",
     "langchain_core.messages",
     "langchain_core.vectorstores",
@@ -98,10 +99,15 @@ MOCK_MODULES = [
     "langchain_core.callbacks.manager",
     "langchain_core.prompts",
     "langchain_core.runnables",
+    "requests.packages.urllib3.util",
+    "requests.packages.urllib3.util.retry",
+    "requests.adapters",
+    "requests.packages.urllib3",
     "langchain_core.runnables.history",
     "langchain_core.language_models",
     "langchain_core.retrievers",
     "langchain_core.load",
+    "langgraph.graph.message",
     "langchain_core.load.load",
     "langchain_core.language_models.chat_models",
     "langchain_core.messages.ai",
@@ -176,18 +182,21 @@ class MockBase(MagicMock):
     def __getattr__(cls, name):
         return MagicMock()
 
+
 # Create base mock class for all language models and transformers
 class BaseMock(MagicMock):
     @classmethod
     def __getattr__(cls, name):
         return MagicMock()
-    
+
     def __call__(self, *args, **kwargs):
         return self
+
 
 # Create mock for Pydantic ConfigDict
 class ConfigDict(BaseMock):
     pass
+
 
 # Register ConfigDict mock
 sys.modules["pydantic._internal._config"] = type(
@@ -196,55 +205,63 @@ sys.modules["pydantic._internal._config"] = type(
     {"ConfigDict": ConfigDict},
 )
 
+
 # Create specific mock classes inheriting from BaseMock
 class BaseLanguageModel(BaseMock):
     pass
 
+
 class BaseLLM(BaseMock):
     pass
+
 
 class BaseGoogleGenerativeAI(BaseMock):
     pass
 
+
 class BaseDocumentTransformer(BaseMock):
     pass
+
 
 class TextSplitter(BaseMock):
     pass
 
+
 # Add the mock classes to the system
-sys.modules.update({
-    "langchain_core.language_models.base": type(
-        "langchain_core.language_models.base",
-        (),
-        {
-            "BaseLanguageModel": BaseLanguageModel,
-            "BaseLLM": BaseLLM,
-        },
-    ),
-    "langchain_google_genai.llms": type(
-        "langchain_google_genai.llms",
-        (),
-        {
-            "_BaseGoogleGenerativeAI": BaseGoogleGenerativeAI,
-        },
-    ),
-    "langchain_core.documents.transformers": type(
-        "langchain_core.documents.transformers",
-        (),
-        {
-            "BaseDocumentTransformer": BaseDocumentTransformer,
-        }
-    ),
-    "langchain_text_splitters": type(
-        "langchain_text_splitters",
-        (),
-        {
-            "TextSplitter": TextSplitter,
-            "RecursiveCharacterTextSplitter": TextSplitter,
-        }
-    ),
-})
+sys.modules.update(
+    {
+        "langchain_core.language_models.base": type(
+            "langchain_core.language_models.base",
+            (),
+            {
+                "BaseLanguageModel": BaseLanguageModel,
+                "BaseLLM": BaseLLM,
+            },
+        ),
+        "langchain_google_genai.llms": type(
+            "langchain_google_genai.llms",
+            (),
+            {
+                "_BaseGoogleGenerativeAI": BaseGoogleGenerativeAI,
+            },
+        ),
+        "langchain_core.documents.transformers": type(
+            "langchain_core.documents.transformers",
+            (),
+            {
+                "BaseDocumentTransformer": BaseDocumentTransformer,
+            },
+        ),
+        "langchain_text_splitters": type(
+            "langchain_text_splitters",
+            (),
+            {
+                "TextSplitter": TextSplitter,
+                "RecursiveCharacterTextSplitter": TextSplitter,
+            },
+        ),
+    }
+)
 
 # Update all mock modules
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)

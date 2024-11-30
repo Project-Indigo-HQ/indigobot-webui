@@ -28,34 +28,28 @@ GEM_DB: Final[str] = os.path.join(CHROMA_DIR, "gemini/chroma.sqlite3")
 GPT_DB: Final[str] = os.path.join(CHROMA_DIR, "openai/chroma.sqlite3")
 CRAWLER_DIR: Final[str] = os.path.join(CURRENT_DIR, "utils/jf_crawler")
 
-def initialize_vectorstores():
-    """Initialize and return vectorstore instances."""
-    try:
-        gpt_vstore = Chroma(
-            persist_directory=os.path.join(CHROMA_DIR, "openai"),
-            embedding_function=OpenAIEmbeddings(model="text-embedding-3-large"),
-        )
-    except Exception as e:
-        print(f"Error initializing OpenAI vectorstore: {e}")
-        gpt_vstore = None
+try:
+    gpt_vstore = Chroma(
+        persist_directory=os.path.join(CHROMA_DIR, "openai"),
+        embedding_function=OpenAIEmbeddings(model="text-embedding-3-large"),
+    )
+except Exception as e:
+    print(f"Error initializing OpenAI vectorstore: {e}")
+    gpt_vstore = None
 
-    try:
-        gem_vstore = Chroma(
-            persist_directory=os.path.join(CHROMA_DIR, "gemini"),
-            embedding_function=GoogleGenerativeAIEmbeddings(
-                model="models/embedding-001", task_type="retrieval_query"
-            ),
-        )
-    except Exception as e:
-        print(f"Error initializing Google vectorstore: {e}")
-        gem_vstore = None
+try:
+    gem_vstore = Chroma(
+        persist_directory=os.path.join(CHROMA_DIR, "gemini"),
+        embedding_function=GoogleGenerativeAIEmbeddings(
+            model="models/embedding-001", task_type="retrieval_query"
+        ),
+    )
+except Exception as e:
+    print(f"Error initializing Google vectorstore: {e}")
+    gem_vstore = None
 
-    return {"gpt": gpt_vstore, "gemini": gem_vstore}
+vectorstores = {"gpt": gpt_vstore, "gemini": gem_vstore}
 
-# Initialize vectorstores if not in documentation build
-vectorstores = {}
-if not os.environ.get("SPHINX_BUILD"):
-    vectorstores = initialize_vectorstores()
 
 # URLs for API endpoints that return JSON data
 urls: List[str] = [

@@ -19,12 +19,6 @@ import os
 from indigobot.config import CRAWLER_DIR, r_urls, urls, vectorstores
 from indigobot.utils import jf_crawler, refine_html
 
-# Only initialize vectorstores tuple if not in documentation build
-if not os.environ.get("SPHINX_BUILD"):
-    vectorstores_tuple = (vectorstores.get("gpt"), vectorstores.get("gemini"))
-else:
-    vectorstores_tuple = (None, None)
-
 
 def clean_text(text):
     """
@@ -78,7 +72,7 @@ def load_docs(docs, vectorstore):
     :type vectorstore: object
     """
     chunks = chunking(docs)
-    add_documents(vectorstore, chunks, 300)
+    add_docs(vectorstore, chunks, 300)
 
 
 def load_urls(urls, vectorstore):
@@ -157,7 +151,7 @@ def scrape_main(url, depth):
     return docs
 
 
-def add_documents(vectorstore, chunks, n):
+def add_docs(vectorstore, chunks, n):
     """
     Adds documents to the vectorstore database.
 
@@ -184,7 +178,7 @@ def scrape_urls(url_list, vectorstore):
     for url in url_list:
         docs = scrape_main(url, 12)
         chunks = chunking(docs)
-        add_documents(vectorstore, chunks, 300)
+        add_docs(vectorstore, chunks, 300)
 
 
 def jf_loader():
@@ -210,7 +204,7 @@ def main():
     """
     Execute the document loading process by scraping web pages, reading PDFs, and loading local files.
     """
-    for vectorstore in vectorstores:
+    for vectorstore in vectorstores.values():
         try:
             scrape_urls(r_urls, vectorstore)
             load_urls(urls, vectorstore)

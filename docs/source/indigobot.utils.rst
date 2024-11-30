@@ -2,20 +2,12 @@ indigobot.utils package
 =======================
 
 Utils Submodules
---------------------
+----------------
 
 indigobot.utils.custom\_loader module
 -------------------------------------
 
 .. automodule:: indigobot.utils.custom_loader
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-indigobot.utils.doctool module
-------------------------------
-
-.. automodule:: indigobot.utils.doctool
    :members:
    :undoc-members:
    :show-inheritance:
