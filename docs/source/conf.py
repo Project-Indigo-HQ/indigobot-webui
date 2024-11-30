@@ -22,6 +22,10 @@ class Mock(MagicMock):
 
 MOCK_MODULES = [
     "langchain",
+    "langchain.chains",
+    "langchain.text_splitter",
+    "langchain.agents",
+    "langchain.schema",
     "langchain_core",
     "langchain_community",
     "langchain_anthropic",
@@ -29,6 +33,7 @@ MOCK_MODULES = [
     "anthropic",
     "openai",
     "chromadb",
+    "chromadb.config",
     "bs4",
     "numpy",
     "pandas",
