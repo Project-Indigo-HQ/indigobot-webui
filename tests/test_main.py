@@ -23,7 +23,7 @@ def test_state():
 @pytest.fixture
 def mock_rag_chain():
     """Mock RAG chain fixture"""
-    with patch("langchain_app.base_model.rag_chain") as mock:
+    with patch("indigobot.__main__.rag_chain") as mock:
         mock.invoke.return_value = {
             "answer": "test answer",
             "context": "test context",
