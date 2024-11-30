@@ -53,12 +53,12 @@ except Exception as e:
 vectorstores = {"gpt": gpt_vstore, "gemini": gem_vstore}
 
 # URLs for API endpoints that return JSON data
-urls: List[str] = [
+url_list: List[str] = [
     "https://rosecityresource.streetroots.org/api/query",  # Street Roots Resource API
 ]
 
 # URLs for web pages that need recursive scraping
-r_urls: List[str] = [
+r_url_list: List[str] = [
     "https://www.multco.us/food-assistance/get-food-guide",  # Food assistance guide
     "https://www.multco.us/dchs/rent-housing-shelter",  # Housing and shelter
     "https://www.multco.us/veterans",  # Veterans services

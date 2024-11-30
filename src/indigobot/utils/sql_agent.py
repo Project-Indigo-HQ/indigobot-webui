@@ -11,7 +11,7 @@ Usage:
     Example queries:
     - "What tables exist in the database?"
     - "Show me the first 5 documents"
-    - "Find documents containing the word 'python'"
+    - "Find documents containing the word 'housing'"
     
     Type 'quit' to exit the interactive prompt.
 """
@@ -21,18 +21,24 @@ import readline  # Required for using arrow keys in CLI
 import sqlite3
 
 from langchain import hub
+from langchain.agents.agent_toolkits import create_retriever_tool
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.agent_toolkits import SQLDatabaseToolkit
-from langchain.agents.agent_toolkits import create_retriever_tool
 from langchain_community.document_loaders import AsyncHtmlLoader
 from langchain_community.utilities import SQLDatabase
-from langchain_core.messages import HumanMessage
 from langgraph.prebuilt import create_react_agent
 
-from indigobot.config import GEM_DB, GPT_DB, llms, vectorstores
+from indigobot.config import GPT_DB, llms, vectorstores
 
 llm = llms["gpt"]
 vectorstore = vectorstores["gpt"]
+
+# NOTE: not sure best combo/individual options for these
+included_tables = [
+    # "embedding_metadata",
+    "embedding_fulltext_search",
+    "embedding_fulltext_search_content",
+]
 
 
 def init_db(db_path=None):
@@ -82,7 +88,8 @@ def init_db(db_path=None):
 
         # Return SQLDatabase instance
         return SQLDatabase.from_uri(
-            f"sqlite:///{db_file}", include_tables=["embedding_metadata"]
+            f"sqlite:///{db_file}",
+            include_tables=included_tables,
         )
     except Exception as e:
         print(f"Error initializing database: {e}")

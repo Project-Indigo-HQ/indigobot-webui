@@ -1,12 +1,12 @@
 """Unit tests for __main__.py"""
 
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pytest
 from langchain_core.messages import AIMessage, HumanMessage
 from langgraph.graph import START
 
-from indigobot.__main__ import State, call_model, rag_chain, retriever, workflow
+from indigobot.__main__ import call_model, workflow
 
 
 @pytest.fixture
