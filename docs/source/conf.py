@@ -61,6 +61,7 @@ MOCK_MODULES = [
     "langchain_core.utils.json_schema",
     "langchain_core.language_models.llms",
     "langchain_core.runnables.utils",
+    "langchain_core.tracers",
     "langchain_community",
     "langchain_community.document_loaders",
     "langchain_community.document_loaders.recursive_url_loader",
@@ -72,6 +73,9 @@ MOCK_MODULES = [
     "langchain_community.utilities",
     "langchain_anthropic",
     "langchain_openai",
+    "langchain_google_genai",
+    "langchain_google_genai.chat_models",
+    "langchain_google_genai.llms",
     "anthropic",
     "openai",
     "chromadb",
@@ -83,20 +87,35 @@ MOCK_MODULES = [
 ]
 
 
-# Create base class for language models
-class BaseLLM:
+# Create base classes for language models with metaclass support
+class BaseMeta(type):
     pass
 
-
-class BaseLanguageModel:
+class BaseLLM(metaclass=BaseMeta):
     pass
 
+class BaseLanguageModel(metaclass=BaseMeta):
+    pass
+
+class BaseGoogleGenerativeAI(metaclass=BaseMeta):
+    pass
 
 # Add the base classes to the mock system
 sys.modules["langchain_core.language_models.base"] = type(
     "langchain_core.language_models.base",
     (),
-    {"BaseLanguageModel": BaseLanguageModel, "BaseLLM": BaseLLM},
+    {
+        "BaseLanguageModel": BaseLanguageModel,
+        "BaseLLM": BaseLLM,
+    },
+)
+
+sys.modules["langchain_google_genai.llms"] = type(
+    "langchain_google_genai.llms",
+    (),
+    {
+        "_BaseGoogleGenerativeAI": BaseGoogleGenerativeAI,
+    },
 )
 
 # Update all mock modules
