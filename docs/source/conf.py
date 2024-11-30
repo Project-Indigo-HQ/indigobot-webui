@@ -96,10 +96,12 @@ MOCK_MODULES = [
     "langchain_core.tracers.context",
 ]
 
+
 # Create mock classes for Chroma
 class MockChroma:
     def __init__(self, *args, **kwargs):
         pass
+
 
 sys.modules["langchain_chroma"] = type(
     "langchain_chroma",
