@@ -58,7 +58,7 @@ class TestSQLAgent(unittest.TestCase):
                 string_value TEXT,
                 metadata TEXT,
                 FOREIGN KEY (document_id) REFERENCES documents (id)
-            ) WITHOUT ROWID;
+            );
         """
         )
         
