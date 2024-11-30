@@ -8,7 +8,8 @@ build:
     - graphviz
   commands:
     - pip install --upgrade pip
-    - echo "Build completed"
+    - pip install -e .
+    - sphinx-build -b html docs/source docs/build/html
 
 sphinx:
   configuration: docs/source/conf.py
