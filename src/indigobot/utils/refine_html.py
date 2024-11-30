@@ -7,7 +7,6 @@ from langchain.schema import Document
 from indigobot.config import RAG_DIR
 
 
-# Load each of the .html files under the "html_files/" folder
 def load_html_files(folder_path):
     """
     Load all HTML files from a specified directory.
@@ -25,7 +24,6 @@ def load_html_files(folder_path):
     return html_files
 
 
-# Parse a single HTML file and extract required information to save as JSON
 def parse_and_save(file_path):
     """
     Parse an HTML file to extract the title and headers, and save the result as a JSON file.
@@ -56,7 +54,6 @@ def parse_and_save(file_path):
             ),
             "headers": [],
         }
-
         # Extract all element wrapped around <*h></*h> and their subtrees
         for header in soup.find_all(
             [

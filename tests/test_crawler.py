@@ -1,6 +1,5 @@
 import os
 import unittest
-import xml.etree.ElementTree as ET
 from unittest.mock import Mock, mock_open, patch
 
 from indigobot.utils.jf_crawler import (

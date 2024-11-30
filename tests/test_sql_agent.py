@@ -2,7 +2,7 @@ import json
 import os
 import sqlite3
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 from langchain_core.documents import Document
 

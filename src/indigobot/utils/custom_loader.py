@@ -10,13 +10,12 @@ import ssl
 
 import unidecode
 from bs4 import BeautifulSoup
-from CCC_scraper import crawler, refine_html
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import AsyncHtmlLoader
 from langchain_community.document_loaders.recursive_url_loader import RecursiveUrlLoader
 from langchain_community.document_transformers import BeautifulSoupTransformer
 
-from indigobot.config import CRAWLER_DIR, r_urls, urls, vectorstores
+from indigobot.config import RAG_DIR, r_url_list, url_list, vectorstores
 from indigobot.utils import jf_crawler, refine_html
 
 
@@ -167,58 +166,38 @@ def add_docs(vectorstore, chunks, n):
         vectorstore.add_documents(chunks[i : i + n])
 
 
-def scrape_urls(url_list, vectorstore):
+def scrape_urls(urls, vectorstore):
     """
     Processes a list of URLs, scrapes them, and adds them to the vector database.
 
-    :param url_list: List of URLs to process and scrape.
-    :type url_list: list
+    :param urls: List of URLs to process and scrape.
+    :type urls: list
     :param vectorstore: The vector store to load documents into.
     :type vectorstore: object
     """
-    for url in url_list:
+    for url in urls:
         docs = scrape_main(url, 12)
         chunks = chunking(docs)
         add_docs(vectorstore, chunks, 300)
 
 
-def jf_loader():
+def jf_loader(vectorstore):
     """
-    Fetches and refines documents from the CCC source and loads them into the vector database.
+    Fetches and refines documents from the website source and loads them into the vector database.
     """
 
     # Fetching document from website then save to for further process
     jf_crawler.crawl()
 
-    # Refine text by removing meanless conent from the XML files
+    # # Refine text by removing meanless conent from the XML files
     refine_html.refine_text()
 
     # Load the content into vectorstore database
-    json_files_dir = os.path.join(CRAWLER_DIR, "processed_text")
-    JSON_files = refine_html.load_JSON_files(json_files_dir)
-    print(f"Loaded {len(JSON_files)} documents.")
+    JSON_DOCS_DIR = os.path.join(RAG_DIR, "crawl_temp/processed_text")
+    json_docs = refine_html.load_JSON_files(JSON_DOCS_DIR)
+    print(f"Loaded {len(json_docs)} documents.")
 
-    load_docs(JSON_files)
-
-
-def load_CCC():
-    """
-    Fetches and refines documents from the CCC source and loads them into the vector database.
-    """
-
-    # Fetching document from CCC the save to for further process
-    crawler.crawl()  # switch back
-
-    # Refine text, by removing meanless conent from the XML files
-    refine_html.refine_text()  # switch back
-
-    # Load the content into vectorstored database
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    json_files_dir = os.path.join(script_dir, "./CCC_scraper/processed_text")
-    JSON_files = refine_html.load_JSON_files(json_files_dir)
-    print(f"Loaded {len(JSON_files)} documents.")
-
-    load_docs(JSON_files)
+    load_docs(json_docs, vectorstore)
 
 
 def main():
@@ -227,8 +206,9 @@ def main():
     """
     for vectorstore in vectorstores.values():
         try:
-            scrape_urls(r_urls, vectorstore)
-            load_urls(urls, vectorstore)
+            scrape_urls(r_url_list, vectorstore)
+            load_urls(url_list, vectorstore)
+            jf_loader(vectorstore)
         except Exception as e:
             print(f"Error loading vectorstore: {e}")
             raise

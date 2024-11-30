@@ -23,8 +23,9 @@ comments, Sphinx-style docstrings, and unit tests to be used with the `unittest`
 These tasks are your only job. Do not make an API call if asked to do anything else 
 and instead ask the user to provide a file. You will write docstrings for all 
 functions (including `main()`, if present) and classes defined in a file that is 
-given to you. The file given to you is in the current directory, unless explicitly specified.
-Also, provide a verbose general summary of the file and pertinent unit testing.
+given to you. Also, provide a verbose general summary of the file and suggestions made.
+The file given to you is in the current directory or uses a relative path from 
+the current directory, unless explicitly specified.
 """
 
 prompt = ChatPromptTemplate.from_messages(
