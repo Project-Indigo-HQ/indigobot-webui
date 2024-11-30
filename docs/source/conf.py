@@ -25,13 +25,15 @@ os.environ["SPHINX_BUILD"] = "1"
 
 # Additional type hints for documentation
 import typing
+
 if typing.TYPE_CHECKING:
     from typing import Any, Dict, List, Optional, Tuple, Union
 
 MOCK_MODULES = [
-    'typing_extensions',
-    'requests',
-    'bs4',
+    "typing_extensions",
+    "requests",
+    "requests.exceptions",
+    "bs4",
     "langchain_chroma",
     "langchain",
     "langchain.chains",
