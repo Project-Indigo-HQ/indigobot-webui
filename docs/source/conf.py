@@ -7,7 +7,7 @@ import os
 import sys
 
 # Add the project root directory to the Python path
-sys.path.insert(0, os.path.abspath('../..'))
+sys.path.insert(0, os.path.abspath("../.."))
 from unittest.mock import MagicMock
 
 
@@ -38,6 +38,10 @@ MOCK_MODULES = [
     "langchain_community.agent_toolkits.load_tools",
     "langchain_community.agent_toolkits.sql",
     "langchain_anthropic",
+    "langchain_core.utils",
+    "langchain_community.agent_toolkits.sql.base",
+    "langchain.tools.retriever",
+    "langchain_community.document_transformers",
     "langchain_openai",
     "anthropic",
     "openai",
@@ -47,6 +51,35 @@ MOCK_MODULES = [
     "numpy",
     "pandas",
     "sqlalchemy",
+    "langchain_core.messages",
+    "langchain_core.chat_history",
+    "langchain_core.vectorstores",
+    "langchain_community.utilities",
+    "langchain_core.callbacks",
+    "langchain_core.callbacks.manager",
+    "langchain_core.prompts",
+    "langchain_core.runnables",
+    "langchain_core.runnables.history",
+    "langchain_core.language_models",
+    "langchain_core.load",
+    "langchain_core.load.load",
+    "langchain_core.language_models.chat_models",
+    "langchain_core.messages.ai",
+    "langchain_core.messages.tool",
+    "langchain_core.output_parsers",
+    "langchain_core.load.serializable",
+    "langchain_core.output_parsers.base",
+    "langchain_core.runnables.config",
+    "langchain_core.runnables.base",
+    "langchain_core.output_parsers.openai_tools",
+    "langchain_core.tools",
+    "langchain_core.runnables.graph",
+    "langchain_core.outputs",
+    "langchain_core.utils.function_calling",
+    "langchain_core.globals",
+    "langchain_core.utils.json_schema",
+    "langchain_core.language_models.llms",
+    "langchain_core.runnables.utils",
 ]
 
 
