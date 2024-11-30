@@ -4,13 +4,11 @@ build:
   os: ubuntu-22.04
   tools:
     python: "3.10"
-  jobs:
-    post_build:
-      - echo "Build completed"
   apt_packages:
     - graphviz
   commands:
     - pip install --upgrade pip
+    - echo "Build completed"
 
 sphinx:
   configuration: docs/source/conf.py
