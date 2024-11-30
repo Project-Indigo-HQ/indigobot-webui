@@ -54,6 +54,7 @@ class TestSQLAgent(unittest.TestCase):
             CREATE TABLE IF NOT EXISTS embedding_metadata (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 document_id INTEGER,
+                key TEXT,
                 metadata TEXT,
                 FOREIGN KEY (document_id) REFERENCES documents (id)
             );
