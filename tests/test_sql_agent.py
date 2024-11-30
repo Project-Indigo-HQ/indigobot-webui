@@ -39,13 +39,14 @@ class TestSQLAgent(unittest.TestCase):
     def setUp(self):
         """Create fresh test database before each test"""
         # Clear all data before each test
-        try:
-            conn = sqlite3.connect(self.test_db_path, timeout=30)
-            cursor = conn.cursor()
-            cursor.execute("DELETE FROM documents")
-            conn.commit()
-        finally:
-            conn.close()
+        if os.path.exists(self.test_db_path):
+            try:
+                conn = sqlite3.connect(self.test_db_path, timeout=30)
+                cursor = conn.cursor()
+                cursor.execute("DELETE FROM documents")
+                conn.commit()
+            finally:
+                conn.close()
 
     def tearDown(self):
         """Clean up test database after each test"""

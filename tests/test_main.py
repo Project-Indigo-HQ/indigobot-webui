@@ -1,4 +1,4 @@
-"""Unit tests for base_model.py"""
+"""Unit tests for __main__.py"""
 
 from unittest.mock import Mock, patch
 
@@ -6,7 +6,7 @@ import pytest
 from langchain_core.messages import AIMessage, HumanMessage
 from langgraph.graph import START
 
-from indigobot.__main__ import State, call_model, rag_chain, workflow
+from indigobot.__main__ import State, call_model, rag_chain, retriever, workflow
 
 
 @pytest.fixture
@@ -79,7 +79,8 @@ def test_workflow_structure():
 @patch("builtins.input")
 @patch("indigobot.__main__.app")
 @patch("indigobot.__main__.retriever")
-def test_main_function(mock_retriever, mock_app, mock_input):
+@patch("indigobot.__main__.custom_loader")
+def test_main_function(mock_custom_loader, mock_retriever, mock_app, mock_input):
     """Test main function with skip_loader"""
     from indigobot.__main__ import main
 
@@ -89,20 +90,24 @@ def test_main_function(mock_retriever, mock_app, mock_input):
     }
 
     # Mock the app's invoke response
-    mock_app.invoke.return_value = {"answer": "test response"}
+    mock_app.invoke.return_value = {
+        "answer": "test response",
+        "chat_history": [
+            HumanMessage(content="test input"),
+            AIMessage(content="test response")
+        ]
+    }
 
-    # Mock user input to exit after one iteration
+    # Mock user input sequence
     mock_input.side_effect = ["test input", ""]
 
     # Test that main runs without error when skip_loader is True
-    try:
-        main(skip_loader=True)
-    except Exception as e:
-        pytest.fail(f"main() raised {type(e).__name__} unexpectedly!")
+    main(skip_loader=True)
 
     # Verify mocks were called correctly
     mock_app.invoke.assert_called_once()
     mock_retriever.vectorstore.get.assert_called_once()
+    mock_custom_loader.main.assert_not_called()
 
 
 if __name__ == "__main__":
