@@ -10,6 +10,7 @@ import ssl
 
 import unidecode
 from bs4 import BeautifulSoup
+from CCC_scraper import crawler, refine_html
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import AsyncHtmlLoader
 from langchain_community.document_loaders.recursive_url_loader import RecursiveUrlLoader
@@ -70,6 +71,7 @@ def load_docs(docs, vectorstore):
     :param vectorstore: The vector store to load documents into.
     :type vectorstore: object
     """
+
     chunks = chunking(docs)
     add_docs(vectorstore, chunks, 300)
 
@@ -193,6 +195,26 @@ def jf_loader():
 
     # Load the content into vectorstore database
     json_files_dir = os.path.join(CRAWLER_DIR, "processed_text")
+    JSON_files = refine_html.load_JSON_files(json_files_dir)
+    print(f"Loaded {len(JSON_files)} documents.")
+
+    load_docs(JSON_files)
+
+
+def load_CCC():
+    """
+    Fetches and refines documents from the CCC source and loads them into the vector database.
+    """
+
+    # Fetching document from CCC the save to for further process
+    crawler.crawl()  # switch back
+
+    # Refine text, by removing meanless conent from the XML files
+    refine_html.refine_text()  # switch back
+
+    # Load the content into vectorstored database
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    json_files_dir = os.path.join(script_dir, "./CCC_scraper/processed_text")
     JSON_files = refine_html.load_JSON_files(json_files_dir)
     print(f"Loaded {len(JSON_files)} documents.")
 
