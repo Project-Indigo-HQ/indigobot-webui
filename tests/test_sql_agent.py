@@ -24,6 +24,8 @@ class TestSQLAgent(unittest.TestCase):
         # Initialize the test database
         conn = sqlite3.connect(cls.test_db_path)
         cursor = conn.cursor()
+        
+        # Create documents table
         cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS documents (
@@ -33,6 +35,19 @@ class TestSQLAgent(unittest.TestCase):
             );
         """
         )
+        
+        # Create embeddings table
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS embeddings (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                document_id INTEGER,
+                embedding BLOB,
+                FOREIGN KEY (document_id) REFERENCES documents (id)
+            );
+        """
+        )
+        
         conn.commit()
         conn.close()
 
@@ -44,6 +59,7 @@ class TestSQLAgent(unittest.TestCase):
                 conn = sqlite3.connect(self.test_db_path, timeout=30)
                 cursor = conn.cursor()
                 cursor.execute("DELETE FROM documents")
+                cursor.execute("DELETE FROM embeddings")
                 conn.commit()
             finally:
                 conn.close()
