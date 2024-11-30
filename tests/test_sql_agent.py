@@ -52,7 +52,7 @@ class TestSQLAgent(unittest.TestCase):
         cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS embedding_metadata (
-                id INTEGER PRIMARY KEY,
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 document_id INTEGER,
                 key TEXT,
                 string_value TEXT,
@@ -72,10 +72,14 @@ class TestSQLAgent(unittest.TestCase):
             try:
                 conn = sqlite3.connect(self.test_db_path, timeout=30)
                 cursor = conn.cursor()
+                # Clear all tables
                 cursor.execute("DELETE FROM embedding_metadata")
                 cursor.execute("DELETE FROM embeddings")
-                # Reset the autoincrement counters
-                cursor.execute("DELETE FROM sqlite_sequence WHERE name='documents' OR name='embeddings' OR name='embedding_metadata'")
+                cursor.execute("DELETE FROM documents")
+                # Reset all sequences
+                cursor.execute("DELETE FROM sqlite_sequence")
+                # Vacuum to clean up space and reset file
+                cursor.execute("VACUUM")
                 cursor.execute("DELETE FROM documents")
                 conn.commit()
             finally:
