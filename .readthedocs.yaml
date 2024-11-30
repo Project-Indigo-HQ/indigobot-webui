@@ -10,6 +10,7 @@ build:
     pre_build:
       - pip install --upgrade pip
       - pip install -e .
+      - pip install sphinx sphinx-rtd-theme sphinx-copybutton myst-parser
 
 sphinx:
   configuration: docs/source/conf.py
@@ -23,3 +24,5 @@ formats:
 python:
   install:
     - requirements: docs/requirements.txt
+    - method: pip
+      path: .
