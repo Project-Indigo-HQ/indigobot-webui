@@ -139,6 +139,11 @@ MOCK_MODULES = [
     "langchain_core.tracers.stdout",
     "langchain_core.tracers.langchain",
     "langchain_core.tracers.context",
+    "langchain_text_splitters",
+    "langchain_text_splitters.base",
+    "langchain.chains.combine_documents",
+    "langchain.chains.combine_documents.base",
+    "langchain.chains.combine_documents.reduce",
 ]
 
 
@@ -161,33 +166,61 @@ class MockBase(MagicMock):
     def __getattr__(cls, name):
         return MagicMock()
 
-# Create mock classes for language models
-class BaseLLM(MockBase):
+# Create base mock class for all language models and transformers
+class BaseMock(MagicMock):
+    @classmethod
+    def __getattr__(cls, name):
+        return MagicMock()
+
+# Create specific mock classes inheriting from BaseMock
+class BaseLanguageModel(BaseMock):
     pass
 
-class BaseLanguageModel(MockBase):
+class BaseLLM(BaseMock):
     pass
 
-class BaseGoogleGenerativeAI(MockBase):
+class BaseGoogleGenerativeAI(BaseMock):
+    pass
+
+class BaseDocumentTransformer(BaseMock):
+    pass
+
+class TextSplitter(BaseMock):
     pass
 
 # Add the mock classes to the system
-sys.modules["langchain_core.language_models.base"] = type(
-    "langchain_core.language_models.base",
-    (),
-    {
-        "BaseLanguageModel": BaseLanguageModel,
-        "BaseLLM": BaseLLM,
-    },
-)
-
-sys.modules["langchain_google_genai.llms"] = type(
-    "langchain_google_genai.llms",
-    (),
-    {
-        "_BaseGoogleGenerativeAI": BaseGoogleGenerativeAI,
-    },
-)
+sys.modules.update({
+    "langchain_core.language_models.base": type(
+        "langchain_core.language_models.base",
+        (),
+        {
+            "BaseLanguageModel": BaseLanguageModel,
+            "BaseLLM": BaseLLM,
+        },
+    ),
+    "langchain_google_genai.llms": type(
+        "langchain_google_genai.llms",
+        (),
+        {
+            "_BaseGoogleGenerativeAI": BaseGoogleGenerativeAI,
+        },
+    ),
+    "langchain_core.documents.transformers": type(
+        "langchain_core.documents.transformers",
+        (),
+        {
+            "BaseDocumentTransformer": BaseDocumentTransformer,
+        }
+    ),
+    "langchain_text_splitters": type(
+        "langchain_text_splitters",
+        (),
+        {
+            "TextSplitter": TextSplitter,
+            "RecursiveCharacterTextSplitter": TextSplitter,
+        }
+    ),
+})
 
 # Update all mock modules
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
