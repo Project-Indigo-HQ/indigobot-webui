@@ -73,14 +73,16 @@ class TestSQLAgent(unittest.TestCase):
                 conn = sqlite3.connect(self.test_db_path, timeout=30)
                 cursor = conn.cursor()
                 # Clear all tables
+                # Clear all tables
                 cursor.execute("DELETE FROM embedding_metadata")
                 cursor.execute("DELETE FROM embeddings")
                 cursor.execute("DELETE FROM documents")
                 # Reset all sequences
                 cursor.execute("DELETE FROM sqlite_sequence")
+                # Commit transaction before VACUUM
+                conn.commit()
                 # Vacuum to clean up space and reset file
                 cursor.execute("VACUUM")
-                cursor.execute("DELETE FROM documents")
                 conn.commit()
             finally:
                 conn.close()
