@@ -6,14 +6,15 @@ build:
     python: "3.10"
   apt_packages:
     - graphviz
-  commands:
-    - pip install --upgrade pip
-    - pip install -e .
-    - sphinx-build -b html docs/source docs/build/html
+  jobs:
+    pre_build:
+      - pip install --upgrade pip
+      - pip install -e .
 
 sphinx:
   configuration: docs/source/conf.py
-  fail_on_warning: true
+  fail_on_warning: false
+  builder: html
 
 formats:
   - htmlzip
