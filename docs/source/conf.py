@@ -155,24 +155,23 @@ sys.modules["langchain_chroma"] = type(
 )
 
 
-# Create base classes for language models with metaclass support
-class BaseMeta(type):
+# Create unified mock base for language models
+class MockBase(MagicMock):
+    @classmethod
+    def __getattr__(cls, name):
+        return MagicMock()
+
+# Create mock classes for language models
+class BaseLLM(MockBase):
     pass
 
-
-class BaseLLM(metaclass=BaseMeta):
+class BaseLanguageModel(MockBase):
     pass
 
-
-class BaseLanguageModel(metaclass=BaseMeta):
+class BaseGoogleGenerativeAI(MockBase):
     pass
 
-
-class BaseGoogleGenerativeAI(metaclass=BaseMeta):
-    pass
-
-
-# Add the base classes to the mock system
+# Add the mock classes to the system
 sys.modules["langchain_core.language_models.base"] = type(
     "langchain_core.language_models.base",
     (),
