@@ -2,7 +2,7 @@ indigobot.utils package
 =======================
 
 Utils Submodules
---------------------
+----------------
 
 indigobot.utils.custom\_loader module
 -------------------------------------

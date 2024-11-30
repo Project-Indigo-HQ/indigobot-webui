@@ -37,7 +37,7 @@ class State(TypedDict):
     """
 
     input: str
-    chat_history: Sequence[BaseMessage]
+    chat_history: Annotated[Sequence[BaseMessage], add_messages]
     context: str
     answer: str
 
@@ -115,7 +115,7 @@ retriever_tool = create_retriever_tool(retriever, "my_retriever", "my_descriptio
 tools = [retriever_tool]
 
 # Configuration constants
-THREAD_CONFIG = {"configurable": {"thread_id": "abc123"}}
+thread_config = {"configurable": {"thread_id": "abc123"}}
 
 
 def main(skip_loader: bool = False) -> None:
@@ -132,13 +132,6 @@ def main(skip_loader: bool = False) -> None:
         if load_res == "y":
             custom_loader.main()
 
-    print("What kind of questions do you have about the following resources?")
-    # Iterate over documents and dump metadata
-    document_data_sources = set()
-    for doc_metadata in retriever.vectorstore.get()["metadatas"]:
-        document_data_sources.add(doc_metadata["source"])
-    for doc in document_data_sources:
-        print(f"  {doc}")
     while True:
         try:
             print()
@@ -146,7 +139,7 @@ def main(skip_loader: bool = False) -> None:
             if line:
                 result = app.invoke(
                     {"input": line},
-                    config=THREAD_CONFIG,
+                    config=thread_config,
                 )
                 print()
                 print(result["answer"])
