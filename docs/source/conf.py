@@ -17,11 +17,6 @@ class Mock(MagicMock):
 
 
 MOCK_MODULES = [
-    "langchain_core.runnables.utils",
-    "langchain_core.utils",
-    "langchain_core.utils.input",
-    "langchain_core.utils.math",
-    "langchain_core.utils.parallel",
     "anthropic",
     "bs4",
     "chromadb",
@@ -47,6 +42,8 @@ MOCK_MODULES = [
     "langchain_community.document_transformers",
     "langchain_community.utilities",
     "langchain_core",
+    "langchain_core.callbacks",
+    "langchain_core.callbacks.manager",
     "langchain_core.chat_history",
     "langchain_core.documents",
     "langchain_core.documents.base",
@@ -63,17 +60,20 @@ MOCK_MODULES = [
     "langchain_core.runnables.base",
     "langchain_core.runnables.config",
     "langchain_core.runnables.history",
+    "langchain_core.runnables.utils",
     "langchain_core.vectorstores",
-    "langchain_core.callbacks",
-    "langchain_core.callbacks.manager",
     "langchain_core.tools",
     "langchain_core.tools.base",
+    "langchain_core.utils",
+    "langchain_core.utils.input",
+    "langchain_core.utils.math",
+    "langchain_core.utils.parallel",
     "langchain_experimental",
+    "langchain_experimental.tools",
     "langchain_google_genai",
     "langchain_openai",
     "langgraph",
     "langgraph.checkpoint",
-    "langchain_experimental.tools",
     "openai",
     "numpy",
     "pandas",
@@ -163,4 +163,4 @@ html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
 html_css_files = ["custom.css"]
 
-suppress_warnings = ["epub.unknown_project_files"]
+# suppress_warnings = ["epub.unknown_project_files"]
