@@ -55,6 +55,7 @@ class TestSQLAgent(unittest.TestCase):
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 document_id INTEGER,
                 key TEXT,
+                string_value TEXT,
                 metadata TEXT,
                 FOREIGN KEY (document_id) REFERENCES documents (id)
             );
