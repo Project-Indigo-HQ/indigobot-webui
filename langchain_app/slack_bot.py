@@ -83,5 +83,5 @@ def slack_commands():
     return handler.handle(request)
 
 if __name__ == "__main__":
-    # Run the Flask app on port 3000
-    flask_app.run(port=3000)
+    # Run the Flask app on all interfaces
+    flask_app.run(host='0.0.0.0', port=3000)
