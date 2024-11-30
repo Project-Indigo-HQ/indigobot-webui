@@ -2,12 +2,14 @@
 This is the main chatbot program for conversational capabilities and info distribution.
 """
 
+import os
 import readline  # Required for using arrow keys in CLI
+import sys
+from pathlib import Path
 from typing import Sequence
+
+import uvicorn
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-
-
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.tools.retriever import create_retriever_tool
@@ -16,18 +18,17 @@ from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import START, StateGraph
 from langgraph.graph.message import add_messages
+from pydantic import BaseModel
 from typing_extensions import Annotated, TypedDict
 
-import sys
-from pathlib import Path
-
-file_path = Path(__file__).resolve()
-parent_dir = file_path.parent.parent
-sys.path.append(str(parent_dir))
 from indigobot.config import llms, vectorstores
 from indigobot.utils import custom_loader
 
 llm = llms["gpt"]
+
+# file_path = Path(__file__).resolve()
+# parent_dir = file_path.parent.parent
+# sys.path.append(str(parent_dir))
 
 
 # Define API models
@@ -95,86 +96,6 @@ def call_model(state: State):
     }
 
 
-# currently not used
-def search_vectorstore(query):
-    """
-    Perform a similarity search in the vector store with the given query.
-
-    :param query: The query to search for.
-    :type query: str
-    """
-    docs = vectorstore.similarity_search(query)
-    print(f"Query database for: {query}")
-    if docs:
-        print(f"Closest document match in database: {docs[0].metadata['source']}")
-    else:
-        print("No matching documents")
-
-
-# Model to use
-llm = ChatOpenAI(model="gpt-4")
-# llm = GoogleGenerativeAI(model="gemini-1.5-pro-latest", temperature=0)
-# llm = ChatAnthropic(model="claude-3-5-sonnet-latest")
-
-# OpenAI embeddings
-vectorstore = Chroma(
-    persist_directory="./rag_data/.chromadb/openai",
-    embedding_function=OpenAIEmbeddings(model="text-embedding-3-large"),
-)
-GPT_SQL_DB = "./rag_data/.chromadb/openai/chroma.sqlite3"
-
-# Google embeddings
-# vectorstore = Chroma(
-#     persist_directory="./rag_data/.chromadb/gemini",
-#     embedding_function=GoogleGenerativeAIEmbeddings(
-#         model="models/embedding-001", task_type="retrieval_query"
-#     ),
-# )
-# GOOGLE_SQL_DB = "./rag_data/.chromadb/gemini/chroma.sqlite3"
-
-# Create vectorstore retriever with limit to avoid context overflow
-retriever = vectorstore.as_retriever(
-    search_kwargs={"k": 3}  # Limit to top 3 most relevant documents
-)
-# Create vectorstore retriever for accessing & displaying doc info & metadata
-retriever = vectorstores["gpt"].as_retriever()
-
-### Contextualize question ###
-contextualize_q_system_prompt = (
-    "Reformulate the user's question into a standalone question, "
-    "considering the chat history. Return the original question if no reformulation needed."
-)
-contextualize_q_prompt = ChatPromptTemplate.from_messages(
-    [
-        ("system", contextualize_q_system_prompt),
-        MessagesPlaceholder("chat_history"),
-        ("human", "{input}"),
-    ]
-)
-history_aware_retriever = create_history_aware_retriever(
-    llm, retriever, contextualize_q_prompt
-)
-
-### Answer question ###
-system_prompt = (
-    "You are an assistant that answers questions/provides information about "
-    "social services in Portland, Oregon. Use the following pieces of "
-    "retrieved context to answer the question. If you don't know the answer, "
-    "say that you don't know. Use three sentences maximum and keep the answer concise."
-    "\n\n"
-    "{context}"
-)
-qa_prompt = ChatPromptTemplate.from_messages(
-    [
-        ("system", system_prompt),
-        MessagesPlaceholder("chat_history"),
-        ("human", "{input}"),
-    ]
-)
-question_answer_chain = create_stuff_documents_chain(llm, qa_prompt)
-rag_chain = create_retrieval_chain(history_aware_retriever, question_answer_chain)
-"""
-        """
 # FastAPI app initialization
 app = FastAPI(
     title="RAG API",
@@ -278,31 +199,43 @@ async def list_sources():
         )
 
 
-if __name__ == "__main__":
-    import uvicorn
-    import os
-    import sys
+retriever = vectorstores["gpt"].as_retriever()
 
-    # Optionally, execute custom loader before starting the server
-    load_res = input("Would you like to execute the loader? (y/n) ")
-    if load_res == "y":
-        custom_loader.main()
+### Contextualize question ###
+contextualize_q_system_prompt = (
+    "Reformulate the user's question into a standalone question, "
+    "considering the chat history. Return the original question if no reformulation needed."
+)
+contextualize_q_prompt = ChatPromptTemplate.from_messages(
+    [
+        ("system", contextualize_q_system_prompt),
+        MessagesPlaceholder("chat_history"),
+        ("human", "{input}"),
+    ]
+)
+history_aware_retriever = create_history_aware_retriever(
+    llm, retriever, contextualize_q_prompt
+)
 
-    # Start FastAPI
-    # Get port from environment variable or use default 8000
-    port = int(os.getenv("PORT", 8000))
-    host = "0.0.0.0"  # Explicitly bind to all interfaces
-    print(f"\nStarting server on http://{host}:{port}")
-    print("To access from another machine, use your VM's external IP address")
-    print(f"Make sure your GCP firewall allows incoming traffic on port {port}\n")
+### Answer question ###
+system_prompt = (
+    "You are an assistant that answers questions/provides information about "
+    "social services in Portland, Oregon. Use the following pieces of "
+    "retrieved context to answer the question. If you don't know the answer, "
+    "say that you don't know. Use three sentences maximum and keep the answer concise."
+    "\n\n"
+    "{context}"
+)
+qa_prompt = ChatPromptTemplate.from_messages(
+    [
+        ("system", system_prompt),
+        MessagesPlaceholder("chat_history"),
+        ("human", "{input}"),
+    ]
+)
+question_answer_chain = create_stuff_documents_chain(llm, qa_prompt)
+rag_chain = create_retrieval_chain(history_aware_retriever, question_answer_chain)
 
-    uvicorn.run(
-        "langchain_app.base_model:app",
-        host=host,
-        port=port,
-        reload=True,
-        access_log=True,  # Enable access logging
-    )
 workflow = StateGraph(state_schema=State)
 workflow.add_edge(START, "model")
 workflow.add_node("model", call_model)
@@ -330,6 +263,25 @@ def main(skip_loader: bool = False) -> None:
         load_res = input("Would you like to execute the loader? (y/n) ")
         if load_res == "y":
             custom_loader.main()
+
+    # Start FastAPI
+    # Get port from environment variable or use default 8000
+    port = int(os.getenv("PORT", 8000))
+    host = "0.0.0.0"  # Explicitly bind to all interfaces
+    print(f"\nStarting server on http://{host}:{port}")
+    print("To access from another machine, use your VM's external IP address")
+    print(f"Make sure your GCP firewall allows incoming traffic on port {port}\n")
+
+    try:
+        uvicorn.run(
+            "indigobot.__main__:app",
+            host=host,
+            port=port,
+            reload=True,
+            access_log=True,  # Enable access logging
+        )
+    except Exception as e:
+        print(f"Failure running Uvicorn: {e}")
 
     while True:
         try:

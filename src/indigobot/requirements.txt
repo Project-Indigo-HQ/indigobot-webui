@@ -1,4 +1,5 @@
 bs4
+fastapi
 jq
 langchain
 langchainhub
@@ -12,3 +13,4 @@ langgraph
 pypdf
 requests
 unidecode
+uvicorn
