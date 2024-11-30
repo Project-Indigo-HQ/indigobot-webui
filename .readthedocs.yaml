@@ -12,7 +12,7 @@ sphinx:
 formats:
   - pdf
   - epub
-  - htmlzip
+  # - htmlzip
 
 python:
   install:

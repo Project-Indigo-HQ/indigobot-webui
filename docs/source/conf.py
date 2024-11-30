@@ -114,17 +114,17 @@ release = "1.0.0"
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
+    "myst_parser",
     "sphinx.ext.autodoc",
-    "sphinx.ext.napoleon",
-    "sphinx.ext.viewcode",
+    "sphinx.ext.autodoc.typehints",
+    "sphinx.ext.autosectionlabel",
+    "sphinx.ext.coverage",
     "sphinx.ext.githubpages",
     "sphinx.ext.intersphinx",
-    "sphinx.ext.autosectionlabel",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.viewcode",
     "sphinx.ext.todo",
-    "sphinx.ext.coverage",
     "sphinx_copybutton",
-    "sphinx.ext.autodoc.typehints",
-    "myst_parser",
 ]
 
 # Add source file mappings
