@@ -32,7 +32,7 @@ def handle_ask_command(ack, command, say):
             input=question,
             chat_history=[],
             context=""
-        ).dict()
+        ).model_dump()
         
         # Get response from RAG chain
         response = rag_chain.invoke(state)
@@ -60,7 +60,7 @@ def handle_mention(event, say):
             input=question,
             chat_history=[],
             context=""
-        ).dict()
+        ).model_dump()
         
         # Get response from RAG chain
         response = rag_chain.invoke(state)
