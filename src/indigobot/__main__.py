@@ -4,8 +4,6 @@ This is the main chatbot program for conversational capabilities and info distri
 
 import os
 import readline  # Required for using arrow keys in CLI
-import sys
-from pathlib import Path
 from typing import Sequence
 
 import uvicorn
@@ -26,6 +24,7 @@ from indigobot.utils import custom_loader
 
 llm = llms["gpt"]
 
+# TODO: Do we need this?
 # file_path = Path(__file__).resolve()
 # parent_dir = file_path.parent.parent
 # sys.path.append(str(parent_dir))
@@ -65,6 +64,8 @@ class ChatState(TypedDict):
     answer: str
 
 
+# TODO: We have 2 classes (this and the above) that are basically the same.
+# This one doesn't work with call_model(), but is maybe needed for query_model ??
 class State(BaseModel):
     """
     Pydantic model for chat state validation
@@ -76,12 +77,12 @@ class State(BaseModel):
     answer: str = ""
 
 
-def call_model(state: State):
+def call_model(state: ChatState):
     """
     Call the model with the given state and return the response.
 
     :param state: The state containing input, chat history, context, and answer.
-    :type state: State
+    :type state: ChatState
     :return: Updated state with chat history, context, and answer.
     :rtype: dict
     """
@@ -236,15 +237,12 @@ qa_prompt = ChatPromptTemplate.from_messages(
 question_answer_chain = create_stuff_documents_chain(llm, qa_prompt)
 rag_chain = create_retrieval_chain(history_aware_retriever, question_answer_chain)
 
-workflow = StateGraph(state_schema=State)
+workflow = StateGraph(state_schema=ChatState)
 workflow.add_edge(START, "model")
 workflow.add_node("model", call_model)
 
 memory = MemorySaver()
-app = workflow.compile(checkpointer=memory)
-
-retriever_tool = create_retriever_tool(retriever, "my_retriever", "my_description")
-tools = [retriever_tool]
+chatbot_app = workflow.compile(checkpointer=memory)
 
 # Configuration constants
 thread_config = {"configurable": {"thread_id": "abc123"}}
@@ -264,7 +262,7 @@ def main(skip_loader: bool = False) -> None:
         if load_res == "y":
             custom_loader.main()
 
-    # Start FastAPI
+    """Start FastAPI"""
     # Get port from environment variable or use default 8000
     port = int(os.getenv("PORT", 8000))
     host = "0.0.0.0"  # Explicitly bind to all interfaces
@@ -288,7 +286,7 @@ def main(skip_loader: bool = False) -> None:
             print()
             line = input("llm>> ")
             if line:
-                result = app.invoke(
+                result = chatbot_app.invoke(
                     {"input": line},
                     config=thread_config,
                 )
