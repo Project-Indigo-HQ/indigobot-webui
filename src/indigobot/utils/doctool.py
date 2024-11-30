@@ -3,7 +3,7 @@ This program provides an agent that generates Sphinx-style docstrings, unit test
 a summary when given a file path or name. It assumes the provided file is in the cwd.
 """
 
-import readline
+import readline  # Required for using arrow keys in CLI
 
 from langchain.agents import AgentExecutor, create_tool_calling_agent
 from langchain_community.agent_toolkits.load_tools import load_tools

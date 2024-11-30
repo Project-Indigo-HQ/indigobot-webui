@@ -50,7 +50,6 @@ except Exception as e:
     print(f"Error initializing Google vectorstore: {e}")
     raise
 
-
 vectorstores = {"gpt": gpt_vstore, "gemini": gem_vstore}
 
 # URLs for API endpoints that return JSON data

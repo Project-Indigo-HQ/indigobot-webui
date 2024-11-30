@@ -17,18 +17,22 @@ Usage:
 """
 
 import os
-import readline
+import readline  # Required for using arrow keys in CLI
 import sqlite3
 
+from langchain import hub
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.agent_toolkits import SQLDatabaseToolkit
-from langchain_community.agent_toolkits.sql.base import create_sql_agent
+from langchain.agents.agent_toolkits import create_retriever_tool
 from langchain_community.document_loaders import AsyncHtmlLoader
 from langchain_community.utilities import SQLDatabase
+from langchain_core.messages import HumanMessage
+from langgraph.prebuilt import create_react_agent
 
-from indigobot.config import GEM_DB, GPT_DB, llms
+from indigobot.config import GEM_DB, GPT_DB, llms, vectorstores
 
 llm = llms["gpt"]
+vectorstore = vectorstores["gpt"]
 
 
 def init_db(db_path=None):
@@ -54,7 +58,7 @@ def init_db(db_path=None):
         # Create the documents table if it doesn't exist
         cursor.execute(
             """
-            CREATE TABLE IF NOT EXISTS embeddings (
+            CREATE TABLE IF NOT EXISTS documents (
                 id INTEGER PRIMARY KEY AUTOINCREMENT
             );
         """
@@ -123,13 +127,13 @@ def load_docs(docs, db_path=None):
         cursor = conn.cursor()
 
         for doc in splits:
-            # First insert into embeddings table to get an id
-            cursor.execute("INSERT INTO embeddings DEFAULT VALUES")
+            # First insert into documents table to get an id
+            cursor.execute("INSERT INTO documents DEFAULT VALUES")
             doc_id = cursor.lastrowid
 
             # Insert the document content
             cursor.execute(
-                "INSERT INTO embedding_metadata (id, key, string_value) VALUES (?, ?, ?)",
+                "INSERT INTO documents (id, key, string_value) VALUES (?, ?, ?)",
                 (doc_id, "content", doc.page_content),
             )
 
@@ -137,22 +141,22 @@ def load_docs(docs, db_path=None):
             for key, value in doc.metadata.items():
                 if isinstance(value, str):
                     cursor.execute(
-                        "INSERT INTO embedding_metadata (id, key, string_value) VALUES (?, ?, ?)",
+                        "INSERT INTO documents (id, key, string_value) VALUES (?, ?, ?)",
                         (doc_id, key, value),
                     )
                 elif isinstance(value, bool):
                     cursor.execute(
-                        "INSERT INTO embedding_metadata (id, key, bool_value) VALUES (?, ?, ?)",
+                        "INSERT INTO documents (id, key, bool_value) VALUES (?, ?, ?)",
                         (doc_id, key, int(value)),
                     )
                 elif isinstance(value, int):
                     cursor.execute(
-                        "INSERT INTO embedding_metadata (id, key, int_value) VALUES (?, ?, ?)",
+                        "INSERT INTO documents (id, key, int_value) VALUES (?, ?, ?)",
                         (doc_id, key, value),
                     )
                 elif isinstance(value, float):
                     cursor.execute(
-                        "INSERT INTO embedding_metadata (id, key, float_value) VALUES (?, ?, ?)",
+                        "INSERT INTO documents (id, key, float_value) VALUES (?, ?, ?)",
                         (doc_id, key, value),
                     )
 
@@ -216,13 +220,29 @@ def query_database(query, params=(), db_path=None):
 def main():
     db = init_db(GPT_DB)
 
-    toolkit = SQLDatabaseToolkit(db=db, llm=llm)  # create llm toolkit
-    agent = create_sql_agent(
-        llm=llm,
-        toolkit=toolkit,
-        verbose=True,
-        handle_parsing_errors=True,
-    )  # create agent
+    prompt_template = hub.pull("langchain-ai/sql-agent-system-prompt")
+
+    assert len(prompt_template.messages) == 1
+    prompt_template.messages[0].pretty_print()
+    system_message = prompt_template.format(dialect="SQLite", top_k=5)
+
+    retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
+    description = (
+        "Use to look up values to filter on. Input is an approximate spelling "
+        "of the proper noun, output is valid proper nouns. Use the noun most "
+        "similar to the search."
+    )
+
+    retriever_tool = create_retriever_tool(
+        retriever,
+        name="search_proper_nouns",
+        description=description,
+    )
+    toolkit = SQLDatabaseToolkit(db=db, llm=llm)
+    tools = toolkit.get_tools()
+    tools.append(retriever_tool)
+
+    agent_executor = create_react_agent(llm, tools, state_modifier=system_message)
 
     while True:
         line = input("llm>> ")
@@ -231,8 +251,11 @@ def main():
             break
         if line:
             try:
-                result = agent.invoke(line)
-                print(f"\n{result}")
+                for step in agent_executor.stream(
+                    {"messages": [{"role": "user", "content": line}]},
+                    stream_mode="values",
+                ):
+                    step["messages"][-1].pretty_print()
             except Exception as e:
                 print(f"error: {e}")
         else:
