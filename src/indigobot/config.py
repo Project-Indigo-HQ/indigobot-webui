@@ -28,6 +28,7 @@ GEM_DB: Final[str] = os.path.join(CHROMA_DIR, "gemini/chroma.sqlite3")
 GPT_DB: Final[str] = os.path.join(CHROMA_DIR, "openai/chroma.sqlite3")
 CRAWLER_DIR: Final[str] = os.path.join(CURRENT_DIR, "utils/jf_crawler")
 
+# OpenAI embeddings
 try:
     gpt_vstore = Chroma(
         persist_directory=os.path.join(CHROMA_DIR, "openai"),
@@ -35,8 +36,9 @@ try:
     )
 except Exception as e:
     print(f"Error initializing OpenAI vectorstore: {e}")
-    gpt_vstore = None
+    raise
 
+# Google embeddings
 try:
     gem_vstore = Chroma(
         persist_directory=os.path.join(CHROMA_DIR, "gemini"),
@@ -46,10 +48,10 @@ try:
     )
 except Exception as e:
     print(f"Error initializing Google vectorstore: {e}")
-    gem_vstore = None
+    raise
+
 
 vectorstores = {"gpt": gpt_vstore, "gemini": gem_vstore}
-
 
 # URLs for API endpoints that return JSON data
 urls: List[str] = [

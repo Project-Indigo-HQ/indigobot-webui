@@ -18,6 +18,8 @@ from langchain_community.document_transformers import BeautifulSoupTransformer
 from indigobot.config import CRAWLER_DIR, r_urls, urls, vectorstores
 from indigobot.utils import jf_crawler, refine_html
 
+vectorstores = (vectorstores["gpt"], vectorstores["gemini"])
+
 
 def clean_text(text):
     """

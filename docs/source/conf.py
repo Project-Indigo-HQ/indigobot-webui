@@ -3,8 +3,8 @@
 # For the full list of built-in configuration values, see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-import os
 import sys
+import os
 
 # Add the project root directory to the Python path
 sys.path.insert(0, os.path.abspath("../.."))
@@ -25,6 +25,14 @@ os.environ["SPHINX_BUILD"] = "1"
 
 
 MOCK_MODULES = [
+    "langchain",
+    "langchain_core",
+    "langchain_community",
+    "langchain_anthropic",
+    "langchain_openai",
+    "anthropic",
+    "openai",
+    "chromadb",
     "typing_extensions",
     "requests",
     "requests.exceptions",
