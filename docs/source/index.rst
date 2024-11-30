@@ -1,17 +1,52 @@
-.. indigo documentation master file, created by
-   sphinx-quickstart on Sun Nov 10 10:22:41 2024.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+Project Indigo Documentation
+============================
 
-indigo documentation
-====================
+Welcome to Project Indigo's documentation. This project provides a sophisticated RAG (Retrieval-Augmented Generation) system using LangChain.
 
-Add your content using ``reStructuredText`` syntax. See the
-`reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html>`_
-documentation for details.
+Quick Start
+-----------
 
+To get started with Project Indigo:
+
+.. code-block:: bash
+
+   git clone https://github.com/yourusername/project-indigo
+   cd project-indigo
+   python -m venv venv
+   source venv/bin/activate  # On Windows use: venv\Scripts\activate
+   pip install -r requirements.txt
+
+Installation
+------------
+
+Requirements:
+
+* Python 3.12 or higher
+* pip package manager
+* Virtual environment (recommended)
+
+Features
+--------
+
+* Custom document loading and processing
+* Advanced RAG implementation
+* SQL database integration
+* Web crawling capabilities
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: API Documentation:
 
+   modules
+
+Contributing
+------------
+
+We welcome contributions! Please see our contributing guidelines for more information.
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
