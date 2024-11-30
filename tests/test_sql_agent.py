@@ -47,6 +47,18 @@ class TestSQLAgent(unittest.TestCase):
             );
         """
         )
+
+        # Create embedding metadata table
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS embedding_metadata (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                document_id INTEGER,
+                metadata TEXT,
+                FOREIGN KEY (document_id) REFERENCES documents (id)
+            );
+        """
+        )
         
         conn.commit()
         conn.close()
@@ -58,8 +70,11 @@ class TestSQLAgent(unittest.TestCase):
             try:
                 conn = sqlite3.connect(self.test_db_path, timeout=30)
                 cursor = conn.cursor()
-                cursor.execute("DELETE FROM documents")
+                cursor.execute("DELETE FROM embedding_metadata")
                 cursor.execute("DELETE FROM embeddings")
+                cursor.execute("DELETE FROM embedding_metadata")
+                cursor.execute("DELETE FROM embeddings") 
+                cursor.execute("DELETE FROM documents")
                 conn.commit()
             finally:
                 conn.close()
