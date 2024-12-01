@@ -87,28 +87,6 @@ def load_urls(urls, vectorstore):
     load_docs(AsyncHtmlLoader(urls).load(), vectorstore)
 
 
-def scrape_articles(links):
-    """
-    Scrapes a list of links, extracts article text, and returns Documents.
-
-    :param links: List of URLs to scrape.
-    :type links: list
-    :return: List of transformed documents.
-    :rtype: list
-    """
-    # Create SSL context with verification disabled
-    ssl_context = ssl.create_default_context()
-    ssl_context.check_hostname = False  # Disable hostname checking
-    ssl_context.verify_mode = ssl.CERT_NONE  # Disable certificate verification
-    loader = AsyncHtmlLoader(links, requests_kwargs={"ssl": ssl_context})
-    docs = loader.load()
-    # Extract article tag
-    transformer = BeautifulSoupTransformer()
-    docs_tr = transformer.transform_documents(documents=docs, tags_to_extract=[])
-    clean_documents(docs_tr)
-    return docs_tr
-
-
 def extract_text(html):
     """
     Extracts text from a div tag with id of 'main' from HTML content.
