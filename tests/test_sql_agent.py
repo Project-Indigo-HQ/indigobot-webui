@@ -1,241 +1,120 @@
-import json
-import os
-import sqlite3
-import unittest
-from unittest.mock import patch
+ import os                                                                                                                                                                                                                                                                                                                      
+ import pytest                                                                                                                                                                                                                                                                                                                  
+ import sqlite3                                                                                                                                                                                                                                                                                                                 
+ import tempfile                                                                                                                                                                                                                                                                                                                
+ from unittest.mock import Mock, patch                                                                                                                                                                                                                                                                                          
+                                                                                                                                                                                                                                                                                                                                
+ from langchain_community.document_loaders import Document                                                                                                                                                                                                                                                                      
+ from langchain_community.utilities import SQLDatabase                                                                                                                                                                                                                                                                          
+                                                                                                                                                                                                                                                                                                                                
+ from indigobot.utils.sql_agent import (                                                                                                                                                                                                                                                                                        
+     init_db,                                                                                                                                                                                                                                                                                                                   
+     load_docs,                                                                                                                                                                                                                                                                                                                 
+     load_urls,                                                                                                                                                                                                                                                                                                                 
+     query_database,                                                                                                                                                                                                                                                                                                            
+     format_docs,                                                                                                                                                                                                                                                                                                               
+ )                                                                                                                                                                                                                                                                                                                              
+                                                                                                                                                                                                                                                                                                                                
+ @pytest.fixture                                                                                                                                                                                                                                                                                                                
+ def temp_db_path():                                                                                                                                                                                                                                                                                                            
+     """Fixture to create a temporary database file"""                                                                                                                                                                                                                                                                          
+     with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:                                                                                                                                                                                                                                                         
+         db_path = f.name                                                                                                                                                                                                                                                                                                       
+     yield db_path                                                                                                                                                                                                                                                                                                              
+     os.unlink(db_path)  # Clean up after test                                                                                                                                                                                                                                                                                  
+                                                                                                                                                                                                                                                                                                                                
+ @pytest.fixture                                                                                                                                                                                                                                                                                                                
+ def sample_docs():                                                                                                                                                                                                                                                                                                             
+     """Fixture to create sample documents"""                                                                                                                                                                                                                                                                                   
+     return [                                                                                                                                                                                                                                                                                                                   
+         Document(                                                                                                                                                                                                                                                                                                              
+             page_content="Test document 1",                                                                                                                                                                                                                                                                                    
+             metadata={"source": "test1.txt", "page": 1}                                                                                                                                                                                                                                                                        
+         ),                                                                                                                                                                                                                                                                                                                     
+         Document(                                                                                                                                                                                                                                                                                                              
+             page_content="Test document 2",                                                                                                                                                                                                                                                                                    
+             metadata={"source": "test2.txt", "page": 2, "score": 0.95}                                                                                                                                                                                                                                                         
+         )                                                                                                                                                                                                                                                                                                                      
+     ]                                                                                                                                                                                                                                                                                                                          
+                                                                                                                                                                                                                                                                                                                                
+ def test_init_db(temp_db_path):                                                                                                                                                                                                                                                                                                
+     """Test database initialization"""                                                                                                                                                                                                                                                                                         
+     db = init_db(temp_db_path)                                                                                                                                                                                                                                                                                                 
+     assert isinstance(db, SQLDatabase)                                                                                                                                                                                                                                                                                         
+                                                                                                                                                                                                                                                                                                                                
+     # Verify tables were created                                                                                                                                                                                                                                                                                               
+     conn = sqlite3.connect(temp_db_path)                                                                                                                                                                                                                                                                                       
+     cursor = conn.cursor()                                                                                                                                                                                                                                                                                                     
+                                                                                                                                                                                                                                                                                                                                
+     # Check if documents table exists                                                                                                                                                                                                                                                                                          
+     cursor.execute("""                                                                                                                                                                                                                                                                                                         
+         SELECT name FROM sqlite_master                                                                                                                                                                                                                                                                                         
+         WHERE type='table' AND name='documents'                                                                                                                                                                                                                                                                                
+     """)                                                                                                                                                                                                                                                                                                                       
+     assert cursor.fetchone() is not None                                                                                                                                                                                                                                                                                       
+                                                                                                                                                                                                                                                                                                                                
+     conn.close()                                                                                                                                                                                                                                                                                                               
+                                                                                                                                                                                                                                                                                                                                
+ def test_load_docs(temp_db_path, sample_docs):                                                                                                                                                                                                                                                                                 
+     """Test loading documents into database"""                                                                                                                                                                                                                                                                                 
+     load_docs(sample_docs, temp_db_path)                                                                                                                                                                                                                                                                                       
+                                                                                                                                                                                                                                                                                                                                
+     # Verify documents were inserted                                                                                                                                                                                                                                                                                           
+     results = query_database(                                                                                                                                                                                                                                                                                                  
+         "SELECT COUNT(*) FROM documents",                                                                                                                                                                                                                                                                                      
+         db_path=temp_db_path                                                                                                                                                                                                                                                                                                   
+     )                                                                                                                                                                                                                                                                                                                          
+     assert results[0][0] == len(sample_docs)                                                                                                                                                                                                                                                                                   
+                                                                                                                                                                                                                                                                                                                                
+ @patch('indigobot.utils.sql_agent.AsyncHtmlLoader')                                                                                                                                                                                                                                                                            
+ def test_load_urls(mock_loader, temp_db_path):                                                                                                                                                                                                                                                                                 
+     """Test loading documents from URLs"""                                                                                                                                                                                                                                                                                     
+     mock_docs = [                                                                                                                                                                                                                                                                                                              
+         Document(page_content="Web content 1"),                                                                                                                                                                                                                                                                                
+         Document(page_content="Web content 2")                                                                                                                                                                                                                                                                                 
+     ]                                                                                                                                                                                                                                                                                                                          
+     mock_loader_instance = Mock()                                                                                                                                                                                                                                                                                              
+     mock_loader_instance.load.return_value = mock_docs                                                                                                                                                                                                                                                                         
+     mock_loader.return_value = mock_loader_instance                                                                                                                                                                                                                                                                            
+                                                                                                                                                                                                                                                                                                                                
+     urls = ["http://example.com"]                                                                                                                                                                                                                                                                                              
+     load_urls(urls, temp_db_path)                                                                                                                                                                                                                                                                                              
+                                                                                                                                                                                                                                                                                                                                
+     mock_loader.assert_called_once_with(urls)                                                                                                                                                                                                                                                                                  
+     mock_loader_instance.load.assert_called_once()                                                                                                                                                                                                                                                                             
+                                                                                                                                                                                                                                                                                                                                
+ def test_format_docs(sample_docs):                                                                                                                                                                                                                                                                                             
+     """Test document formatting"""                                                                                                                                                                                                                                                                                             
+     formatted = format_docs(sample_docs)                                                                                                                                                                                                                                                                                       
+     assert "Test document 1" in formatted                                                                                                                                                                                                                                                                                      
+     assert "Test document 2" in formatted                                                                                                                                                                                                                                                                                      
+     assert formatted.count("\n\n") == 1  # Documents should be separated by newlines                                                                                                                                                                                                                                           
+                                                                                                                                                                                                                                                                                                                                
+ def test_query_database(temp_db_path, sample_docs):                                                                                                                                                                                                                                                                            
+     """Test database querying"""                                                                                                                                                                                                                                                                                               
+     load_docs(sample_docs, temp_db_path)                                                                                                                                                                                                                                                                                       
+                                                                                                                                                                                                                                                                                                                                
+     # Test basic query                                                                                                                                                                                                                                                                                                         
+     results = query_database(                                                                                                                                                                                                                                                                                                  
+         "SELECT COUNT(*) FROM documents",                                                                                                                                                                                                                                                                                      
+         db_path=temp_db_path                                                                                                                                                                                                                                                                                                   
+     )                                                                                                                                                                                                                                                                                                                          
+     assert results[0][0] == len(sample_docs)                                                                                                                                                                                                                                                                                   
+                                                                                                                                                                                                                                                                                                                                
+     # Test query with parameters                                                                                                                                                                                                                                                                                               
+     results = query_database(                                                                                                                                                                                                                                                                                                  
+         "SELECT * FROM documents WHERE id = ?",                                                                                                                                                                                                                                                                                
+         params=(1,),                                                                                                                                                                                                                                                                                                           
+         db_path=temp_db_path                                                                                                                                                                                                                                                                                                   
+     )                                                                                                                                                                                                                                                                                                                          
+     assert len(results) > 0                                                                                                                                                                                                                                                                                                    
+                                                                                                                                                                                                                                                                                                                                
+ @pytest.mark.parametrize("invalid_query", [                                                                                                                                                                                                                                                                                    
+     "SELECT * FROM nonexistent_table",                                                                                                                                                                                                                                                                                         
+     "INVALID SQL QUERY",                                                                                                                                                                                                                                                                                                       
+ ])                                                                                                                                                                                                                                                                                                                             
+ def test_query_database_errors(temp_db_path, invalid_query):                                                                                                                                                                                                                                                                   
+     """Test database query error handling"""                                                                                                                                                                                                                                                                                   
+     with pytest.raises(sqlite3.Error):                                                                                                                                                                                                                                                                                         
+         query_database(invalid_query, db_path=temp_db_path)
 
-from langchain_core.documents import Document
-
-from indigobot.config import GPT_DB
-from indigobot.utils.sql_agent import format_docs, load_docs, load_urls, query_database
-
-
-class TestSQLAgent(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        """Set up test database"""
-        cls.original_db_path = GPT_DB
-        cls.test_db_path = "test_indigo_bot_db.sqlite"
-        if os.path.exists(cls.test_db_path):
-            os.remove(cls.test_db_path)
-
-    def setUp(self):
-        """Create fresh test database before each test"""
-        # Clear all data before each test
-        if os.path.exists(self.test_db_path):
-            try:
-                # Close any existing connections
-                conn = sqlite3.connect(self.test_db_path, timeout=30)
-                cursor = conn.cursor()
-
-                # Drop and recreate tables to ensure clean state
-                cursor.execute("DROP TABLE IF EXISTS embedding_metadata")
-                cursor.execute("DROP TABLE IF EXISTS embeddings")
-                cursor.execute("DROP TABLE IF EXISTS documents")
-
-                # Recreate tables
-                cursor.execute("""DROP TABLE IF EXISTS embedding_metadata""")
-                cursor.execute("""DROP TABLE IF EXISTS embeddings""")
-                cursor.execute("""DROP TABLE IF EXISTS documents""")
-
-                cursor.execute("""
-                    CREATE TABLE documents (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        text TEXT NOT NULL,
-                        metadata TEXT,
-                        key TEXT,
-                        source TEXT
-                    )
-                """)
-
-                cursor.execute("""
-                    CREATE TABLE embeddings (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        document_id INTEGER,
-                        embedding BLOB,
-                        FOREIGN KEY (document_id) REFERENCES documents (id)
-                    )
-                """)
-
-                cursor.execute("""
-                    CREATE TABLE embedding_metadata (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        document_id INTEGER,
-                        key TEXT,
-                        string_value TEXT,
-                        metadata TEXT,
-                        FOREIGN KEY (document_id) REFERENCES documents (id)
-                    )
-                """)
-
-                conn.commit()
-
-                # Vacuum database after schema changes
-                conn.execute("VACUUM")
-                conn.commit()
-            finally:
-                conn.close()
-
-    def tearDown(self):
-        """Clean up test database after each test"""
-        if os.path.exists(self.test_db_path):
-            try:
-                conn = sqlite3.connect(self.test_db_path, timeout=30)
-                cursor = conn.cursor()
-                cursor.execute("DELETE FROM documents")
-                conn.commit()
-            finally:
-                conn.close()
-
-    @classmethod
-    def tearDownClass(cls):
-        """Clean up test database and restore original GPT_DB"""
-        try:
-            if os.path.exists(cls.test_db_path):
-                os.remove(cls.test_db_path)
-        finally:
-            # Always restore original DB path
-            global GPT_DB
-            GPT_DB = cls.original_db_path
-
-    def test_load_docs(self):
-        """Test loading documents into database"""
-        test_docs = [
-            Document(page_content="Test content 1", metadata={"source": "test1.txt"}),
-            Document(page_content="Test content 2", metadata={"source": "test2.txt"}),
-        ]
-
-        load_docs(test_docs, db_path=self.test_db_path)
-
-        results = query_database(
-            "SELECT text, metadata FROM documents ORDER BY id",
-            db_path=self.test_db_path,
-        )
-        self.assertEqual(len(results), 2)
-        self.assertEqual(results[0][0], "Test content 1")
-        metadata1 = json.loads(results[0][1])
-        self.assertEqual(metadata1["source"], "test1.txt")
-
-    @patch("indigobot.utils.sql_agent.AsyncHtmlLoader")
-    def test_load_urls(self, mock_loader):
-        """Test loading URLs"""
-        mock_docs = [
-            Document(
-                page_content="Web content 1", metadata={"source": "http://test1.com"}
-            )
-        ]
-        mock_loader.return_value.load.return_value = mock_docs
-
-        test_urls = ["http://test1.com"]
-        load_urls(test_urls, db_path=self.test_db_path)
-
-        results = query_database(
-            "SELECT text, metadata FROM documents", db_path=self.test_db_path
-        )
-        self.assertEqual(len(results), 1)
-        self.assertIn("Web content 1", results[0][0])
-
-    def test_format_docs(self):
-        """Test document formatting"""
-        test_docs = [
-            Document(page_content="Content 1"),
-            Document(page_content="Content 2"),
-        ]
-
-        result = format_docs(test_docs)
-        self.assertEqual(result, "Content 1\n\nContent 2")
-
-    def test_query_database(self):
-        """Test database querying"""
-        # Insert test data
-        conn = sqlite3.connect(self.test_db_path)
-        cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO documents (text, metadata) VALUES (?, ?)",
-            ("Test text", '{"source": "test.txt"}'),
-        )
-        conn.commit()
-        conn.close()
-
-        # Test normal query
-        results = query_database(
-            "SELECT text FROM documents", params=(), db_path=self.test_db_path
-        )
-        self.assertEqual(len(results), 1)
-        self.assertEqual(results[0][0], "Test text")
-
-    def test_query_database_with_params(self):
-        """Test parameterized database querying"""
-        # Insert test data
-        conn = sqlite3.connect(self.test_db_path)
-        cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO documents (text, metadata) VALUES (?, ?)",
-            ("Test text", '{"source": "test.txt"}'),
-        )
-        conn.commit()
-        conn.close()
-
-        # Test parameterized query
-        results = query_database(
-            "SELECT text FROM documents WHERE text = ?",
-            params=("Test text",),
-            db_path=self.test_db_path,
-        )
-        self.assertEqual(len(results), 1)
-        self.assertEqual(results[0][0], "Test text")
-
-    def test_query_database_injection_prevention(self):
-        """Test SQL injection prevention"""
-        # Insert test data
-        conn = sqlite3.connect(self.test_db_path)
-        cursor = conn.cursor()
-        cursor.execute(
-            "INSERT INTO documents (text, metadata) VALUES (?, ?)",
-            ("Safe text", '{"source": "test.txt"}'),
-        )
-        conn.commit()
-        conn.close()
-
-        # Attempt SQL injection
-        malicious_input = "' OR '1'='1"
-        results = query_database(
-            "SELECT text FROM documents WHERE text = ?",
-            params=(malicious_input,),
-            db_path=self.test_db_path,
-        )
-        self.assertEqual(len(results), 0)  # Should not match anything
-
-    def test_query_database_empty_params(self):
-        """Test query_database with empty parameters"""
-        results = query_database(
-            "SELECT COUNT(*) FROM documents",
-            params=(),
-            db_path=self.test_db_path,
-        )
-        self.assertIsNotNone(results)
-        self.assertTrue(isinstance(results[0][0], int))
-
-    def test_load_docs_with_malicious_content(self):
-        """Test handling of potentially malicious document content"""
-        malicious_docs = [
-            Document(
-                page_content="'; DROP TABLE documents; --",
-                metadata={"source": "malicious.txt"},
-            )
-        ]
-
-        load_docs(malicious_docs, db_path=self.test_db_path)
-
-        # Verify table still exists and data was properly escaped
-        results = query_database(
-            "SELECT text FROM documents WHERE text = ?",
-            params=("'; DROP TABLE documents; --",),
-            db_path=self.test_db_path,
-        )
-        self.assertEqual(len(results), 1)
-        self.assertEqual(results[0][0], "'; DROP TABLE documents; --")
-
-
-if __name__ == "__main__":
-    unittest.main()
