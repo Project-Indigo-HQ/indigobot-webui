@@ -79,8 +79,12 @@ class TestCrawler(unittest.TestCase):
         test_urls = ["https://example.com/page1"]
         session = mock_session()
 
-        with patch("os.makedirs"), patch("builtins.open", unittest.mock.mock_open()):
+        with patch("os.makedirs") as mock_makedirs, patch("builtins.open", unittest.mock.mock_open()) as mock_file:
             download_and_save_html(test_urls, session)
+            # Verify makedirs was called
+            mock_makedirs.assert_called_once()
+            # Verify file was opened for writing
+            mock_file.assert_called_once()
 
     @patch("indigobot.utils.jf_crawler.fetch_xml")
     @patch("indigobot.utils.jf_crawler.extract_xml")
