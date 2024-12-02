@@ -54,13 +54,7 @@ def init_db(db_path=None):
         # Ensure the database directory exists
         os.makedirs(os.path.dirname(db_file), exist_ok=True)
 
-        # Create SQLDatabase instance first
-        db = SQLDatabase.from_uri(
-            f"sqlite:///{db_file}",
-            include_tables=included_tables,
-        )
-
-        # Then initialize tables
+        # Initialize tables first
         conn = sqlite3.connect(db_file)
         cursor = conn.cursor()
 
@@ -75,11 +69,16 @@ def init_db(db_path=None):
                 float_value REAL,
                 bool_value INTEGER
             );
-        """
+            """
         )
         conn.commit()
         conn.close()
 
+        # Then create SQLDatabase instance
+        db = SQLDatabase.from_uri(
+            f"sqlite:///{db_file}",
+            include_tables=included_tables,
+        )
         return db
     except Exception as e:
         print(f"Error initializing database: {e}")
@@ -114,6 +113,9 @@ def load_docs(docs, db_path=None):
     :param db_path: Path to the database file. If None, the default GPT_DB path is used.
     :type db_path: str, optional
     """
+    # Initialize database if it doesn't exist
+    init_db(db_path)
+    
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=10)
     splits = text_splitter.split_documents(docs)
 
@@ -135,23 +137,23 @@ def load_docs(docs, db_path=None):
             for key, value in doc.metadata.items():
                 if isinstance(value, str):
                     cursor.execute(
-                        "INSERT INTO documents (id, key, string_value) VALUES (?, ?, ?)",
-                        (doc_id, key, value),
+                        "INSERT INTO documents (key, string_value) VALUES (?, ?)",
+                        (key, value),
                     )
                 elif isinstance(value, bool):
                     cursor.execute(
-                        "INSERT INTO documents (id, key, bool_value) VALUES (?, ?, ?)",
-                        (doc_id, key, int(value)),
+                        "INSERT INTO documents (key, bool_value) VALUES (?, ?)",
+                        (key, int(value)),
                     )
                 elif isinstance(value, int):
                     cursor.execute(
-                        "INSERT INTO documents (id, key, int_value) VALUES (?, ?, ?)",
-                        (doc_id, key, value),
+                        "INSERT INTO documents (key, int_value) VALUES (?, ?)",
+                        (key, value),
                     )
                 elif isinstance(value, float):
                     cursor.execute(
-                        "INSERT INTO documents (id, key, float_value) VALUES (?, ?, ?)",
-                        (doc_id, key, value),
+                        "INSERT INTO documents (key, float_value) VALUES (?, ?)",
+                        (key, value),
                     )
 
         conn.commit()
