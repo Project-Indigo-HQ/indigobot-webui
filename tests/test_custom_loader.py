@@ -39,33 +39,35 @@ class TestCustomLoader(unittest.TestCase):
         self.assertEqual(cleaned_docs[0].page_content, "Hello World")
         self.assertEqual(cleaned_docs[1].page_content, "Cafe")
 
-    @patch("indigobot.utils.custom_loader.RecursiveCharacterTextSplitter")
-    def test_chunking(self, mock_splitter):
-        """Test chunking function"""
-        mock_splitter_instance = MagicMock()
-        mock_splitter.return_value = mock_splitter_instance
-        mock_doc = MagicMock()
-        mock_doc.page_content = "Test content"
-        mock_docs = [mock_doc]
-        mock_chunks = [MagicMock()]
-        mock_splitter_instance.split_documents.return_value = mock_chunks
+    def test_chunking_mock(self):
+        """Test chunking function with mocks"""
+        with patch("indigobot.utils.custom_loader.RecursiveCharacterTextSplitter") as mock_splitter:
+            mock_splitter_instance = MagicMock()
+            mock_splitter.return_value = mock_splitter_instance
+            mock_doc = MagicMock()
+            mock_doc.page_content = "Test content"
+            mock_docs = [mock_doc]
+            mock_chunks = [MagicMock()]
+            mock_splitter_instance.split_documents.return_value = mock_chunks
 
-        result = chunking(mock_docs)
+            result = chunking(mock_docs)
 
-        mock_splitter.assert_called_once_with(chunk_size=10000, chunk_overlap=1000)
-        mock_splitter_instance.split_documents.assert_called_once_with(mock_docs)
-        self.assertEqual(result, mock_chunks)
+            mock_splitter.assert_called_once_with(chunk_size=10000, chunk_overlap=1000)
+            mock_splitter_instance.split_documents.assert_called_once_with(mock_docs)
+            self.assertEqual(result, mock_chunks)
 
+    def test_chunking_real(self):
+        """Test chunking function with real documents"""
         # Create a test document with content longer than chunk size
         long_text = " ".join(["word"] * 20000)  # Create much longer text
         docs = [Document(page_content=long_text, metadata={})]
 
         chunks = chunking(docs)
-
-        assert len(chunks) > 1  # Should split into multiple chunks
-        assert all(
-            len(chunk.page_content) <= 10000 for chunk in chunks
-        )  # Check chunk sizes
+        
+        # Verify chunks were created properly
+        self.assertGreater(len(chunks), 1)  # Should split into multiple chunks
+        for chunk in chunks:
+            self.assertLessEqual(len(chunk.page_content), 10000)  # Check chunk sizes
 
     def test_extract_text(self):
         """Test extract_text function"""
