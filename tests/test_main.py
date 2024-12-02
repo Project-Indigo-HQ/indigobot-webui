@@ -15,8 +15,9 @@ def test_state():
     return {
         "messages": [HumanMessage(content="test question")],
         "chat_history": [],
-        "context": "test context", 
-        "answer": None
+        "context": "test context",
+        "answer": None,
+        "input": "test question"
     }
 
 
@@ -36,7 +37,8 @@ def test_state_class(test_state):
     assert test_state["input"] == "test question"
     assert test_state["chat_history"] == []
     assert test_state["context"] == "test context"
-    assert test_state["answer"] == ""
+    assert test_state["answer"] is None
+    assert isinstance(test_state["messages"][0], HumanMessage)
 
 
 def test_call_model(test_state, mock_rag_chain):
@@ -103,8 +105,12 @@ def test_main_function(mock_custom_loader, mock_retriever, mock_app, mock_input)
             HumanMessage(content="test input"),
             AIMessage(content="test response")
         ],
-        "chat_history": [],
-        "context": "test context"
+        "chat_history": [
+            HumanMessage(content="test input"),
+            AIMessage(content="test response")
+        ],
+        "context": "test context",
+        "input": "test input"
     }
 
     # Mock user input sequence
