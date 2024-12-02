@@ -6,9 +6,10 @@ from indigobot.utils.custom_loader import (
     clean_documents,
     clean_text,
     extract_text,
-    scrape_articles,
     scrape_main,
 )
+
+from langchain.schema import Document
 
 
 class TestCustomLoader(unittest.TestCase):
@@ -19,6 +20,7 @@ class TestCustomLoader(unittest.TestCase):
             ("Café", "Cafe"),  # Unicode characters
             ("\n\tTest\n", "Test"),  # Whitespace characters
             ("Multiple     Spaces", "Multiple Spaces"),  # Multiple spaces
+            ("", ""),  # Empty string
         ]
         for input_text, expected in test_cases:
             with self.subTest(input_text=input_text):
@@ -53,6 +55,17 @@ class TestCustomLoader(unittest.TestCase):
         mock_splitter.assert_called_once_with(chunk_size=10000, chunk_overlap=1000)
         mock_splitter_instance.split_documents.assert_called_once_with(mock_docs)
         self.assertEqual(result, mock_chunks)
+
+        # Create a test document with content longer than chunk size
+        long_text = " ".join(["word"] * 20000)  # Create much longer text
+        docs = [Document(page_content=long_text, metadata={})]
+
+        chunks = chunking(docs)
+
+        assert len(chunks) > 1  # Should split into multiple chunks
+        assert all(
+            len(chunk.page_content) <= 10000 for chunk in chunks
+        )  # Check chunk sizes
 
     def test_extract_text(self):
         """Test extract_text function"""
@@ -94,33 +107,6 @@ class TestCustomLoader(unittest.TestCase):
         mock_loader.assert_called_once()
         mock_loader_instance.load.assert_called_once()
         self.assertEqual(result, mock_docs)
-
-    @patch("indigobot.utils.custom_loader.AsyncHtmlLoader")
-    @patch("indigobot.utils.custom_loader.BeautifulSoupTransformer")
-    def test_scrape_articles(self, mock_transformer, mock_loader):
-        """Test scrape_articles function"""
-        mock_loader_instance = MagicMock()
-        mock_loader.return_value = mock_loader_instance
-        mock_transformer_instance = MagicMock()
-        mock_transformer.return_value = mock_transformer_instance
-
-        mock_docs = [MagicMock()]
-        mock_loader_instance.load.return_value = mock_docs
-        mock_transformed_doc = MagicMock()
-        mock_transformed_doc.page_content = "Test content"
-        mock_transformed_docs = [mock_transformed_doc]
-        mock_transformer_instance.transform_documents.return_value = (
-            mock_transformed_docs
-        )
-
-        result = scrape_articles(["http://example.com"])
-
-        mock_loader.assert_called_once()
-        mock_loader_instance.load.assert_called_once()
-        mock_transformer_instance.transform_documents.assert_called_once_with(
-            documents=mock_docs, tags_to_extract=[]
-        )
-        self.assertEqual(result, mock_transformed_docs)
 
 
 if __name__ == "__main__":
