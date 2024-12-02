@@ -13,6 +13,7 @@ from indigobot.utils.sql_agent import (
     load_urls,
     query_database,
     format_docs,
+    main,
 )
 
 
