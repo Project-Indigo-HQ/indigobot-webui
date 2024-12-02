@@ -56,13 +56,20 @@ class TestCrawler(unittest.TestCase):
         self.assertEqual(urls[0], "https://example.com/page1")
         self.assertEqual(urls[1], "https://example.com/page2")
 
-    @patch(
-        "builtins.open",
-        new_callable=mock_open,
-        read_data="https://example.com/test1\nhttps://example.com/test2",
-    )
-    def test_load_urls(self, mock_file):
-        with patch("os.path.exists") as mock_exists, patch("os.listdir") as mock_listdir:
+    def test_load_urls(self):
+        mock_data = {
+            'test_urls/test1.txt': 'https://example.com/test1\n',
+            'test_urls/test2.txt': 'https://example.com/test2\n'
+        }
+        
+        def mock_open_func(filename, *args, **kwargs):
+            m = mock_open(read_data=mock_data[filename])
+            return m(*args, **kwargs)
+            
+        with patch('builtins.open', mock_open_func), \
+             patch("os.path.exists") as mock_exists, \
+             patch("os.listdir") as mock_listdir:
+            
             mock_exists.return_value = True
             mock_listdir.return_value = ["test1.txt", "test2.txt"]
             urls = load_urls("test_urls")
