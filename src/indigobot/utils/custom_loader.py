@@ -6,14 +6,12 @@ It loads local PDFs, Python files, and also checks web pages to scrape and consu
 
 import os
 import re
-import ssl
 
 import unidecode
 from bs4 import BeautifulSoup
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import AsyncHtmlLoader
 from langchain_community.document_loaders.recursive_url_loader import RecursiveUrlLoader
-from langchain_community.document_transformers import BeautifulSoupTransformer
 
 from indigobot.config import RAG_DIR, r_url_list, url_list, vectorstores
 from indigobot.utils import jf_crawler, refine_html
