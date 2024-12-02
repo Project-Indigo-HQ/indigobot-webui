@@ -45,15 +45,15 @@ def test_init_db(temp_db_path):
     # Verify tables were created
     conn = sqlite3.connect(temp_db_path)
     cursor = conn.cursor()
-                                                                                                                                                                                                                                                                                                                                
-     # Check if documents table exists                                                                                                                                                                                                                                                                                          
-     cursor.execute("""                                                                                                                                                                                                                                                                                                         
-         SELECT name FROM sqlite_master                                                                                                                                                                                                                                                                                         
-         WHERE type='table' AND name='documents'                                                                                                                                                                                                                                                                                
-     """)                                                                                                                                                                                                                                                                                                                       
-     assert cursor.fetchone() is not None                                                                                                                                                                                                                                                                                       
-                                                                                                                                                                                                                                                                                                                                
-     conn.close()                                                                                                                                                                                                                                                                                                               
+
+    # Check if documents table exists
+    cursor.execute("""
+        SELECT name FROM sqlite_master
+        WHERE type='table' AND name='documents'
+    """)
+    assert cursor.fetchone() is not None
+
+    conn.close()
                                                                                                                                                                                                                                                                                                                                 
  def test_load_docs(temp_db_path, sample_docs):                                                                                                                                                                                                                                                                                 
      """Test loading documents into database"""                                                                                                                                                                                                                                                                                 
