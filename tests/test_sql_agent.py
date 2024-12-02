@@ -14,61 +14,10 @@ class TestSQLAgent(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Set up test database"""
-        # Store original DB path
         cls.original_db_path = GPT_DB
         cls.test_db_path = "test_indigo_bot_db.sqlite"
-        # Remove existing test database if it exists
         if os.path.exists(cls.test_db_path):
             os.remove(cls.test_db_path)
-
-        # Initialize the test database
-        conn = sqlite3.connect(cls.test_db_path)
-        cursor = conn.cursor()
-
-        # Create documents table
-        cursor.execute(
-            """
-            CREATE TABLE IF NOT EXISTS documents (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                text TEXT,
-                metadata TEXT
-            );
-        """
-        )
-
-        # Create embeddings table
-        cursor.execute(
-            """
-            CREATE TABLE IF NOT EXISTS embeddings (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                document_id INTEGER,
-                embedding BLOB,
-                FOREIGN KEY (document_id) REFERENCES documents (id)
-            );
-        """
-        )
-
-        # Drop existing tables if they exist
-        cursor.execute("DROP TABLE IF EXISTS embedding_metadata")
-        cursor.execute("DROP TABLE IF EXISTS embeddings")
-        cursor.execute("DROP TABLE IF EXISTS documents")
-
-        # Create embedding metadata table with explicit AUTOINCREMENT
-        cursor.execute(
-            """
-            CREATE TABLE IF NOT EXISTS embedding_metadata (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                document_id INTEGER,
-                key TEXT,
-                string_value TEXT,
-                metadata TEXT,
-                FOREIGN KEY (document_id) REFERENCES documents (id)
-            ) STRICT;
-        """
-        )
-
-        conn.commit()
-        conn.close()
 
     def setUp(self):
         """Create fresh test database before each test"""
@@ -141,15 +90,13 @@ class TestSQLAgent(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         """Clean up test database and restore original GPT_DB"""
-        global GPT_DB
-        GPT_DB = cls.original_db_path
-
-        # Remove test database
-        if os.path.exists(cls.test_db_path):
-            try:
+        try:
+            if os.path.exists(cls.test_db_path):
                 os.remove(cls.test_db_path)
-            except OSError:
-                pass
+        finally:
+            # Always restore original DB path
+            global GPT_DB
+            GPT_DB = cls.original_db_path
 
     def test_load_docs(self):
         """Test loading documents into database"""
@@ -258,6 +205,16 @@ class TestSQLAgent(unittest.TestCase):
             db_path=self.test_db_path,
         )
         self.assertEqual(len(results), 0)  # Should not match anything
+
+    def test_query_database_empty_params(self):
+        """Test query_database with empty parameters"""
+        results = query_database(
+            "SELECT COUNT(*) FROM documents",
+            params=(),
+            db_path=self.test_db_path,
+        )
+        self.assertIsNotNone(results)
+        self.assertTrue(isinstance(results[0][0], int))
 
     def test_load_docs_with_malicious_content(self):
         """Test handling of potentially malicious document content"""
