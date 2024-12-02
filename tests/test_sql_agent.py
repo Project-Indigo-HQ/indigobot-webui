@@ -1,27 +1,27 @@
- import os                                                                                                                                                                                                                                                                                                                      
- import pytest                                                                                                                                                                                                                                                                                                                  
- import sqlite3                                                                                                                                                                                                                                                                                                                 
- import tempfile                                                                                                                                                                                                                                                                                                                
- from unittest.mock import Mock, patch                                                                                                                                                                                                                                                                                          
-                                                                                                                                                                                                                                                                                                                                
- from langchain_community.document_loaders import Document                                                                                                                                                                                                                                                                      
- from langchain_community.utilities import SQLDatabase                                                                                                                                                                                                                                                                          
-                                                                                                                                                                                                                                                                                                                                
- from indigobot.utils.sql_agent import (                                                                                                                                                                                                                                                                                        
-     init_db,                                                                                                                                                                                                                                                                                                                   
-     load_docs,                                                                                                                                                                                                                                                                                                                 
-     load_urls,                                                                                                                                                                                                                                                                                                                 
-     query_database,                                                                                                                                                                                                                                                                                                            
-     format_docs,                                                                                                                                                                                                                                                                                                               
- )                                                                                                                                                                                                                                                                                                                              
-                                                                                                                                                                                                                                                                                                                                
- @pytest.fixture                                                                                                                                                                                                                                                                                                                
- def temp_db_path():                                                                                                                                                                                                                                                                                                            
-     """Fixture to create a temporary database file"""                                                                                                                                                                                                                                                                          
-     with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:                                                                                                                                                                                                                                                         
-         db_path = f.name                                                                                                                                                                                                                                                                                                       
-     yield db_path                                                                                                                                                                                                                                                                                                              
-     os.unlink(db_path)  # Clean up after test                                                                                                                                                                                                                                                                                  
+import os
+import pytest
+import sqlite3
+import tempfile
+from unittest.mock import Mock, patch
+
+from langchain_community.document_loaders import Document
+from langchain_community.utilities import SQLDatabase
+
+from indigobot.utils.sql_agent import (
+    init_db,
+    load_docs,
+    load_urls,
+    query_database,
+    format_docs,
+)
+
+@pytest.fixture
+def temp_db_path():
+    """Fixture to create a temporary database file"""
+    with tempfile.NamedTemporaryFile(suffix='.db', delete=False) as f:
+        db_path = f.name
+    yield db_path
+    os.unlink(db_path)  # Clean up after test
                                                                                                                                                                                                                                                                                                                                 
  @pytest.fixture                                                                                                                                                                                                                                                                                                                
  def sample_docs():                                                                                                                                                                                                                                                                                                             
