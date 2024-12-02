@@ -4,7 +4,7 @@ import sqlite3
 import tempfile
 from unittest.mock import Mock, patch
 
-from langchain_community.document_loaders import Document
+from langchain.schema import Document
 from langchain_community.utilities import SQLDatabase
 
 from indigobot.utils.sql_agent import (

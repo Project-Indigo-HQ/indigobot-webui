@@ -24,7 +24,7 @@ from langchain import hub
 from langchain.agents.agent_toolkits import create_retriever_tool
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.agent_toolkits import SQLDatabaseToolkit
-from langchain_community.document_loaders import AsyncHtmlLoader
+from langchain.document_loaders import AsyncHtmlLoader
 from langchain_community.utilities import SQLDatabase
 from langgraph.prebuilt import create_react_agent
 
