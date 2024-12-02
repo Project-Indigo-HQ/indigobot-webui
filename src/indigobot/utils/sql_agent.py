@@ -64,8 +64,11 @@ def init_db(db_path=None):
             CREATE TABLE IF NOT EXISTS documents (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 content TEXT,
-                metadata_key TEXT,
-                metadata_value TEXT
+                key TEXT,
+                string_value TEXT,
+                int_value INTEGER,
+                float_value REAL,
+                bool_value BOOLEAN
             );
             """
         )
@@ -76,6 +79,7 @@ def init_db(db_path=None):
         db = SQLDatabase.from_uri(
             f"sqlite:///{db_file}",
             include_tables=included_tables,
+            sample_rows_in_table_info=0
         )
         return db
     except Exception as e:
@@ -124,19 +128,40 @@ def load_docs(docs, db_path=None):
         cursor = conn.cursor()
 
         for doc in splits:
-            # Insert document with content and metadata
+            # Insert document content
             cursor.execute(
                 "INSERT INTO documents (content) VALUES (?)",
                 (doc.page_content,)
             )
-            doc_id = cursor.lastrowid
-
-            # Insert metadata as separate rows linked to the document
+            
+            # Insert metadata for the document
             for key, value in doc.metadata.items():
-                cursor.execute(
-                    "INSERT INTO documents (metadata_key, metadata_value) VALUES (?, ?)",
-                    (key, str(value))
-                )
+                if isinstance(value, str):
+                    cursor.execute(
+                        "INSERT INTO documents (key, string_value) VALUES (?, ?)",
+                        (key, value)
+                    )
+                elif isinstance(value, int):
+                    cursor.execute(
+                        "INSERT INTO documents (key, int_value) VALUES (?, ?)",
+                        (key, value)
+                    )
+                elif isinstance(value, float):
+                    cursor.execute(
+                        "INSERT INTO documents (key, float_value) VALUES (?, ?)",
+                        (key, value)
+                    )
+                elif isinstance(value, bool):
+                    cursor.execute(
+                        "INSERT INTO documents (key, bool_value) VALUES (?, ?)",
+                        (key, value)
+                    )
+                else:
+                    # Convert other types to string
+                    cursor.execute(
+                        "INSERT INTO documents (key, string_value) VALUES (?, ?)",
+                        (key, str(value))
+                    )
 
         conn.commit()
     except sqlite3.DatabaseError as e:
