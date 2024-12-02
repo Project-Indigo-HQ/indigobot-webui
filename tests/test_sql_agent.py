@@ -111,10 +111,63 @@
                                                                                                                                                                                                                                                                                                                                 
  @pytest.mark.parametrize("invalid_query", [                                                                                                                                                                                                                                                                                    
      "SELECT * FROM nonexistent_table",                                                                                                                                                                                                                                                                                         
-     "INVALID SQL QUERY",                                                                                                                                                                                                                                                                                                       
- ])                                                                                                                                                                                                                                                                                                                             
- def test_query_database_errors(temp_db_path, invalid_query):                                                                                                                                                                                                                                                                   
-     """Test database query error handling"""                                                                                                                                                                                                                                                                                   
-     with pytest.raises(sqlite3.Error):                                                                                                                                                                                                                                                                                         
-         query_database(invalid_query, db_path=temp_db_path)
+     "INVALID SQL QUERY",                                                                                                                                                                                                                                                                                   
+ ])
+def test_query_database_errors(temp_db_path, invalid_query):
+    """Test database query error handling"""
+    with pytest.raises(sqlite3.Error):
+        query_database(invalid_query, db_path=temp_db_path)
 
+def test_main_function_initialization():
+    """Test main function initialization"""
+    with patch('indigobot.utils.sql_agent.init_db') as mock_init_db, \
+         patch('indigobot.utils.sql_agent.hub.pull') as mock_hub_pull, \
+         patch('indigobot.utils.sql_agent.create_react_agent') as mock_create_agent, \
+         patch('builtins.input', side_effect=['quit']):
+        
+        mock_prompt = Mock()
+        mock_prompt.messages = [Mock()]
+        mock_hub_pull.return_value = mock_prompt
+        
+        main()
+        
+        mock_init_db.assert_called_once()
+        mock_hub_pull.assert_called_once_with("langchain-ai/sql-agent-system-prompt")
+        mock_create_agent.assert_called_once()
+
+def test_load_docs_with_various_metadata_types(temp_db_path):
+    """Test loading documents with different metadata types"""
+    docs = [
+        Document(
+            page_content="Test content",
+            metadata={
+                "string_field": "test",
+                "int_field": 42,
+                "float_field": 3.14,
+                "bool_field": True
+            }
+        )
+    ]
+    
+    load_docs(docs, temp_db_path)
+    
+    # Verify all metadata types were stored correctly
+    results = query_database(
+        "SELECT key, string_value, int_value, float_value, bool_value FROM documents WHERE id = 1",
+        db_path=temp_db_path
+    )
+    
+    metadata_values = {row[0]: row[1:] for row in results}
+    assert metadata_values['string_field'][0] == 'test'
+    assert metadata_values['int_field'][1] == 42
+    assert metadata_values['float_field'][2] == 3.14
+    assert metadata_values['bool_field'][3] == 1
+
+def test_database_connection_timeout(temp_db_path):
+    """Test database connection timeout handling"""
+    with patch('sqlite3.connect') as mock_connect:
+        mock_connect.side_effect = sqlite3.OperationalError('database is locked')
+        
+        with pytest.raises(sqlite3.Error) as exc_info:
+            query_database("SELECT 1", db_path=temp_db_path)
+        assert 'database is locked' in str(exc_info.value)
