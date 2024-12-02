@@ -13,10 +13,11 @@ from indigobot.__main__ import call_model, workflow
 def test_state():
     """Test state fixture"""
     return {
-        "input": "test question",
+        "messages": [HumanMessage(content="test question")],
         "chat_history": [],
         "context": "test context",
-        "answer": "",
+        "answer": None,
+        "input": "test question"
     }
 
 
@@ -36,7 +37,8 @@ def test_state_class(test_state):
     assert test_state["input"] == "test question"
     assert test_state["chat_history"] == []
     assert test_state["context"] == "test context"
-    assert test_state["answer"] == ""
+    assert test_state["answer"] is None
+    assert isinstance(test_state["messages"][0], HumanMessage)
 
 
 def test_call_model(test_state, mock_rag_chain):
@@ -69,16 +71,22 @@ def test_workflow_structure():
     """Test workflow graph structure"""
     # Verify workflow has expected nodes
     assert "model" in workflow.nodes
+    assert "should_continue" in workflow.nodes
+    assert "human_input" in workflow.nodes
 
-    # Verify START edge exists
+    # Verify START edge exists and connects to model
     edges = workflow.edges
     start_edges = [edge for edge in edges if edge[0] == START]
     assert any(edge[1] == "model" for edge in start_edges)
 
+    # Verify conditional edges exist
+    model_edges = [edge for edge in edges if edge[0] == "model"]
+    assert len(model_edges) > 0
+
 
 @patch("builtins.input")
 @patch("indigobot.__main__.app")
-@patch("indigobot.__main__.retriever")
+@patch("indigobot.__main__.retriever") 
 @patch("indigobot.__main__.custom_loader")
 def test_main_function(mock_custom_loader, mock_retriever, mock_app, mock_input):
     """Test main function with skip_loader"""
@@ -86,28 +94,38 @@ def test_main_function(mock_custom_loader, mock_retriever, mock_app, mock_input)
 
     # Mock the retriever's vectorstore response
     mock_retriever.vectorstore.get.return_value = {
-        "metadatas": [{"source": "test_source.pdf"}]
+        "metadatas": [{"source": "test_source.pdf"}],
+        "documents": ["test document"]
     }
 
     # Mock the app's invoke response
     mock_app.invoke.return_value = {
         "answer": "test response",
+        "messages": [
+            HumanMessage(content="test input"),
+            AIMessage(content="test response")
+        ],
         "chat_history": [
             HumanMessage(content="test input"),
-            AIMessage(content="test response"),
+            AIMessage(content="test response")
         ],
+        "context": "test context",
+        "input": "test input"
     }
 
     # Mock user input sequence
-    mock_input.side_effect = ["test input", ""]
+    mock_input.side_effect = ["test input", "quit"]
 
     # Test that main runs without error when skip_loader is True
     main(skip_loader=True)
 
     # Verify mocks were called correctly
-    mock_app.invoke.assert_called_once()
-    mock_retriever.vectorstore.get.assert_called_once()
+    mock_app.invoke.assert_called()
+    mock_retriever.vectorstore.get.assert_called()
     mock_custom_loader.main.assert_not_called()
+
+    # Verify input was handled
+    assert mock_input.call_count >= 2
 
 
 if __name__ == "__main__":

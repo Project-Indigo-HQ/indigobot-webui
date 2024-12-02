@@ -34,11 +34,7 @@ llm = llms["gpt"]
 vectorstore = vectorstores["gpt"]
 
 # NOTE: not sure best combo/individual options for these
-included_tables = [
-    # "embedding_metadata",
-    "embedding_fulltext_search",
-    "embedding_fulltext_search_content",
-]
+included_tables = ["documents"]
 
 
 def init_db(db_path=None):
@@ -58,6 +54,7 @@ def init_db(db_path=None):
         # Ensure the database directory exists
         os.makedirs(os.path.dirname(db_file), exist_ok=True)
 
+        # First create the database and tables
         conn = sqlite3.connect(db_file)
         cursor = conn.cursor()
 
@@ -65,32 +62,28 @@ def init_db(db_path=None):
         cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS documents (
-                id INTEGER PRIMARY KEY AUTOINCREMENT
-            );
-        """
-        )
-        cursor.execute(
-            """
-            CREATE TABLE IF NOT EXISTS embedding_metadata (
-                id INTEGER,
-                key TEXT NOT NULL,
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                content TEXT,
+                key TEXT,
                 string_value TEXT,
                 int_value INTEGER,
                 float_value REAL,
-                bool_value INTEGER,
-                PRIMARY KEY (id, key),
-                FOREIGN KEY(id) REFERENCES embeddings (id)
+                bool_value BOOLEAN
             );
-        """
+            """
         )
         conn.commit()
         conn.close()
 
-        # Return SQLDatabase instance
-        return SQLDatabase.from_uri(
-            f"sqlite:///{db_file}",
+        # Then initialize SQLDatabase after tables exist
+        db_uri = f"sqlite:///{db_file}"
+        db = SQLDatabase.from_uri(
+            db_uri,
             include_tables=included_tables,
+            sample_rows_in_table_info=0
         )
+
+        return db
     except Exception as e:
         print(f"Error initializing database: {e}")
         raise
@@ -124,6 +117,9 @@ def load_docs(docs, db_path=None):
     :param db_path: Path to the database file. If None, the default GPT_DB path is used.
     :type db_path: str, optional
     """
+    # Initialize database if it doesn't exist
+    init_db(db_path)
+    
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=10)
     splits = text_splitter.split_documents(docs)
 
@@ -134,38 +130,22 @@ def load_docs(docs, db_path=None):
         cursor = conn.cursor()
 
         for doc in splits:
-            # First insert into documents table to get an id
-            cursor.execute("INSERT INTO documents DEFAULT VALUES")
-            doc_id = cursor.lastrowid
-
-            # Insert the document content
+            # Insert document content and metadata in a single row
             cursor.execute(
-                "INSERT INTO documents (id, key, string_value) VALUES (?, ?, ?)",
-                (doc_id, "content", doc.page_content),
+                """
+                INSERT INTO documents (
+                    content, key, string_value, int_value, float_value, bool_value
+                ) VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    doc.page_content,
+                    next(iter(doc.metadata.keys()), None),  # First metadata key
+                    doc.metadata.get(next((k for k, v in doc.metadata.items() if isinstance(v, str)), None)),
+                    doc.metadata.get(next((k for k, v in doc.metadata.items() if isinstance(v, int)), None)),
+                    doc.metadata.get(next((k for k, v in doc.metadata.items() if isinstance(v, float)), None)),
+                    doc.metadata.get(next((k for k, v in doc.metadata.items() if isinstance(v, bool)), None))
+                )
             )
-
-            # Insert each metadata field
-            for key, value in doc.metadata.items():
-                if isinstance(value, str):
-                    cursor.execute(
-                        "INSERT INTO documents (id, key, string_value) VALUES (?, ?, ?)",
-                        (doc_id, key, value),
-                    )
-                elif isinstance(value, bool):
-                    cursor.execute(
-                        "INSERT INTO documents (id, key, bool_value) VALUES (?, ?, ?)",
-                        (doc_id, key, int(value)),
-                    )
-                elif isinstance(value, int):
-                    cursor.execute(
-                        "INSERT INTO documents (id, key, int_value) VALUES (?, ?, ?)",
-                        (doc_id, key, value),
-                    )
-                elif isinstance(value, float):
-                    cursor.execute(
-                        "INSERT INTO documents (id, key, float_value) VALUES (?, ?, ?)",
-                        (doc_id, key, value),
-                    )
 
         conn.commit()
     except sqlite3.DatabaseError as e:
@@ -225,7 +205,10 @@ def query_database(query, params=(), db_path=None):
 
 
 def main():
+    # Initialize database and ensure it's a SQLDatabase instance
     db = init_db(GPT_DB)
+    if not isinstance(db, SQLDatabase):
+        raise ValueError("Database initialization failed - not a SQLDatabase instance")
 
     prompt_template = hub.pull("langchain-ai/sql-agent-system-prompt")
 
