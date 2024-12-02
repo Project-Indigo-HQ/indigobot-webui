@@ -22,29 +22,29 @@ def temp_db_path():
         db_path = f.name
     yield db_path
     os.unlink(db_path)  # Clean up after test
-                                                                                                                                                                                                                                                                                                                                
- @pytest.fixture                                                                                                                                                                                                                                                                                                                
- def sample_docs():                                                                                                                                                                                                                                                                                                             
-     """Fixture to create sample documents"""                                                                                                                                                                                                                                                                                   
-     return [                                                                                                                                                                                                                                                                                                                   
-         Document(                                                                                                                                                                                                                                                                                                              
-             page_content="Test document 1",                                                                                                                                                                                                                                                                                    
-             metadata={"source": "test1.txt", "page": 1}                                                                                                                                                                                                                                                                        
-         ),                                                                                                                                                                                                                                                                                                                     
-         Document(                                                                                                                                                                                                                                                                                                              
-             page_content="Test document 2",                                                                                                                                                                                                                                                                                    
-             metadata={"source": "test2.txt", "page": 2, "score": 0.95}                                                                                                                                                                                                                                                         
-         )                                                                                                                                                                                                                                                                                                                      
-     ]                                                                                                                                                                                                                                                                                                                          
-                                                                                                                                                                                                                                                                                                                                
- def test_init_db(temp_db_path):                                                                                                                                                                                                                                                                                                
-     """Test database initialization"""                                                                                                                                                                                                                                                                                         
-     db = init_db(temp_db_path)                                                                                                                                                                                                                                                                                                 
-     assert isinstance(db, SQLDatabase)                                                                                                                                                                                                                                                                                         
-                                                                                                                                                                                                                                                                                                                                
-     # Verify tables were created                                                                                                                                                                                                                                                                                               
-     conn = sqlite3.connect(temp_db_path)                                                                                                                                                                                                                                                                                       
-     cursor = conn.cursor()                                                                                                                                                                                                                                                                                                     
+
+@pytest.fixture
+def sample_docs():
+    """Fixture to create sample documents"""
+    return [
+        Document(
+            page_content="Test document 1",
+            metadata={"source": "test1.txt", "page": 1}
+        ),
+        Document(
+            page_content="Test document 2",
+            metadata={"source": "test2.txt", "page": 2, "score": 0.95}
+        )
+    ]
+
+def test_init_db(temp_db_path):
+    """Test database initialization"""
+    db = init_db(temp_db_path)
+    assert isinstance(db, SQLDatabase)
+
+    # Verify tables were created
+    conn = sqlite3.connect(temp_db_path)
+    cursor = conn.cursor()
                                                                                                                                                                                                                                                                                                                                 
      # Check if documents table exists                                                                                                                                                                                                                                                                                          
      cursor.execute("""                                                                                                                                                                                                                                                                                                         
