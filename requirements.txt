@@ -1,5 +1,6 @@
 black
 build
+flask
 isort
 langchain
 langchainhub
@@ -14,6 +15,7 @@ pylama[toml]
 pyyaml
 setuptools
 setuptools-scm
+slack-bolt
 sphinx
 sphinx-rtd-theme
 types-pyyaml
