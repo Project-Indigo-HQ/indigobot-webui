@@ -63,11 +63,9 @@ def init_db(db_path=None):
             """
             CREATE TABLE IF NOT EXISTS documents (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                key TEXT,
-                string_value TEXT,
-                int_value INTEGER,
-                float_value REAL,
-                bool_value INTEGER
+                content TEXT,
+                metadata_key TEXT,
+                metadata_value TEXT
             );
             """
         )
@@ -126,35 +124,19 @@ def load_docs(docs, db_path=None):
         cursor = conn.cursor()
 
         for doc in splits:
-            # Insert the document content
+            # Insert document with content and metadata
             cursor.execute(
-                "INSERT INTO documents (key, string_value) VALUES (?, ?)",
-                ("content", doc.page_content),
+                "INSERT INTO documents (content) VALUES (?)",
+                (doc.page_content,)
             )
             doc_id = cursor.lastrowid
 
-            # Insert each metadata field
+            # Insert metadata as separate rows linked to the document
             for key, value in doc.metadata.items():
-                if isinstance(value, str):
-                    cursor.execute(
-                        "INSERT INTO documents (key, string_value) VALUES (?, ?)",
-                        (key, value),
-                    )
-                elif isinstance(value, bool):
-                    cursor.execute(
-                        "INSERT INTO documents (key, bool_value) VALUES (?, ?)",
-                        (key, int(value)),
-                    )
-                elif isinstance(value, int):
-                    cursor.execute(
-                        "INSERT INTO documents (key, int_value) VALUES (?, ?)",
-                        (key, value),
-                    )
-                elif isinstance(value, float):
-                    cursor.execute(
-                        "INSERT INTO documents (key, float_value) VALUES (?, ?)",
-                        (key, value),
-                    )
+                cursor.execute(
+                    "INSERT INTO documents (metadata_key, metadata_value) VALUES (?, ?)",
+                    (key, str(value))
+                )
 
         conn.commit()
     except sqlite3.DatabaseError as e:
@@ -214,7 +196,10 @@ def query_database(query, params=(), db_path=None):
 
 
 def main():
+    # Initialize database and ensure it's a SQLDatabase instance
     db = init_db(GPT_DB)
+    if not isinstance(db, SQLDatabase):
+        raise ValueError("Database initialization failed - not a SQLDatabase instance")
 
     prompt_template = hub.pull("langchain-ai/sql-agent-system-prompt")
 
