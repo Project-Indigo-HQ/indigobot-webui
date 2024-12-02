@@ -24,7 +24,7 @@ from langchain import hub
 from langchain.agents.agent_toolkits import create_retriever_tool
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.agent_toolkits import SQLDatabaseToolkit
-from langchain.document_loaders import AsyncHtmlLoader
+from langchain_community.document_loaders import AsyncHtmlLoader
 from langchain_community.utilities import SQLDatabase
 from langgraph.prebuilt import create_react_agent
 
@@ -54,6 +54,13 @@ def init_db(db_path=None):
         # Ensure the database directory exists
         os.makedirs(os.path.dirname(db_file), exist_ok=True)
 
+        # Create SQLDatabase instance first
+        db = SQLDatabase.from_uri(
+            f"sqlite:///{db_file}",
+            include_tables=included_tables,
+        )
+
+        # Then initialize tables
         conn = sqlite3.connect(db_file)
         cursor = conn.cursor()
 
@@ -73,11 +80,7 @@ def init_db(db_path=None):
         conn.commit()
         conn.close()
 
-        # Return SQLDatabase instance
-        return SQLDatabase.from_uri(
-            f"sqlite:///{db_file}",
-            include_tables=included_tables,
-        )
+        return db
     except Exception as e:
         print(f"Error initializing database: {e}")
         raise
