@@ -54,7 +54,17 @@ def init_db(db_path=None):
         # Ensure the database directory exists
         os.makedirs(os.path.dirname(db_file), exist_ok=True)
 
-        # Initialize tables first
+        # Create database URI
+        db_uri = f"sqlite:///{db_file}"
+
+        # Initialize SQLDatabase first to ensure proper setup
+        db = SQLDatabase.from_uri(
+            db_uri,
+            include_tables=included_tables,
+            sample_rows_in_table_info=0
+        )
+
+        # Then create tables
         conn = sqlite3.connect(db_file)
         cursor = conn.cursor()
 
@@ -75,12 +85,6 @@ def init_db(db_path=None):
         conn.commit()
         conn.close()
 
-        # Then create SQLDatabase instance
-        db = SQLDatabase.from_uri(
-            f"sqlite:///{db_file}",
-            include_tables=included_tables,
-            sample_rows_in_table_info=0
-        )
         return db
     except Exception as e:
         print(f"Error initializing database: {e}")
@@ -128,40 +132,22 @@ def load_docs(docs, db_path=None):
         cursor = conn.cursor()
 
         for doc in splits:
-            # Insert document content
+            # Insert document content and metadata in a single row
             cursor.execute(
-                "INSERT INTO documents (content) VALUES (?)",
-                (doc.page_content,)
+                """
+                INSERT INTO documents (
+                    content, key, string_value, int_value, float_value, bool_value
+                ) VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    doc.page_content,
+                    next(iter(doc.metadata.keys()), None),  # First metadata key
+                    doc.metadata.get(next((k for k, v in doc.metadata.items() if isinstance(v, str)), None)),
+                    doc.metadata.get(next((k for k, v in doc.metadata.items() if isinstance(v, int)), None)),
+                    doc.metadata.get(next((k for k, v in doc.metadata.items() if isinstance(v, float)), None)),
+                    doc.metadata.get(next((k for k, v in doc.metadata.items() if isinstance(v, bool)), None))
+                )
             )
-            
-            # Insert metadata for the document
-            for key, value in doc.metadata.items():
-                if isinstance(value, str):
-                    cursor.execute(
-                        "INSERT INTO documents (key, string_value) VALUES (?, ?)",
-                        (key, value)
-                    )
-                elif isinstance(value, int):
-                    cursor.execute(
-                        "INSERT INTO documents (key, int_value) VALUES (?, ?)",
-                        (key, value)
-                    )
-                elif isinstance(value, float):
-                    cursor.execute(
-                        "INSERT INTO documents (key, float_value) VALUES (?, ?)",
-                        (key, value)
-                    )
-                elif isinstance(value, bool):
-                    cursor.execute(
-                        "INSERT INTO documents (key, bool_value) VALUES (?, ?)",
-                        (key, value)
-                    )
-                else:
-                    # Convert other types to string
-                    cursor.execute(
-                        "INSERT INTO documents (key, string_value) VALUES (?, ?)",
-                        (key, str(value))
-                    )
 
         conn.commit()
     except sqlite3.DatabaseError as e:
