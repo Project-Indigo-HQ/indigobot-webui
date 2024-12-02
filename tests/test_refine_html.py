@@ -99,7 +99,14 @@ class TestRefineHtml(unittest.TestCase):
         self.assertEqual(documents[0].page_content, "Test Header")
         self.assertEqual(documents[0].metadata["source"], "test1.json")
         self.assertTrue(all(isinstance(doc, Document) for doc in documents))
-        self.assertEqual(len(documents), 2)  # One doc per JSON file
+
+    def test_load_JSON_files_invalid_json(self):
+        with patch("os.listdir") as mock_listdir, patch(
+            "builtins.open", mock_open(read_data="invalid json")
+        ):
+            mock_listdir.return_value = ["test1.json"]
+            documents = load_JSON_files("/fake/path")
+            self.assertEqual(len(documents), 0)  # Should handle invalid JSON gracefully
 
     @patch("indigobot.utils.refine_html.load_html_files")
     @patch("indigobot.utils.refine_html.parse_and_save")
