@@ -62,8 +62,9 @@ class TestCrawler(unittest.TestCase):
         read_data="https://example.com/test1\nhttps://example.com/test2",
     )
     def test_load_urls(self, mock_file):
-        with patch("os.path.exists") as mock_exists:
+        with patch("os.path.exists") as mock_exists, patch("os.listdir") as mock_listdir:
             mock_exists.return_value = True
+            mock_listdir.return_value = ["test1.txt", "test2.txt"]
             urls = load_urls("test_urls")
             self.assertEqual(len(urls), 2)
             self.assertEqual(urls[0], "https://example.com/test1")

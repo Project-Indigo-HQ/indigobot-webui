@@ -115,9 +115,8 @@ def download_and_save_html(urls, session):
             # Extract last section of url as file name
             filename = url.rstrip("/").split("/")[-1] + ".html"
 
-            html_files_dir = os.path.join(RAG_DIR, "crawl_temp/html_files")
-            if not os.path.exists(html_files_dir):
-                os.makedirs(html_files_dir)
+            html_files_dir = os.path.join(RAG_DIR, "crawl_temp", "html_files")
+            os.makedirs(html_files_dir, exist_ok=True)
 
             # save the content to html
             with open(
