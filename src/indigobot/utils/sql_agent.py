@@ -34,11 +34,7 @@ llm = llms["gpt"]
 vectorstore = vectorstores["gpt"]
 
 # NOTE: not sure best combo/individual options for these
-included_tables = [
-    # "embedding_metadata",
-    "embedding_fulltext_search",
-    "embedding_fulltext_search_content",
-]
+included_tables = ["documents"]
 
 
 def init_db(db_path=None):
@@ -65,21 +61,12 @@ def init_db(db_path=None):
         cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS documents (
-                id INTEGER PRIMARY KEY AUTOINCREMENT
-            );
-        """
-        )
-        cursor.execute(
-            """
-            CREATE TABLE IF NOT EXISTS embedding_metadata (
-                id INTEGER,
-                key TEXT NOT NULL,
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                key TEXT,
                 string_value TEXT,
                 int_value INTEGER,
                 float_value REAL,
-                bool_value INTEGER,
-                PRIMARY KEY (id, key),
-                FOREIGN KEY(id) REFERENCES embeddings (id)
+                bool_value INTEGER
             );
         """
         )
@@ -134,15 +121,12 @@ def load_docs(docs, db_path=None):
         cursor = conn.cursor()
 
         for doc in splits:
-            # First insert into documents table to get an id
-            cursor.execute("INSERT INTO documents DEFAULT VALUES")
-            doc_id = cursor.lastrowid
-
             # Insert the document content
             cursor.execute(
-                "INSERT INTO documents (id, key, string_value) VALUES (?, ?, ?)",
-                (doc_id, "content", doc.page_content),
+                "INSERT INTO documents (key, string_value) VALUES (?, ?)",
+                ("content", doc.page_content),
             )
+            doc_id = cursor.lastrowid
 
             # Insert each metadata field
             for key, value in doc.metadata.items():
