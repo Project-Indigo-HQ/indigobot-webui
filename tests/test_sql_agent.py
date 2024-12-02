@@ -34,39 +34,39 @@ class TestSQLAgent(unittest.TestCase):
                 cursor.execute("DROP TABLE IF EXISTS documents")
 
                 # Recreate tables
-                cursor.execute(
-                    """
-                    CREATE TABLE IF NOT EXISTS documents (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        text TEXT,
-                        metadata TEXT
-                    ) STRICT;
-                    """
-                )
+                cursor.execute("""DROP TABLE IF EXISTS embedding_metadata""")
+                cursor.execute("""DROP TABLE IF EXISTS embeddings""")
+                cursor.execute("""DROP TABLE IF EXISTS documents""")
 
-                cursor.execute(
-                    """
-                    CREATE TABLE IF NOT EXISTS embeddings (
+                cursor.execute("""
+                    CREATE TABLE documents (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        text TEXT NOT NULL,
+                        metadata TEXT,
+                        key TEXT,
+                        source TEXT
+                    )
+                """)
+
+                cursor.execute("""
+                    CREATE TABLE embeddings (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         document_id INTEGER,
                         embedding BLOB,
                         FOREIGN KEY (document_id) REFERENCES documents (id)
-                    ) STRICT;
-                    """
-                )
+                    )
+                """)
 
-                cursor.execute(
-                    """
-                    CREATE TABLE IF NOT EXISTS embedding_metadata (
+                cursor.execute("""
+                    CREATE TABLE embedding_metadata (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         document_id INTEGER,
                         key TEXT,
                         string_value TEXT,
                         metadata TEXT,
                         FOREIGN KEY (document_id) REFERENCES documents (id)
-                    ) STRICT;
-                    """
-                )
+                    )
+                """)
 
                 conn.commit()
 
