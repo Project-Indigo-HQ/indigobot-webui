@@ -103,27 +103,41 @@ def retrieve_final_urls(base_url, session):
     return final_urls
 
 
-def parse_url(sitemap_url, session):
+# Get the HTML file for each URL and save it
+def download_and_save_html(urls, session):
     """
-    Parse URLs from a sitemap without saving them to a file.
+    Download HTML content from a list of URLs and save it to a file.
 
-    :param sitemap_url: The URL of the sitemap to parse.
-    :type sitemap_url: str
-    :param session: The requests session to use for fetching.
+    :param urls: List of URLs to download HTML from.
+    :type urls: list[str]
+    :param session: The requests session to use for downloading.
     :type session: requests.Session
-    :return: A list of URLs extracted from the sitemap.
-    :rtype: list[str]
     """
-    urls = []
-    page_content = extract_xml(fetch_xml(sitemap_url, session))
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+    }
 
-    # Display all  URLs
-    print("Extracting URLs:")
-    for url in page_content:
-        print(url)
-        urls.append(url)
+    for url in urls:
+        time.sleep(random.randint(3, 6))
+        response = session.get(url, headers=headers)
 
-    return urls
+        if response.status_code == 200:
+            # Extract last section of url as file name
+            filename = url.rstrip("/").split("/")[-1] + ".html"
+
+            html_files_dir = os.path.join(RAG_DIR, "crawl_temp", "html_files")
+            os.makedirs(html_files_dir, exist_ok=True)
+
+            # save the content to html
+            with open(
+                os.path.join(html_files_dir, filename), "w", encoding="utf-8"
+            ) as file:
+                file.write(response.text)
+                print(f"Save html content to {html_files_dir}")
+        else:
+            print(f"Faile to fetch {url}, Status code: {response.status_code}")
+
+
 
 
 def crawl():
@@ -139,7 +153,7 @@ def crawl():
 
     # Scrape URLs from the sitemap
     for page in sitemaps:
-        url_list.extend(retrieve_final_urls(page, session))
+        url_list.extend(retrieve_final_urls(page,session))
 
     # Download all resource page as html
     download_and_save_html(url_list, session)

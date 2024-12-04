@@ -3,10 +3,10 @@ import unittest
 from unittest.mock import Mock, mock_open, patch
 
 from indigobot.utils.jf_crawler import (
+    download_and_save_html,
     extract_xml,
     fetch_xml,
-    parse_url,
-    start_session
+    start_session,
 )
 
 
@@ -55,18 +55,23 @@ class TestCrawler(unittest.TestCase):
         self.assertEqual(urls[1], "https://example.com/page2")
 
 
+    @patch("requests.Session")
+    def test_download_and_save_html(self, mock_session):
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.text = "<html>test</html>"
+        mock_session.return_value.get.return_value = mock_response
 
-    @patch("indigobot.utils.jf_crawler.fetch_xml")
-    @patch("indigobot.utils.jf_crawler.extract_xml")
-    def test_parse_url(self, mock_extract_xml, mock_fetch_xml):
-        mock_extract_xml.return_value = ["https://example.com/page1"]
-        mock_fetch_xml.return_value = self.test_xml.encode()
+        test_urls = ["https://example.com/page1"]
+        session = mock_session()
 
-        session = Mock()
-        urls = parse_url("https://example.com/sitemap.xml", session)
+        with patch("os.makedirs") as mock_makedirs, patch("builtins.open", unittest.mock.mock_open()) as mock_file:
+            download_and_save_html(test_urls, session)
+            # Verify makedirs was called
+            mock_makedirs.assert_called_once()
+            # Verify file was opened for writing
+            mock_file.assert_called_once()
 
-        self.assertEqual(len(urls), 1)
-        self.assertEqual(urls[0], "https://example.com/page1")
 
 
 if __name__ == "__main__":
