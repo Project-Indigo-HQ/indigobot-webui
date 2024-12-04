@@ -73,88 +73,34 @@ def extract_xml(xml):
         url_list.append(loc)
     return url_list
 
+# Check if the given URL is a sitemap
+def is_sitemap(url, session):
+    try:
+        content = fetch_xml(url, session)
+        root = ET.fromstring(content)
+        return root.tag.endswith("sitemapindex") or root.tag.endswith("urlset")
+    except Exception:
+        return False
 
-# Load each of the .txt file under "urls/"
-def load_urls(folder_path):
-    """
-    Load URLs from text files in a specified folder.
-
-    :param folder_path: Path to the folder containing URL text files.
-    :type folder_path: str
-    :return: A list of URLs read from the files.
-    :rtype: list[str]
-    """
-    urls = []
-    for filename in os.listdir(folder_path):
-        if filename.endswith(".txt"):
-            file_path = os.path.join(folder_path, filename)
-            with open(file_path, "r", encoding="utf-8") as file:
-                urls.extend(file.read().splitlines())
-    return urls
-
-
-# Get the HTML file for each URL and save it
-def download_and_save_html(urls, session):
-    """
-    Download HTML content from a list of URLs and save it to a file.
-
-    :param urls: List of URLs to download HTML from.
-    :type urls: list[str]
-    :param session: The requests session to use for downloading.
-    :type session: requests.Session
-    """
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-    }
-
-    for url in urls:
-        time.sleep(random.randint(3, 6))
-        response = session.get(url, headers=headers)
-
-        if response.status_code == 200:
-            # Extract last section of url as file name
-            filename = url.rstrip("/").split("/")[-1] + ".html"
-
-            html_files_dir = os.path.join(RAG_DIR, "crawl_temp", "html_files")
-            os.makedirs(html_files_dir, exist_ok=True)
-
-            # save the content to html
-            with open(
-                os.path.join(html_files_dir, filename), "w", encoding="utf-8"
-            ) as file:
-                file.write(response.text)
-                print(f"Save html content to {html_files_dir}")
+# Recursive function to retrive final list of URLs
+def retrieve_final_urls(base_url, session):
+    urls_to_cehck = [base_url]
+    final_urls = []
+    
+    while urls_to_cehck:
+        time.sleep(1)
+        current_url = urls_to_cehck.pop(0)
+        # If reached a stiemap, extract the URLs and add them to the list to check
+        if is_sitemap(current_url,session):
+            print(f"Processing sitemap: {current_url}")
+            sitemaps_content = fetch_xml(current_url, session)
+            extracted_urls = extract_xml(sitemaps_content)
+            urls_to_cehck.extend(extracted_urls)
+        # If it is not a sitemap, add it to the final_urls
         else:
-            print(f"Faile to fetch {url}, Status code: {response.status_code}")
-
-
-def parse_url_and_save(sitemap_url, target_file_name, session):
-    """
-    Parse URLs from a sitemap and save them to a file.
-
-    :param sitemap_url: The URL of the sitemap to parse.
-    :type sitemap_url: str
-    :param target_file_name: The name of the file to save URLs.
-    :type target_file_name: str
-    :param session: The requests session to use for fetching.
-    :type session: requests.Session
-    """
-    urls = extract_xml(fetch_xml(sitemap_url, session))
-
-    # Output all housing URLs
-    print("Extracted Housing URLs:")
-    for url in urls:
-        print(url)
-
-    # Ensure 'urls' directory exists
-    if not os.path.exists(os.path.join(RAG_DIR, "crawl_temp/extracted_urls")):
-        os.makedirs("crawl_temp/extracted_urls")
-
-    # Save URLs to a file
-    with open(f"crawl_temp/extracted_urls/{target_file_name}.txt", "w") as file:
-        for url in urls:
-            file.write(url + "\n")
-    time.sleep(5)
+            print(f"Found terminal URL: {current_url}")
+            final_urls.append(current_url)
+    return final_urls
 
 
 def parse_url(sitemap_url, session):
@@ -193,7 +139,7 @@ def crawl():
 
     # Scrape URLs from the sitemap
     for page in sitemaps:
-        url_list.extend(parse_url(page, session))
+        url_list.extend(retrieve_final_urls(page, session))
 
     # Download all resource page as html
     download_and_save_html(url_list, session)
