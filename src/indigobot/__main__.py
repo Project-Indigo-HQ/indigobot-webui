@@ -1,5 +1,5 @@
 """
-This is the main chatbot program for conversational capabilities and info distribution.
+This is the main chatbot program/file for conversational capabilities and info distribution.
 """
 
 import readline  # Required for using arrow keys in CLI
