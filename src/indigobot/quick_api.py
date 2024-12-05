@@ -7,7 +7,7 @@ from typing_extensions import Annotated
 from typing import Sequence
 import uvicorn
 
-from indigobot.__main__ import retriever, rag_chain
+from indigobot.context import retriever, rag_chain
 
 
 # Define API models
@@ -98,11 +98,14 @@ async def query_model(request: QueryRequest):
                             if len(desc) > 150:
                                 desc = desc[:150] + "..."
                             contexts.append(desc)
-                    except:
+                    except Exception as e:
                         # Fallback to simple truncation if JSON parsing fails
                         if len(content) > 150:
                             content = content[:150] + "..."
                         contexts.append(content)
+                        print(
+                            f"JSON parsing failed; falling back to simple truncation; Exception: {e}"
+                        )
                 else:
                     # Simple truncation for non-service content
                     if len(content) > 150:
@@ -149,7 +152,7 @@ async def list_sources():
         )
 
 
-def main():
+def start_api():
     """Start FastAPI"""
     # Get port from environment variable or use default 8000
     port = int(os.getenv("PORT", 8000))
@@ -160,7 +163,7 @@ def main():
 
     try:
         uvicorn.run(
-            "indigobot.__main__:app",
+            "indigobot.context:chatbot_app",
             host=host,
             port=port,
             reload=True,
@@ -172,7 +175,7 @@ def main():
 
 if __name__ == "__main__":
     try:
-        main()
+        start_api()
     except KeyboardInterrupt:
         print("\nExiting...")
     except Exception as e:

@@ -34,7 +34,8 @@ llm = llms["gpt"]
 vectorstore = vectorstores["gpt"]
 
 # NOTE: not sure best combo/individual options for these
-included_tables = ["documents"]
+# included_tables = ["documents"]
+included_tables = ["documents", "embedding_fulltext_search_content"]
 
 
 def init_db(db_path=None):
@@ -78,9 +79,7 @@ def init_db(db_path=None):
         # Then initialize SQLDatabase after tables exist
         db_uri = f"sqlite:///{db_file}"
         db = SQLDatabase.from_uri(
-            db_uri,
-            include_tables=included_tables,
-            sample_rows_in_table_info=0
+            db_uri, include_tables=included_tables, sample_rows_in_table_info=0
         )
 
         return db
@@ -119,7 +118,7 @@ def load_docs(docs, db_path=None):
     """
     # Initialize database if it doesn't exist
     init_db(db_path)
-    
+
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=10)
     splits = text_splitter.split_documents(docs)
 
@@ -140,11 +139,35 @@ def load_docs(docs, db_path=None):
                 (
                     doc.page_content,
                     next(iter(doc.metadata.keys()), None),  # First metadata key
-                    doc.metadata.get(next((k for k, v in doc.metadata.items() if isinstance(v, str)), None)),
-                    doc.metadata.get(next((k for k, v in doc.metadata.items() if isinstance(v, int)), None)),
-                    doc.metadata.get(next((k for k, v in doc.metadata.items() if isinstance(v, float)), None)),
-                    doc.metadata.get(next((k for k, v in doc.metadata.items() if isinstance(v, bool)), None))
-                )
+                    doc.metadata.get(
+                        next(
+                            (k for k, v in doc.metadata.items() if isinstance(v, str)),
+                            None,
+                        )
+                    ),
+                    doc.metadata.get(
+                        next(
+                            (k for k, v in doc.metadata.items() if isinstance(v, int)),
+                            None,
+                        )
+                    ),
+                    doc.metadata.get(
+                        next(
+                            (
+                                k
+                                for k, v in doc.metadata.items()
+                                if isinstance(v, float)
+                            ),
+                            None,
+                        )
+                    ),
+                    doc.metadata.get(
+                        next(
+                            (k for k, v in doc.metadata.items() if isinstance(v, bool)),
+                            None,
+                        )
+                    ),
+                ),
             )
 
         conn.commit()

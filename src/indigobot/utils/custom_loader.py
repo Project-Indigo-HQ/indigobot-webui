@@ -176,7 +176,7 @@ def jf_loader(vectorstore):
     load_docs(json_docs, vectorstore)
 
 
-def main():
+def start_loader():
     """
     Execute the document loading process by scraping web pages, reading PDFs, and loading local files.
     """
@@ -192,6 +192,6 @@ def main():
 
 if __name__ == "__main__":
     try:
-        main()
+        start_loader()
     except Exception as e:
         print(e)
