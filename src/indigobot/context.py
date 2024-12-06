@@ -14,7 +14,7 @@ from typing_extensions import Annotated, TypedDict
 from indigobot.config import llms, vectorstores
 
 llm = llms["gpt"]
-retriever = vectorstores["gpt"].as_retriever()
+chatbot_retriever = vectorstores["gpt"].as_retriever()
 
 
 class ChatState(TypedDict):
@@ -37,7 +37,7 @@ def call_model(state: ChatState):
     :return: Updated state with chat history, context, and answer.
     :rtype: dict
     """
-    response = rag_chain.invoke(state)
+    response = chatbot_rag_chain.invoke(state)
     return {
         "chat_history": [
             HumanMessage(state["input"]),
@@ -48,7 +48,7 @@ def call_model(state: ChatState):
     }
 
 
-### Contextualize question ###
+### Main program - Contextualize question ###
 contextualize_q_system_prompt = (
     "Reformulate the user's question into a standalone question, "
     "considering the chat history. Return the original question if no reformulation needed."
@@ -61,10 +61,10 @@ contextualize_q_prompt = ChatPromptTemplate.from_messages(
     ]
 )
 history_aware_retriever = create_history_aware_retriever(
-    llm, retriever, contextualize_q_prompt
+    llm, chatbot_retriever, contextualize_q_prompt
 )
 
-### Answer question ###
+### Main program - Answer question ###
 system_prompt = (
     "You are an assistant that answers questions/provides information about "
     "social services in Portland, Oregon. Use the following pieces of "
@@ -82,7 +82,9 @@ qa_prompt = ChatPromptTemplate.from_messages(
 )
 
 question_answer_chain = create_stuff_documents_chain(llm, qa_prompt)
-rag_chain = create_retrieval_chain(history_aware_retriever, question_answer_chain)
+chatbot_rag_chain = create_retrieval_chain(
+    history_aware_retriever, question_answer_chain
+)
 
 workflow = StateGraph(state_schema=ChatState)
 workflow.add_edge(START, "model")

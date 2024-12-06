@@ -7,7 +7,7 @@ from typing_extensions import Annotated
 from typing import Sequence
 import uvicorn
 
-from indigobot.context import retriever, rag_chain
+from indigobot.context import chatbot_retriever, chatbot_rag_chain
 
 
 # Define API models
@@ -79,7 +79,7 @@ async def query_model(request: QueryRequest):
     try:
         # Initialize state with empty chat history if none provided
         state = State(input=request.input, chat_history=[], context="").model_dump()
-        response = rag_chain.invoke(state)
+        response = chatbot_rag_chain.invoke(state)
         # Format context from documents into a concise string
         context = ""
         if isinstance(response.get("context"), list):
@@ -143,7 +143,7 @@ async def list_sources():
     """
     try:
         document_data_sources = set()
-        for doc_metadata in retriever.vectorstore.get()["metadatas"]:
+        for doc_metadata in chatbot_retriever.vectorstore.get()["metadatas"]:
             document_data_sources.add(doc_metadata["source"])
         return {"sources": list(document_data_sources)}
     except Exception as e:
