@@ -44,7 +44,7 @@ def fetch_xml(url, session):
     }
     response = session.get(url, headers=headers)
     if response.status_code == 200:
-        time.sleep(5)
+        time.sleep(1)
         return response.content
     else:
         raise Exception(
@@ -118,7 +118,7 @@ def download_and_save_html(urls, session):
     }
 
     for url in urls:
-        time.sleep(random.randint(3, 6))
+        time.sleep(random.randint(1, 2))
         response = session.get(url, headers=headers)
 
         if response.status_code == 200:
