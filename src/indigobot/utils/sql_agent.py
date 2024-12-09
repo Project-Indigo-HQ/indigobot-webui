@@ -31,9 +31,7 @@ from indigobot.config import GPT_DB, llms, vectorstores
 llm = llms["gpt"]
 vectorstore = vectorstores["gpt"]
 
-# NOTE: not sure best combo/individual options for these
-# included_tables = ["documents"]
-included_tables = ["documents", "embedding_fulltext_search_content"]
+included_tables = ["embedding_metadata"]
 
 
 def init_db(db_path=None):
@@ -95,7 +93,6 @@ def main():
     prompt_template = hub.pull("langchain-ai/sql-agent-system-prompt")
 
     assert len(prompt_template.messages) == 1
-    prompt_template.messages[0].pretty_print()
     system_message = prompt_template.format(dialect="SQLite", top_k=5)
 
     retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
@@ -128,6 +125,12 @@ def main():
                     stream_mode="values",
                 ):
                     step["messages"][-1].pretty_print()
+                # for message, metadata in agent_executor.stream(
+                #     {"question": line},
+                #     stream_mode="messages",
+                # ):
+                #     if metadata["langgraph_node"] == "generate":
+                #         print(message.content, end="|")
             except Exception as e:
                 print(f"error: {e}")
         else:
@@ -135,4 +138,9 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\nExiting...")
+    except Exception as e:
+        print(f"Error: {e}")
