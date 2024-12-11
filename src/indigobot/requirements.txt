@@ -6,8 +6,8 @@ langchainhub
 langchain_anthropic
 langchain-chroma
 langchain-community
-langchain_google_genai
 langchain-experimental
+langchain_google_genai
 langchain_openai
 langgraph
 pypdf

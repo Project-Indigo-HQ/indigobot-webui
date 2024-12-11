@@ -53,15 +53,13 @@ def main(skip_loader: bool = False, skip_api: bool = False) -> None:
 
     while True:
         try:
-            print()
-            line = input("llm>> ")
+            line = input("\nllm>> ")
             if line:
                 result = chatbot_app.invoke(
                     {"input": line},
                     config=thread_config,
                 )
-                print()
-                print(result["answer"])
+                print(f"\n{result["answer"]}")
             else:
                 break
         except Exception as e:

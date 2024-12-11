@@ -69,6 +69,18 @@ def init_db(db_path=None):
             );
             """
         )
+        
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS embedding_metadata (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                document_id INTEGER,
+                embedding BLOB,
+                metadata TEXT,
+                FOREIGN KEY(document_id) REFERENCES documents(id)
+            );
+            """
+        )
         conn.commit()
         conn.close()
 
@@ -113,6 +125,8 @@ def main():
 
     agent_executor = create_react_agent(llm, tools, state_modifier=system_message)
 
+    print(f"\nI can answer queestions about this dataabse: {GPT_DB}")
+
     while True:
         line = input("llm>> ")
         if line.strip().lower() == "quit":
@@ -126,11 +140,10 @@ def main():
                 ):
                     step["messages"][-1].pretty_print()
                 # for message, metadata in agent_executor.stream(
-                #     {"question": line},
-                #     stream_mode="messages",
+                #     input={"messages": [{"role": "user", "content": line}]},
+                #     stream_mode="message",
                 # ):
-                #     if metadata["langgraph_node"] == "generate":
-                #         print(message.content, end="|")
+                #     print(message.content, end="")
             except Exception as e:
                 print(f"error: {e}")
         else:
@@ -144,3 +157,4 @@ if __name__ == "__main__":
         print("\nExiting...")
     except Exception as e:
         print(f"Error: {e}")
+        raise
