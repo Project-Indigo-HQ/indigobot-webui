@@ -2,7 +2,10 @@
 This is the main chatbot program for conversational capabilities and info distribution.
 """
 
+import os
 import readline  # Required for using arrow keys in CLI
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 from typing import Sequence
 
 from langchain.chains import create_history_aware_retriever, create_retrieval_chain
@@ -99,8 +102,93 @@ chatbot_app = workflow.compile(checkpointer=memory)
 # Configuration constants
 thread_config = {"configurable": {"thread_id": "abc123"}}
 
+# FastAPI app initialization
+app = FastAPI(
+    title="RAG API",
+    description="REST API for RAG-powered question answering",
+    version="1.0.0",
+)
 
-def main(skip_loader: bool = False) -> None:
+# Define API models
+class QueryRequest(BaseModel):
+    """Request model for query endpoint"""
+    input: str
+    
+    class Config:
+        json_schema_extra = {
+            "example": {"input": "What are the key concepts of LLM agents?"}
+        }
+
+class QueryResponse(BaseModel):
+    """Response model for query endpoint"""
+    answer: str
+    
+    class Config:
+        json_schema_extra = {
+            "example": {"answer": "LLM agents are AI systems that can..."}
+        }
+
+@app.post(
+    "/query",
+    response_model=QueryResponse,
+    summary="Query the RAG system",
+    response_description="The answer and supporting context",
+)
+async def query_model(request: QueryRequest):
+    """Query the RAG pipeline with a question."""
+    if not request.input.strip():
+        raise HTTPException(status_code=400, detail="Input query cannot be empty")
+
+    try:
+        state = ChatState(input=request.input, chat_history=[], context="", answer="")
+        response = rag_chain.invoke(state)
+        return QueryResponse(answer=response["answer"])
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing query: {str(e)}")
+
+@app.get("/", summary="Health check", response_description="Basic server status")
+async def root():
+    """Health check endpoint to verify the API is running."""
+    return {"status": "healthy", "message": "RAG API is running!", "version": "1.0.0"}
+
+@app.get(
+    "/sources",
+    summary="List available sources",
+    response_description="List of document sources in the system",
+)
+async def list_sources():
+    """List all document sources available in the vector store."""
+    try:
+        document_data_sources = set()
+        for doc_metadata in retriever.vectorstore.get()["metadatas"]:
+            document_data_sources.add(doc_metadata["source"])
+        return {"sources": list(document_data_sources)}
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error retrieving sources: {str(e)}"
+        )
+
+def start_api():
+    """Start FastAPI server"""
+    import uvicorn
+    port = int(os.getenv("PORT", 8000))
+    host = "0.0.0.0"
+    print(f"\nStarting server on http://{host}:{port}")
+    print("To access from another machine, use your VM's external IP address")
+    print(f"Make sure your GCP firewall allows incoming traffic on port {port}\n")
+    
+    try:
+        uvicorn.run(
+            app,
+            host=host,
+            port=port,
+            reload=True,
+            access_log=True,
+        )
+    except Exception as e:
+        print(f"Failure running Uvicorn: {e}")
+
+def main(skip_loader: bool = False, api_mode: bool = False) -> None:
     """
     Main function that runs the interactive chat loop.
     Handles user input and displays model responses.
@@ -133,7 +221,10 @@ def main(skip_loader: bool = False) -> None:
 
 if __name__ == "__main__":
     try:
-        main(skip_loader=False)
+        if api_mode:
+            start_api()
+        else:
+            main(skip_loader=False)
     except KeyboardInterrupt:
         print("\nExiting...")
     except Exception as e:
