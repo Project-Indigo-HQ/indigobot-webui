@@ -2,6 +2,7 @@
 This is the main chatbot program for conversational capabilities and info distribution.
 """
 
+import argparse
 import os
 import readline  # Required for using arrow keys in CLI
 from fastapi import FastAPI, HTTPException
@@ -221,7 +222,11 @@ def main(skip_loader: bool = False, api_mode: bool = False) -> None:
 
 if __name__ == "__main__":
     try:
-        if api_mode:
+        parser = argparse.ArgumentParser(description="IndigoBot CLI and API server")
+        parser.add_argument("--api-mode", action="store_true", help="Run as API server")
+        args = parser.parse_args()
+        
+        if args.api_mode:
             start_api()
         else:
             main(skip_loader=False)
