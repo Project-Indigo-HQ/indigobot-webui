@@ -67,14 +67,15 @@ app = FastAPI(
 
 
 # Define API endpoints
+from fastapi import Request
+
 @app.post(
     "/query",
     response_model=QueryResponse,
     summary="Query the RAG system",
     response_description="The answer and supporting context",
 )
-# NOTE: Changed this to take `rag_chain` as function parameter
-async def query_model(request: QueryRequest = None):
+async def query_model(request: Request):
     """
     Query the RAG pipeline with a question.
 
@@ -88,18 +89,16 @@ async def query_model(request: QueryRequest = None):
         HTTPException(500): If there's an internal error
     """
     try:
-        # Handle raw request body
-        if not request:
-            raise HTTPException(status_code=400, detail="Request body is required")
-            
-        # Validate and clean request
-        if not isinstance(request, QueryRequest):
-            request = QueryRequest.validate_request(request)
-            
-        if not request.input.strip():
+        # Parse the raw JSON request body
+        json_data = await request.json()
+        
+        # Convert to QueryRequest model
+        query_request = QueryRequest(input=json_data.get("input", ""))
+        
+        if not query_request.input.strip():
             raise HTTPException(status_code=400, detail="Input query cannot be empty")
         # Initialize state with empty chat history if none provided
-        state = State(input=request.input, chat_history=[], context="").model_dump()
+        state = State(input=query_request.input, chat_history=[], context="").model_dump()
         response = chatbot_rag_chain.invoke(state)
         # Format context from documents into a concise string
         context = ""
