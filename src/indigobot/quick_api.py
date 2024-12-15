@@ -163,10 +163,10 @@ def start_api():
 
     try:
         uvicorn.run(
-            "indigobot.context:chatbot_app",
+            app,
             host=host,
             port=port,
-            reload=True,
+            reload=False,  # Disable reload since we're running from __main__
             access_log=True,  # Enable access logging
         )
     except Exception as e:

@@ -25,10 +25,11 @@ def api():
     load_res = input("Would you like to enable the API? (y/n) ")
     if load_res == "y":
         try:
-            api_path = os.path.join(CURRENT_DIR, "quick_api.py")
-            process = subprocess.Popen(["python", api_path])
-            # process.wait()
-            time.sleep(10)
+            from indigobot.quick_api import start_api
+            import threading
+            api_thread = threading.Thread(target=start_api, daemon=True)
+            api_thread.start()
+            time.sleep(2)  # Give API time to start
         except Exception as e:
             print(f"Error booting api: {e}")
 
