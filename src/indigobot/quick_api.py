@@ -131,14 +131,19 @@ async def query_model(request: Request):
                 # Try to extract service description if it exists
                 if "service_description" in content:
                     try:
-                        import json
-
-                        data = json.loads("{" + content.split("{", 1)[1])
-                        desc = data.get("service_description", "")
-                        if desc:
-                            if len(desc) > 150:
-                                desc = desc[:150] + "..."
-                            contexts.append(desc)
+                        content_parts = content.split("{", 1)
+                        if len(content_parts) > 1:
+                            data = json.loads("{" + content_parts[1])
+                            desc = data.get("service_description", "")
+                            if desc:
+                                if len(desc) > 150:
+                                    desc = desc[:150] + "..."
+                                contexts.append(desc)
+                        else:
+                            # Handle content without JSON
+                            if len(content) > 150:
+                                content = content[:150] + "..."
+                            contexts.append(content)
                     except Exception as e:
                         # Fallback to simple truncation if JSON parsing fails
                         if len(content) > 150:
