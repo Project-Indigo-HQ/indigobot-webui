@@ -27,26 +27,8 @@ def api():
         try:
             from indigobot.quick_api import start_api
             import threading
-            
-            # Create event for synchronization
-            api_ready = threading.Event()
-            
-            def run_api():
-                try:
-                    start_api(ready_event=api_ready)
-                except Exception as e:
-                    print(f"API server error: {e}")
-                    api_ready.set()  # Ensure we don't hang
-            
-            api_thread = threading.Thread(target=run_api, daemon=True)
+            api_thread = threading.Thread(target=start_api, daemon=True)
             api_thread.start()
-            
-            # Wait for API to be ready or error
-            if api_ready.wait(timeout=5):
-                print("API server started successfully")
-            else:
-                print("Warning: API server startup timed out")
-                
         except Exception as e:
             print(f"Error booting API: {e}")
 

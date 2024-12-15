@@ -198,13 +198,8 @@ async def list_sources():
         )
 
 
-def start_api(ready_event=None):
-    """
-    Start FastAPI server
-    
-    Args:
-        ready_event: Optional threading.Event to signal when server is ready
-    """
+def start_api():
+    """Start FastAPI server"""
     port = int(os.getenv("PORT", 8000))
     host = "0.0.0.0"  # Explicitly bind to all interfaces
     
@@ -212,34 +207,16 @@ def start_api(ready_event=None):
     print("To access from another machine, use your VM's external IP address")
     print(f"Make sure your GCP firewall allows incoming traffic on port {port}\n")
 
-    config = uvicorn.Config(
-        app,
-        host=host,
-        port=port,
-        reload=False,
-        access_log=True,
-        log_level="info"
-    )
-    
-    server = uvicorn.Server(config)
-    
-    if ready_event:
-        # Override server startup event
-        original_startup = server.startup
-        
-        async def startup():
-            await original_startup()
-            ready_event.set()
-            
-        server.startup = startup
-    
     try:
-        server.run()
+        uvicorn.run(
+            app,
+            host=host,
+            port=port,
+            reload=False,
+            access_log=True
+        )
     except Exception as e:
         print(f"Failure running Uvicorn: {e}")
-        if ready_event:
-            ready_event.set()  # Signal even on error
-        raise
 
 
 if __name__ == "__main__":
