@@ -89,13 +89,27 @@ async def query_model(request: Request):
         HTTPException(500): If there's an internal error
     """
     try:
-        # Parse the raw JSON request body
-        json_data = await request.json()
-        
+        # Get raw request body
+        body = await request.body()
+        if not body:
+            raise HTTPException(status_code=400, detail="Request body is required")
+            
+        # Parse JSON and validate
+        try:
+            json_data = await request.json()
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Invalid JSON: {str(e)}")
+            
+        if not isinstance(json_data, dict):
+            raise HTTPException(status_code=400, detail="Request body must be a JSON object")
+            
         # Convert to QueryRequest model
-        query_request = QueryRequest(input=json_data.get("input", ""))
-        
-        if not query_request.input.strip():
+        try:
+            query_request = QueryRequest(input=json_data.get("input", ""))
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Invalid request format: {str(e)}")
+            
+        if not query_request.input or not query_request.input.strip():
             raise HTTPException(status_code=400, detail="Input query cannot be empty")
         # Initialize state with empty chat history if none provided
         state = State(input=query_request.input, chat_history=[], context="").model_dump()
