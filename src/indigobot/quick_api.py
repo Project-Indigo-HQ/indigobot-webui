@@ -1,4 +1,5 @@
 import os
+import json
 from fastapi import FastAPI, HTTPException
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
@@ -89,26 +90,33 @@ async def query_model(request: Request):
         HTTPException(500): If there's an internal error
     """
     try:
-        # Parse JSON request body
+        # Get the raw request body first
+        body = await request.body()
+        if not body:
+            raise HTTPException(status_code=400, detail="Empty request body")
+
+        # Parse JSON with better error handling
         try:
             json_data = await request.json()
+        except json.JSONDecodeError as e:
+            raise HTTPException(status_code=400, detail=f"Invalid JSON format: {str(e)}")
         except Exception as e:
-            raise HTTPException(status_code=400, detail="Invalid JSON request body")
+            raise HTTPException(status_code=400, detail=f"Error parsing request: {str(e)}")
 
         # Validate request format
         if not isinstance(json_data, dict):
             raise HTTPException(status_code=400, detail="Request body must be a JSON object")
         
         if "input" not in json_data:
-            raise HTTPException(status_code=400, detail="Request must contain 'input' field")
+            raise HTTPException(status_code=400, detail="Missing required field: 'input'")
         
         # Create and validate QueryRequest
         try:
-            query_request = QueryRequest.validate_request(json_data)
+            query_request = QueryRequest(input=json_data["input"])
         except ValueError as e:
-            raise HTTPException(status_code=400, detail=str(e))
+            raise HTTPException(status_code=400, detail=f"Invalid input value: {str(e)}")
             
-        if not query_request.input.strip():
+        if not query_request.input or not query_request.input.strip():
             raise HTTPException(status_code=400, detail="Input query cannot be empty")
         # Initialize state with empty chat history if none provided
         state = State(input=query_request.input, chat_history=[], context="").model_dump()
