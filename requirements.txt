@@ -22,5 +22,6 @@ setuptools
 setuptools-scm
 sphinx
 sphinx-rtd-theme
+sqlalchemy
 types-pyyaml
 unidecode

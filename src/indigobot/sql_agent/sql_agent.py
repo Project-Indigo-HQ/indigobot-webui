@@ -69,7 +69,7 @@ def init_db(db_path=None):
             );
             """
         )
-        
+
         cursor.execute(
             """
             CREATE TABLE IF NOT EXISTS embedding_metadata (
@@ -139,11 +139,6 @@ def main():
                     stream_mode="values",
                 ):
                     step["messages"][-1].pretty_print()
-                # for message, metadata in agent_executor.stream(
-                #     input={"messages": [{"role": "user", "content": line}]},
-                #     stream_mode="message",
-                # ):
-                #     print(message.content, end="")
             except Exception as e:
                 print(f"error: {e}")
         else:

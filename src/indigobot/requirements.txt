@@ -12,5 +12,6 @@ langchain_openai
 langgraph
 pypdf
 requests
+sqlalchemy
 unidecode
 uvicorn
