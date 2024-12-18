@@ -54,8 +54,8 @@ def parse_and_save(file_path):
             ),
             "headers": [],
         }
-        # Extract all element wrapped around <*h></*h> and their subtrees
-        for header in soup.find_all(
+        # Extract all headers and paragraphs
+        for element in soup.find_all(
             [
                 "h1",
                 "h2",
@@ -63,14 +63,15 @@ def parse_and_save(file_path):
                 "h4",
                 "h5",
                 "h6",
+                "p",
             ]
         ):
-            header_content = {
-                "tag": header.name,
-                "text": header.get_text(strip=True),
-                "html": str(header),
+            content = {
+                "tag": element.name,
+                "text": element.get_text(strip=False),
+                "html": str(element),
             }
-            data["headers"].append(header_content)
+            data["headers"].append(content)
     except Exception as e:
         print(f"Error parsing HTML content from {file_path}: {e}")
         return
@@ -85,7 +86,7 @@ def parse_and_save(file_path):
     try:
         with open(json_path, "w", encoding="utf-8") as json_file:
             json.dump(data, json_file, indent=4)
-        print(f"Extracted data save to {json_path}")
+        print(f"Extracted data saved to {json_path}")
     except Exception as e:
         print(f"Error saving JSON to {json_path}: {e}")
 
@@ -121,7 +122,6 @@ def load_JSON_files(folder_path):
     return JSON_files
 
 
-# TODO make this works anywhere
 def refine_text():
     """
     Execute the process of loading, parsing, and saving HTML content as JSON.
@@ -144,3 +144,24 @@ def main():
 
 if __name__ == "__main__":
     main()
+"""
+HTML content refinement and processing utilities.
+
+This module provides functionality for processing HTML files and converting them into
+a more structured JSON format. It extracts meaningful content like titles, headers,
+and paragraphs while preserving the document structure.
+
+The module supports:
+- Loading HTML files from a directory
+- Parsing HTML content using BeautifulSoup
+- Extracting structured content (titles, headers, paragraphs)
+- Saving processed content as JSON
+- Converting JSON back into Document objects for further processing
+
+The processed documents maintain metadata about their source and structure while
+making the content more accessible for NLP tasks.
+
+Note:
+    This module requires BeautifulSoup4 for HTML parsing and uses the RAG_DIR
+    configuration from indigobot.config.
+"""

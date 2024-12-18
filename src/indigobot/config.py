@@ -50,7 +50,8 @@ except Exception as e:
     print(f"Error initializing Google vectorstore: {e}")
     raise
 
-vectorstores = {"gpt": gpt_vstore, "gemini": gem_vstore}
+# vectorstores = {"gpt": gpt_vstore, "gemini": gem_vstore}
+vectorstores = {"gpt": gpt_vstore}
 
 # URLs for API endpoints that return JSON data
 url_list: List[str] = [
@@ -67,8 +68,8 @@ r_url_list: List[str] = [
 
 # Sitemap URLs
 sitemaps: List[str] = [
-    "https://centralcityconcern.org/housing-sitemap.xml",
-    "https://centralcityconcern.org/healthcare-sitemap.xml",
+    # "https://centralcityconcern.org/housing-sitemap.xml",
+    # "https://centralcityconcern.org/healthcare-sitemap.xml",
     "https://centralcityconcern.org/recovery-sitemap.xml",
     "https://centralcityconcern.org/jobs-sitemap.xml",
 ]

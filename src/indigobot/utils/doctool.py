@@ -1,6 +1,22 @@
 """
-This program provides an agent that generates Sphinx-style docstrings, unit tests, and
-a summary when given a file path or name. It assumes the provided file is in the cwd.
+A program that provides an AI agent for generating Sphinx-style docstrings, unit tests, and code summaries.
+
+This module uses LangChain to create an AI agent that can analyze Python source files and generate:
+- Sphinx-style docstrings for all functions and classes
+- Unit tests compatible with the unittest framework  
+- Detailed code summaries and suggestions
+
+The agent assumes provided files are in the current working directory unless a full path is specified.
+
+Example:
+    To use the doctool from command line::
+
+        $ python -m indigobot.utils.doctool
+        Please enter a file path or name to generate docstrings (can use relative path/name):
+        llm>> myfile.py
+
+Note:
+    The agent uses GPT models configured in the indigobot.config module.
 """
 
 import readline  # Required for using arrow keys in CLI

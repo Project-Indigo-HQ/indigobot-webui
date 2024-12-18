@@ -7,7 +7,7 @@ from unittest.mock import Mock, patch
 from langchain.schema import Document
 from langchain_community.utilities import SQLDatabase
 
-from indigobot.utils.sql_agent import init_db, main
+from indigobot.sql_agent.sql_agent import init_db, main
 
 
 @pytest.fixture
@@ -17,6 +17,7 @@ def temp_db_path():
         db_path = f.name
     yield db_path
     os.unlink(db_path)  # Clean up after test
+
 
 @pytest.fixture
 def sample_docs():
@@ -31,6 +32,7 @@ def sample_docs():
             metadata={"source": "test2.txt", "page": 2, "score": 0.95},
         ),
     ]
+
 
 @pytest.fixture
 def db_connection(temp_db_path):
@@ -51,13 +53,13 @@ class TestDatabase:
         cursor = conn.cursor()
 
         # Check if required tables exist
-        for table in ['documents', 'embedding_metadata']:
+        for table in ["documents", "embedding_metadata"]:
             cursor.execute(
                 """
                 SELECT name FROM sqlite_master
                 WHERE type='table' AND name=?
                 """,
-                (table,)
+                (table,),
             )
             assert cursor.fetchone() is not None, f"Table {table} was not created"
 
@@ -88,13 +90,13 @@ class TestDatabase:
         cursor.execute("PRAGMA table_info(documents)")
         columns = cursor.fetchall()
         expected_columns = {
-            'id': 'INTEGER',
-            'content': 'TEXT',
-            'key': 'TEXT',
-            'string_value': 'TEXT',
-            'int_value': 'INTEGER',
-            'float_value': 'REAL',
-            'bool_value': 'BOOLEAN'
+            "id": "INTEGER",
+            "content": "TEXT",
+            "key": "TEXT",
+            "string_value": "TEXT",
+            "int_value": "INTEGER",
+            "float_value": "REAL",
+            "bool_value": "BOOLEAN",
         }
         for col in columns:
             name, type_ = col[1], col[2]
@@ -105,10 +107,10 @@ class TestDatabase:
         cursor.execute("PRAGMA table_info(embedding_metadata)")
         columns = cursor.fetchall()
         expected_columns = {
-            'id': 'INTEGER',
-            'document_id': 'INTEGER',
-            'embedding': 'BLOB',
-            'metadata': 'TEXT'
+            "id": "INTEGER",
+            "document_id": "INTEGER",
+            "embedding": "BLOB",
+            "metadata": "TEXT",
         }
         for col in columns:
             name, type_ = col[1], col[2]
@@ -133,7 +135,7 @@ class TestDocumentHandling:
             INSERT INTO documents (content, key, string_value)
             VALUES (?, ?, ?)
             """,
-            ("Test content", "test_key", "test_value")
+            ("Test content", "test_key", "test_value"),
         )
         conn.commit()
 
@@ -157,19 +159,19 @@ class TestDocumentHandling:
             INSERT INTO documents (content, key)
             VALUES (?, ?)
             """,
-            ("Test content", "test_key")
+            ("Test content", "test_key"),
         )
         doc_id = cursor.lastrowid
 
         # Insert test metadata
-        test_embedding = b'test_embedding_data'
+        test_embedding = b"test_embedding_data"
         test_metadata = '{"source": "test"}'
         cursor.execute(
             """
             INSERT INTO embedding_metadata (document_id, embedding, metadata)
             VALUES (?, ?, ?)
             """,
-            (doc_id, test_embedding, test_metadata)
+            (doc_id, test_embedding, test_metadata),
         )
         conn.commit()
 
@@ -181,7 +183,7 @@ class TestDocumentHandling:
             JOIN embedding_metadata em ON d.id = em.document_id
             WHERE d.key = ?
             """,
-            ("test_key",)
+            ("test_key",),
         )
         result = cursor.fetchone()
         assert result is not None

@@ -18,38 +18,6 @@ SessionLocal = SkipValidation[
 Base = declarative_base()
 
 
-# Define SQLAlchemy Models
-class Artist(Base):
-    __tablename__: str = "artists"
-    ArtistId: Column = Column(Integer, primary_key=True)
-    Name: Column = Column(String)
-
-
-class Genre(Base):
-    __tablename__: str = "genres"
-    GenreId: Column = Column(Integer, primary_key=True)
-    Name: Column = Column(String)
-
-
-class Album(Base):
-    __tablename__: str = "albums"
-    AlbumId: Column = Column(Integer, primary_key=True)
-    Title: Column = Column(String, nullable=False)
-    ArtistId: Column = Column(Integer, nullable=False)
-
-
-class Track(Base):
-    __tablename__: str = "tracks"
-    TrackId: Column = Column(Integer, primary_key=True, autoincrement=True)
-    Name: Column = Column(String)
-    AlbumId: Column = Column(Integer)
-    GenreId: Column = Column(Integer)
-    Composer: Column = Column(String)
-    Milliseconds: Column = Column(Integer)
-    Bytes: Column = Column(Integer)
-    UnitPrice: Column = Column(Integer)
-
-
 def init_sql_db():
     """Initialize connection to the existing Chinook database"""
     db_path = GPT_DB

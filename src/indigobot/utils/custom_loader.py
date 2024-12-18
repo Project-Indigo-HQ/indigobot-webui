@@ -1,7 +1,16 @@
 """
-This module is the customized document loader for the chatbot program. 
-It uses PyPDFLoader as a PDF loader and Chroma as a vector database.
-It loads local PDFs, Python files, and also checks web pages to scrape and consume data.
+A customized document loader for processing and storing various document types.
+The module uses Chroma as a vector database for storing processed documents. It includes
+utilities for text cleaning, chunking, and batch processing of documents.
+
+Functions:
+    clean_text: Cleans and normalizes text content
+    clean_documents: Processes a list of documents
+    chunking: Splits documents into manageable chunks
+    load_docs: Loads documents into the vector store
+    load_urls: Processes URLs and loads their content
+    scrape_urls: Scrapes and processes website content
+    start_loader: Main entry point for document loading process
 """
 
 import os
@@ -183,8 +192,8 @@ def start_loader():
     """
     for vectorstore in vectorstores.values():
         try:
-            scrape_urls(r_url_list, vectorstore)
-            load_urls(url_list, vectorstore)
+            # scrape_urls(r_url_list, vectorstore)
+            # load_urls(url_list, vectorstore)
             jf_loader(vectorstore)
         except Exception as e:
             print(f"Error loading vectorstore: {e}")

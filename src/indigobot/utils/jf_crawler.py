@@ -210,3 +210,29 @@ def main():
 
 if __name__ == "__main__":
     main()
+"""
+A robust web crawler for extracting content from sitemaps and web pages.
+
+This module implements a web crawler with built-in retry mechanisms and polite
+crawling behavior. It can process XML sitemaps, extract URLs, and download HTML
+content while respecting rate limits and server constraints.
+
+Features:
+- Configurable retry mechanism for failed requests
+- Random delays between requests to avoid overwhelming servers
+- XML sitemap parsing and URL extraction
+- Bulk HTML content downloading
+- File-based URL storage and management
+- Session management with custom headers
+
+The crawler implements best practices for web scraping including:
+- User-agent identification
+- Rate limiting
+- Error handling
+- Retry logic
+- Content verification
+
+Note:
+    Configuration settings including sitemaps and RAG_DIR are pulled from
+    indigobot.config.
+"""
