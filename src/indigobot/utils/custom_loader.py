@@ -24,7 +24,7 @@ from langchain_community.document_loaders.recursive_url_loader import RecursiveU
 
 from indigobot.config import RAG_DIR, r_url_list, url_list, vectorstores
 from indigobot.utils.jf_crawler import crawl
-from indigobot.utils.refine_html import refine_text, load_JSON_files
+from indigobot.utils.refine_html import load_JSON_files, refine_text
 
 
 def clean_text(text):

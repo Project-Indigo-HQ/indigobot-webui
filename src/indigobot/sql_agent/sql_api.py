@@ -12,12 +12,8 @@ from fastapi import Depends, FastAPI, HTTPException
 from pydantic import BaseModel
 
 from indigobot.config import RAG_DIR
-from .init_db import (
-    Base,
-    SessionLocal,
-    engine,
-    init_sql_db,
-)
+
+from .init_db import Base, SessionLocal, engine, init_sql_db
 
 # Ensure database directory exists
 os.makedirs(RAG_DIR, exist_ok=True)

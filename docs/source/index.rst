@@ -53,34 +53,6 @@ Core Components
 * **SQL Agent**: Handles database operations
 * **RAG Engine**: Coordinates retrieval and generation
 
-Usage Examples
---------------
-
-Basic RAG Query:
-
-.. code-block:: python
-
-   from indigobot import main
-   
-   # Initialize the system
-   main(skip_loader=False, skip_api=True)
-   
-   # Make a query
-   response = main.query("What services are available?")
-   print(response)
-
-SQL Integration:
-
-.. code-block:: python
-
-   from indigobot.sql_agent import sql_agent
-   
-   # Initialize SQL agent
-   agent = sql_agent.init_db()
-   
-   # Query the database
-   result = agent.query("Show all available services")
-
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
@@ -94,11 +66,6 @@ API Reference
 -------------
 
 See the :ref:`modindex` for detailed API documentation.
-
-Contributing
-------------
-
-We welcome contributions! Please see our `Contributing Guidelines <https://github.com/yourusername/project-indigo/blob/main/CONTRIBUTING.md>`_ for more information.
 
 License
 -------

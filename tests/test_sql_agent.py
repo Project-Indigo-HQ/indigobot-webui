@@ -1,9 +1,9 @@
 import os
-import pytest
 import sqlite3
 import tempfile
 from unittest.mock import Mock, patch
 
+import pytest
 from langchain.schema import Document
 from langchain_community.utilities import SQLDatabase
 

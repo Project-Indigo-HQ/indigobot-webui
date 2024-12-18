@@ -1,6 +1,8 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
+from langchain.schema import Document
+
 from indigobot.utils.custom_loader import (
     chunking,
     clean_documents,
@@ -8,8 +10,6 @@ from indigobot.utils.custom_loader import (
     extract_text,
     scrape_main,
 )
-
-from langchain.schema import Document
 
 
 class TestCustomLoader(unittest.TestCase):
@@ -41,7 +41,9 @@ class TestCustomLoader(unittest.TestCase):
 
     def test_chunking_mock(self):
         """Test chunking function with mocks"""
-        with patch("indigobot.utils.custom_loader.RecursiveCharacterTextSplitter") as mock_splitter:
+        with patch(
+            "indigobot.utils.custom_loader.RecursiveCharacterTextSplitter"
+        ) as mock_splitter:
             mock_splitter_instance = MagicMock()
             mock_splitter.return_value = mock_splitter_instance
             mock_doc = MagicMock()
@@ -63,7 +65,7 @@ class TestCustomLoader(unittest.TestCase):
         docs = [Document(page_content=long_text, metadata={})]
 
         chunks = chunking(docs)
-        
+
         # Verify chunks were created properly
         self.assertGreater(len(chunks), 1)  # Should split into multiple chunks
         for chunk in chunks:

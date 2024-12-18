@@ -5,10 +5,10 @@
 
 import os
 import sys
+from unittest.mock import MagicMock
 
 # Add the project root directory to the Python path
 sys.path.insert(0, os.path.abspath("../.."))
-from unittest.mock import MagicMock
 
 
 class Mock(MagicMock):

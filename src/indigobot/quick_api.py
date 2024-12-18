@@ -1,13 +1,14 @@
 import os
+from typing import Sequence
+
+import uvicorn
 from fastapi import FastAPI, HTTPException
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
 from pydantic import BaseModel
 from typing_extensions import Annotated
-from typing import Sequence
-import uvicorn
 
-from indigobot.context import chatbot_retriever, chatbot_rag_chain
+from indigobot.context import chatbot_rag_chain, chatbot_retriever
 
 
 # Define API models
@@ -30,6 +31,18 @@ class QueryResponse(BaseModel):
     class Config:
         json_schema_extra = {
             "example": {"answer": "LLM agents are AI systems that can..."}
+        }
+
+
+class WebhookRequest(BaseModel):
+    """Request model for webhook endpoint"""
+
+    message: str
+    source: str = "webhook"
+
+    class Config:
+        json_schema_extra = {
+            "example": {"message": "Process this message", "source": "slack"}
         }
 
 
@@ -59,7 +72,6 @@ app = FastAPI(
     summary="Query the RAG system",
     response_description="The answer and supporting context",
 )
-# NOTE: Changed this to take `rag_chain` as function parameter
 async def query_model(request: QueryRequest):
     """
     Query the RAG pipeline with a question.
@@ -121,6 +133,36 @@ async def query_model(request: QueryRequest):
         return QueryResponse(answer=response["answer"])
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing query: {str(e)}")
+
+
+@app.post("/webhook", response_model=QueryResponse, summary="Webhook endpoint")
+async def webhook(request: WebhookRequest):
+    """
+    Webhook endpoint to receive messages from external services.
+
+    The system will:
+    1. Process the incoming webhook message
+    2. Generate a response using the RAG system
+    3. Return the response
+
+    Raises:
+        HTTPException(400): If the webhook payload is invalid
+        HTTPException(500): If there's an internal error
+    """
+    if not request.message.strip():
+        raise HTTPException(status_code=400, detail="Webhook message cannot be empty")
+
+    try:
+        # Process webhook message using the same pipeline as regular queries
+        state = State(input=request.message, chat_history=[], context="").model_dump()
+
+        response = chatbot_rag_chain.invoke(state)
+        return QueryResponse(answer=response["answer"])
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error processing webhook: {str(e)}"
+        )
 
 
 @app.get("/", summary="Health check", response_description="Basic server status")

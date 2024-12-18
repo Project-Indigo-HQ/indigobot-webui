@@ -5,10 +5,9 @@ from langchain.chains import create_history_aware_retriever, create_retrieval_ch
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langgraph.graph.message import add_messages
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import START, StateGraph
-
+from langgraph.graph.message import add_messages
 from typing_extensions import Annotated, TypedDict
 
 from indigobot.config import llms, vectorstores
@@ -48,7 +47,7 @@ def call_model(state: ChatState):
     }
 
 
-### Main program - Contextualize question ###
+""" Main program - Contextualize question """
 contextualize_q_system_prompt = (
     "Reformulate the user's question into a standalone question, "
     "considering the chat history. Return the original question if no reformulation needed."
@@ -64,7 +63,7 @@ history_aware_retriever = create_history_aware_retriever(
     llm, chatbot_retriever, contextualize_q_prompt
 )
 
-### Main program - Answer question ###
+""" Main program - Answer question """
 system_prompt = (
     "You are an assistant that answers questions/provides information about "
     "social services in Portland, Oregon. Use the following pieces of "

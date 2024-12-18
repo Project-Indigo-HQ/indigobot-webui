@@ -2,14 +2,14 @@
 This is the main chatbot program/file for conversational capabilities and info distribution.
 """
 
+import os
 import readline  # Required for using arrow keys in CLI
 import subprocess
-import os
 import time
 
-from indigobot.utils.custom_loader import start_loader
-from indigobot.context import chatbot_app
 from indigobot.config import CURRENT_DIR
+from indigobot.context import chatbot_app
+from indigobot.utils.custom_loader import start_loader
 
 
 def load():
