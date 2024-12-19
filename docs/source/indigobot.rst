@@ -20,6 +20,14 @@ indigobot.config module
    :undoc-members:
    :show-inheritance:
 
+indigobot.context module
+-----------------------
+
+.. automodule:: indigobot.context
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Subpackages
 -----------
 
