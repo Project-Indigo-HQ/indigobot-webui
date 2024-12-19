@@ -28,7 +28,13 @@ MOCK_MODULES = [
     "langchain",
     "langchain_core",
     "langchain_community",
+    "langchain_community.document_loaders.async_html",
+    "langchain_community.document_loaders.html", 
+    "langchain_text_splitters",
     "langchain_anthropic",
+    "unidecode",
+    "bs4",
+    "beautifulsoup4",
     "langchain_openai",
     "anthropic",
     "openai",
@@ -195,6 +201,16 @@ class BaseMock(MagicMock):
     def __call__(self, *args, **kwargs):
         return self
 
+class BeautifulSoup(BaseMock):
+    def __init__(self, *args, **kwargs):
+        super().__init__()
+    
+    def find(self, *args, **kwargs):
+        return self
+    
+    def get_text(self, *args, **kwargs):
+        return ""
+
 
 # Create mock for Pydantic ConfigDict
 class ConfigDict(BaseMock):
@@ -229,10 +245,21 @@ class BaseDocumentTransformer(BaseMock):
 class TextSplitter(BaseMock):
     pass
 
+class AsyncHtmlLoader(BaseMock):
+    pass
+
+class RecursiveUrlLoader(BaseMock):
+    pass
+
 
 # Add the mock classes to the system
 sys.modules.update(
     {
+        "bs4": type(
+            "bs4",
+            (),
+            {"BeautifulSoup": BeautifulSoup}
+        ),
         "langchain_core.language_models.base": type(
             "langchain_core.language_models.base",
             (),
@@ -261,6 +288,14 @@ sys.modules.update(
             {
                 "TextSplitter": TextSplitter,
                 "RecursiveCharacterTextSplitter": TextSplitter,
+            },
+        ),
+        "langchain_community.document_loaders": type(
+            "langchain_community.document_loaders",
+            (),
+            {
+                "AsyncHtmlLoader": AsyncHtmlLoader,
+                "RecursiveUrlLoader": RecursiveUrlLoader,
             },
         ),
     }
