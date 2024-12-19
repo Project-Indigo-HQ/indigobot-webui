@@ -76,7 +76,7 @@ from fastapi import Request
     summary="Query the RAG system",
     response_description="The answer and supporting context",
 )
-async def query_model(request: Request):
+async def query_model(query_request: QueryRequest):
     """
     Query the RAG pipeline with a question.
 
@@ -90,31 +90,6 @@ async def query_model(request: Request):
         HTTPException(500): If there's an internal error
     """
     try:
-        # Get the raw request body first
-        body = await request.body()
-        if not body:
-            raise HTTPException(status_code=400, detail="Empty request body")
-
-        # Parse JSON with better error handling
-        try:
-            json_data = await request.json()
-        except json.JSONDecodeError as e:
-            raise HTTPException(status_code=400, detail=f"Invalid JSON format: {str(e)}")
-        except Exception as e:
-            raise HTTPException(status_code=400, detail=f"Error parsing request: {str(e)}")
-
-        # Validate request format
-        if not isinstance(json_data, dict):
-            raise HTTPException(status_code=400, detail="Request body must be a JSON object")
-        
-        if "input" not in json_data:
-            raise HTTPException(status_code=400, detail="Missing required field: 'input'")
-        
-        # Create and validate QueryRequest
-        try:
-            query_request = QueryRequest(input=json_data["input"])
-        except ValueError as e:
-            raise HTTPException(status_code=400, detail=f"Invalid input value: {str(e)}")
             
         if not query_request.input or not query_request.input.strip():
             raise HTTPException(status_code=400, detail="Input query cannot be empty")
