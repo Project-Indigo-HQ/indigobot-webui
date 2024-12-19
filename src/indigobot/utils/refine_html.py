@@ -11,10 +11,20 @@ def load_html_files(folder_path):
     """
     Load all HTML files from a specified directory.
 
-    :param folder_path: Path to the directory containing HTML files.
+    Scans the given directory and returns paths to all files with .html extension.
+    Does not search subdirectories.
+
+    :param folder_path: Path to the directory containing HTML files
     :type folder_path: str
-    :return: List of file paths to HTML files.
-    :rtype: list
+    :return: List of absolute paths to HTML files
+    :rtype: list[str]
+    :raises OSError: If the folder_path doesn't exist or isn't accessible
+    :raises TypeError: If folder_path is not a string
+    
+    Example:
+        >>> html_files = load_html_files('/path/to/html/files')
+        >>> print(html_files)
+        ['/path/to/html/files/page1.html', '/path/to/html/files/page2.html']
     """
     html_files = []
     for filename in os.listdir(folder_path):
@@ -28,9 +38,31 @@ def parse_and_save(file_path):
     """
     Parse an HTML file to extract the title and headers, and save the result as a JSON file.
 
-    :param file_path: Path to the HTML file to be parsed.
+    Processes an HTML file by:
+    1. Reading and parsing the HTML content
+    2. Extracting the page title
+    3. Finding all header tags (h1-h6) and paragraphs
+    4. Saving the structured data as JSON in the processed_text directory
+
+    :param file_path: Path to the HTML file to be parsed
     :type file_path: str
     :return: None
+    :raises FileNotFoundError: If the input file doesn't exist
+    :raises OSError: If there are issues reading the file or creating output directory
+    :raises Exception: If HTML parsing fails or JSON serialization fails
+    
+    The output JSON structure follows this format:
+    {
+        "title": "Page Title",
+        "headers": [
+            {
+                "tag": "h1",
+                "text": "Header Text",
+                "html": "<h1>Header Text</h1>"
+            },
+            ...
+        ]
+    }
     """
     # Load file
     try:
@@ -95,10 +127,29 @@ def load_JSON_files(folder_path):
     """
     Load JSON files from a directory and parse them into Document objects.
 
-    :param folder_path: Path to the directory containing JSON files.
+    Processes each JSON file in the directory by:
+    1. Reading and parsing the JSON content
+    2. Extracting header texts from the JSON structure
+    3. Creating Document objects with the text content and metadata
+
+    :param folder_path: Path to the directory containing JSON files
     :type folder_path: str
-    :return: List of Document objects with parsed content and metadata.
-    :rtype: list
+    :return: List of Document objects with parsed content and metadata
+    :rtype: list[Document]
+    :raises OSError: If the folder_path doesn't exist or isn't accessible
+    :raises json.JSONDecodeError: If any JSON file is malformed
+    :raises Exception: If Document creation fails
+    
+    Each Document object contains:
+    - page_content: The extracted text from headers
+    - metadata: A dictionary with 'source' set to the original filename
+    
+    Example:
+        >>> docs = load_JSON_files('/path/to/json/files')
+        >>> print(docs[0].page_content)
+        'Header text content'
+        >>> print(docs[0].metadata)
+        {'source': 'original.json'}
     """
     JSON_files = []
     for filename in os.listdir(folder_path):
@@ -126,7 +177,20 @@ def refine_text():
     """
     Execute the process of loading, parsing, and saving HTML content as JSON.
 
+    Main orchestration function that:
+    1. Loads HTML files from the html_files directory
+    2. Parses each HTML file to extract structured content
+    3. Saves the extracted content as JSON files
+
+    The function uses the RAG_DIR configuration to locate input files
+    and store output files in the appropriate directories.
+
     :return: None
+    :raises Exception: If the HTML processing pipeline fails at any stage
+    
+    Directory structure used:
+    - Input: RAG_DIR/crawl_temp/html_files/*.html
+    - Output: RAG_DIR/crawl_temp/processed_text/*.json
     """
     # Load HTML files from "html_files" directory
     html_files_dir = os.path.join(RAG_DIR, "crawl_temp/html_files")
@@ -139,6 +203,15 @@ def refine_text():
 
 # Main Function
 def main():
+    """
+    Main entry point for the HTML refinement process.
+
+    Executes the refine_text() function to process HTML files
+    and handles any exceptions that occur during processing.
+
+    :return: None
+    :raises SystemExit: If critical errors occur during processing
+    """
     refine_text()
 
 
@@ -164,4 +237,10 @@ making the content more accessible for NLP tasks.
 Note:
     This module requires BeautifulSoup4 for HTML parsing and uses the RAG_DIR
     configuration from indigobot.config.
+
+Example:
+    To process a directory of HTML files:
+    
+    >>> from indigobot.utils.refine_html import refine_text
+    >>> refine_text()  # Process all HTML files in the configured directory
 """

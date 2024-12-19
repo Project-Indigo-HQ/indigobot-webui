@@ -31,10 +31,11 @@ def clean_text(text):
     """
     Replaces unicode characters and strips extra whitespace from text.
 
-    :param text: Text to clean.
+    :param text: Raw text content to be cleaned
     :type text: str
-    :return: Cleaned text.
+    :return: Text with unicode characters replaced and whitespace normalized
     :rtype: str
+    :raises UnicodeError: If unicode replacement fails
     """
     text = unidecode.unidecode(text)
     text = re.sub(r"\s+", " ", text).strip()
@@ -45,10 +46,14 @@ def clean_documents(documents):
     """
     Cleans the page_content text of a list of Documents.
 
-    :param documents: List of documents to clean.
-    :type documents: list
-    :return: List of cleaned documents.
-    :rtype: list
+    Processes each document in the list by cleaning its page_content
+    using the clean_text() function.
+
+    :param documents: List of Document objects to clean
+    :type documents: list[Document]
+    :return: List of Document objects with cleaned page_content
+    :rtype: list[Document]
+    :raises AttributeError: If documents don't have page_content attribute
     """
     for doc in documents:
         doc.page_content = clean_text(doc.page_content)
@@ -57,12 +62,16 @@ def clean_documents(documents):
 
 def chunking(documents):
     """
-    Splits text of documents into chunks.
+    Splits text of documents into smaller chunks for processing.
 
-    :param documents: List of documents to split.
-    :type documents: list
-    :return: List of text chunks.
-    :rtype: list
+    Uses RecursiveCharacterTextSplitter to break documents into chunks
+    of approximately 10000 characters with 1000 character overlap.
+
+    :param documents: List of Document objects to split
+    :type documents: list[Document]
+    :return: List of Document chunks
+    :rtype: list[Document]
+    :raises ValueError: If documents cannot be split properly
     """
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=10000, chunk_overlap=1000)
     chunks = text_splitter.split_documents(documents)
@@ -71,12 +80,17 @@ def chunking(documents):
 
 def load_docs(docs, vectorstore):
     """
-    Split text of arg documents into chunks and load them into the Chroma vector store
+    Split text of documents into chunks and load them into the Chroma vector store.
 
-    :param docs: List of documents to load and split.
-    :type docs: list
-    :param vectorstore: The vector store to load documents into.
-    :type vectorstore: object
+    Processes documents by:
+    1. Splitting them into chunks using chunking()
+    2. Adding chunks to the vector store in batches of 300
+
+    :param docs: List of Document objects to process and load
+    :type docs: list[Document]
+    :param vectorstore: Chroma vector store instance
+    :type vectorstore: chromadb.api.models.Collection
+    :raises Exception: If chunking or vector store operations fail
     """
 
     chunks = chunking(docs)
@@ -85,12 +99,16 @@ def load_docs(docs, vectorstore):
 
 def load_urls(urls, vectorstore):
     """
-    Use AsyncHtmlLoader library to check and scrape websites then load to Chroma
+    Asynchronously load and process web pages from URLs into the vector store.
 
-    :param urls: List of URLs to load documents from.
-    :type urls: list
-    :param vectorstore: The vector store to load documents into.
-    :type vectorstore: object
+    Uses AsyncHtmlLoader to fetch web pages concurrently, then processes
+    and loads them into the Chroma vector store.
+
+    :param urls: List of URLs to scrape and process
+    :type urls: list[str]
+    :param vectorstore: Chroma vector store instance
+    :type vectorstore: chromadb.api.models.Collection
+    :raises Exception: If URL loading or processing fails
     """
     load_docs(AsyncHtmlLoader(urls).load(), vectorstore)
 
@@ -99,10 +117,14 @@ def extract_text(html):
     """
     Extracts text from a div tag with id of 'main' from HTML content.
 
-    :param html: HTML content to parse.
+    Attempts to find and extract text from a div with id='main',
+    falling back to all text content if the main div isn't found.
+
+    :param html: Raw HTML content to parse
     :type html: str
-    :return: Extracted text.
+    :return: Extracted text content with normalized spacing
     :rtype: str
+    :raises BeautifulSoupError: If HTML parsing fails
     """
     soup = BeautifulSoup(html, "html.parser")
     div_main = soup.find("div", {"id": "main"})
@@ -113,14 +135,21 @@ def extract_text(html):
 
 def scrape_main(url, depth):
     """
-    Recursively scrapes a URL and returns Documents.
+    Recursively scrapes a URL and its linked pages up to specified depth.
 
-    :param url: The base URL to scrape.
+    Uses RecursiveUrlLoader with async loading and safety checks:
+    - Prevents scraping outside the original domain
+    - Checks response status codes
+    - Uses timeouts to prevent hanging
+    - Continues on individual page failures
+
+    :param url: The base URL to start scraping from
     :type url: str
-    :param depth: The depth of recursion for scraping.
+    :param depth: Maximum recursion depth for following links
     :type depth: int
-    :return: List of cleaned documents.
-    :rtype: list
+    :return: List of Document objects with cleaned content
+    :rtype: list[Document]
+    :raises Exception: If scraping fails or timeout occurs
     """
     loader = RecursiveUrlLoader(
         url=url,
@@ -139,14 +168,18 @@ def scrape_main(url, depth):
 
 def add_docs(vectorstore, chunks, n):
     """
-    Adds documents to the vectorstore database.
+    Adds document chunks to the vector store in batches.
 
-    :param vectorstore: The vector store to add documents to.
-    :type vectorstore: object
-    :param chunks: List of document chunks to add.
-    :type chunks: list
-    :param n: Number of documents to add per batch.
+    Processes chunks in batches of size n to prevent memory issues
+    and optimize vector store operations.
+
+    :param vectorstore: Chroma vector store instance
+    :type vectorstore: chromadb.api.models.Collection
+    :param chunks: List of Document chunks to add
+    :type chunks: list[Document]
+    :param n: Batch size for adding documents
     :type n: int
+    :raises Exception: If vector store operations fail
     """
     for i in range(0, len(chunks), n):
         vectorstore.add_documents(chunks[i : i + n])
@@ -154,12 +187,18 @@ def add_docs(vectorstore, chunks, n):
 
 def scrape_urls(urls, vectorstore):
     """
-    Processes a list of URLs, scrapes them, and adds them to the vector database.
+    Processes multiple URLs by scraping and loading them into the vector store.
 
-    :param urls: List of URLs to process and scrape.
-    :type urls: list
-    :param vectorstore: The vector store to load documents into.
-    :type vectorstore: object
+    For each URL:
+    1. Scrapes content recursively using scrape_main()
+    2. Splits content into chunks
+    3. Adds chunks to vector store in batches
+
+    :param urls: List of URLs to process
+    :type urls: list[str]
+    :param vectorstore: Chroma vector store instance
+    :type vectorstore: chromadb.api.models.Collection
+    :raises Exception: If scraping or processing fails for any URL
     """
     for url in urls:
         docs = scrape_main(url, 12)
@@ -170,6 +209,16 @@ def scrape_urls(urls, vectorstore):
 def jf_loader(vectorstore):
     """
     Fetches and refines documents from the website source and loads them into the vector database.
+
+    Process flow:
+    1. Crawls website using crawl()
+    2. Refines text content using refine_text()
+    3. Loads processed JSON files from the crawl_temp directory
+    4. Adds documents to the vector store
+
+    :param vectorstore: Chroma vector store instance
+    :type vectorstore: chromadb.api.models.Collection
+    :raises Exception: If crawling, refinement, or loading fails
     """
 
     # Fetching document from website then save to for further process
@@ -188,7 +237,15 @@ def jf_loader(vectorstore):
 
 def start_loader():
     """
-    Execute the document loading process by scraping web pages, reading PDFs, and loading local files.
+    Execute the document loading process by scraping web pages and loading local files.
+
+    Main entry point for document processing that:
+    1. Iterates through configured vector stores
+    2. Processes URLs from r_url_list and url_list
+    3. Loads documents using jf_loader
+    4. Handles errors for each vector store independently
+
+    :raises Exception: If loading fails for all vector stores
     """
     for vectorstore in vectorstores.values():
         try:

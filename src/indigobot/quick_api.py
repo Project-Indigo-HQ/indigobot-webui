@@ -1,3 +1,15 @@
+"""
+FastAPI-based REST API for RAG (Retrieval-Augmented Generation) operations.
+
+This module provides a REST API interface for:
+- Querying the RAG system with questions
+- Webhook endpoint for external service integration
+- Health check endpoint
+- Listing available document sources
+
+The API uses FastAPI for HTTP handling and Pydantic for request/response validation.
+"""
+
 import os
 from typing import Sequence
 
@@ -13,7 +25,12 @@ from indigobot.context import chatbot_rag_chain, chatbot_retriever
 
 # Define API models
 class QueryRequest(BaseModel):
-    """Request model for query endpoint"""
+    """Request model for the query endpoint.
+
+    :param input: The question or query text to be processed by the RAG system.
+                 Should be a clear, well-formed question in natural language.
+    :type input: str
+    """
 
     input: str
 
@@ -24,7 +41,12 @@ class QueryRequest(BaseModel):
 
 
 class QueryResponse(BaseModel):
-    """Response model for query endpoint"""
+    """Response model for the query endpoint.
+
+    :param answer: The generated answer from the RAG system based on the query
+                  and retrieved context.
+    :type answer: str
+    """
 
     answer: str
 
@@ -35,7 +57,14 @@ class QueryResponse(BaseModel):
 
 
 class WebhookRequest(BaseModel):
-    """Request model for webhook endpoint"""
+    """Request model for the webhook endpoint.
+
+    :param message: The message content to be processed.
+    :type message: str
+    :param source: The source of the webhook request (e.g., 'slack', 'discord').
+                  Defaults to 'webhook'.
+    :type source: str
+    """
 
     message: str
     source: str = "webhook"
@@ -47,8 +76,17 @@ class WebhookRequest(BaseModel):
 
 
 class State(BaseModel):
-    """
-    Pydantic model for chat state validation
+    """Pydantic model for maintaining and validating chat state.
+
+    :param input: The current user input/query.
+    :type input: str
+    :param chat_history: List of previous chat messages, annotated with add_messages
+                        for proper message handling.
+    :type chat_history: Sequence[BaseMessage]
+    :param context: Retrieved context from the RAG system.
+    :type context: str
+    :param answer: Generated answer for the current query.
+    :type answer: str
     """
 
     input: str
@@ -73,17 +111,18 @@ app = FastAPI(
     response_description="The answer and supporting context",
 )
 async def query_model(request: QueryRequest):
-    """
-    Query the RAG pipeline with a question.
+    """Query the RAG pipeline with a question.
 
-    The system will:
+    The system performs the following steps:
     1. Retrieve relevant context from the document store
     2. Generate an answer based on the context
     3. Return both the answer and the supporting context
 
-    Raises:
-        HTTPException(400): If the input is invalid
-        HTTPException(500): If there's an internal error
+    :param request: The query request containing the input question
+    :type request: QueryRequest
+    :return: Response containing the generated answer
+    :rtype: QueryResponse
+    :raises HTTPException: 400 if the input is invalid, 500 if there's an internal error
     """
     if not request.input.strip():
         raise HTTPException(status_code=400, detail="Input query cannot be empty")
@@ -137,17 +176,18 @@ async def query_model(request: QueryRequest):
 
 @app.post("/webhook", response_model=QueryResponse, summary="Webhook endpoint")
 async def webhook(request: WebhookRequest):
-    """
-    Webhook endpoint to receive messages from external services.
+    """Webhook endpoint to receive messages from external services.
 
-    The system will:
+    The system performs the following steps:
     1. Process the incoming webhook message
     2. Generate a response using the RAG system
     3. Return the response
 
-    Raises:
-        HTTPException(400): If the webhook payload is invalid
-        HTTPException(500): If there's an internal error
+    :param request: The webhook request containing the message
+    :type request: WebhookRequest
+    :return: Response containing the generated answer
+    :rtype: QueryResponse
+    :raises HTTPException: 400 if the webhook payload is invalid, 500 if there's an internal error
     """
     if not request.message.strip():
         raise HTTPException(status_code=400, detail="Webhook message cannot be empty")
@@ -167,8 +207,14 @@ async def webhook(request: WebhookRequest):
 
 @app.get("/", summary="Health check", response_description="Basic server status")
 async def root():
-    """
-    Health check endpoint to verify the API is running.
+    """Health check endpoint to verify the API is running.
+
+    :return: Dictionary containing status information
+    :rtype: dict
+    :returns: Dictionary with the following keys:
+        - status (str): Current server status ('healthy')
+        - message (str): Status message
+        - version (str): API version number
     """
     return {"status": "healthy", "message": "RAG API is running!", "version": "1.0.0"}
 
@@ -178,10 +224,16 @@ async def root():
     summary="List available sources",
     response_description="List of document sources in the system",
 )
-# NOTE: Changed this to take `retriever` as function parameter
 async def list_sources():
-    """
-    List all document sources available in the vector store.
+    """List all document sources available in the vector store.
+
+    Retrieves unique source identifiers from document metadata in the vector store.
+
+    :return: Dictionary containing list of sources
+    :rtype: dict
+    :returns: Dictionary with the following keys:
+        - sources (list): List of unique source identifiers
+    :raises HTTPException: 500 if there's an error accessing the vector store
     """
     try:
         document_data_sources = set()
@@ -195,7 +247,18 @@ async def list_sources():
 
 
 def start_api():
-    """Start FastAPI"""
+    """Start the FastAPI server with Uvicorn.
+
+    Configures the server with the following settings:
+        - Listens on all network interfaces (0.0.0.0)
+        - Uses port from PORT environment variable (default: 8000)
+        - Enables auto-reload for development
+        - Enables access logging
+
+    Prints server URL and configuration information to console.
+
+    :raises Exception: If Uvicorn fails to start or encounters runtime errors
+    """
     # Get port from environment variable or use default 8000
     port = int(os.getenv("PORT", 8000))
     host = "0.0.0.0"  # Explicitly bind to all interfaces
@@ -209,7 +272,7 @@ def start_api():
             host=host,
             port=port,
             reload=True,
-            access_log=True,  # Enable access logging
+            access_log=True,
         )
     except Exception as e:
         print(f"Failure running Uvicorn: {e}")
