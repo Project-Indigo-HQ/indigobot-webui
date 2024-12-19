@@ -5,4 +5,5 @@ Project Indigo Modules
    :maxdepth: 4
 
    indigobot
+   indigobot.context
 
