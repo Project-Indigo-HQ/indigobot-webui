@@ -26,6 +26,8 @@ os.environ["SPHINX_BUILD"] = "1"
 
 MOCK_MODULES = [
     "langchain",
+    "langchain.chains",
+    "langchain.chains.combine_documents",
     "langchain_core",
     "langchain_community",
     "langchain_community.document_loaders.async_html",
@@ -35,11 +37,21 @@ MOCK_MODULES = [
     "unidecode",
     "bs4",
     "beautifulsoup4",
+    "fastapi",
+    "uvicorn",
+    "langchain_core.messages",
+    "langgraph.graph.message",
     "langchain_openai",
     "anthropic",
     "openai",
     "chromadb",
     "typing_extensions",
+    "langgraph",
+    "langgraph.checkpoint",
+    "langgraph.checkpoint.memory",
+    "langgraph.graph",
+    "indigobot.config",
+    "indigobot.__main__",
     "requests",
     "requests.exceptions",
     "bs4",
@@ -201,6 +213,39 @@ class BaseMock(MagicMock):
     def __call__(self, *args, **kwargs):
         return self
 
+class StateGraph(BaseMock):
+    def add_edge(self, *args, **kwargs):
+        return self
+    
+    def add_node(self, *args, **kwargs):
+        return self
+    
+    def compile(self, *args, **kwargs):
+        return self
+
+class MemorySaver(BaseMock):
+    pass
+
+class Config(BaseMock):
+    RAG_DIR = "/mock/rag/dir"
+    llms = {"gpt": BaseMock()}
+    vectorstores = {"gpt": BaseMock()}
+    r_url_list = []
+    url_list = []
+
+class Main(BaseMock):
+    @staticmethod
+    def load():
+        return BaseMock()
+    
+    @staticmethod
+    def api():
+        return BaseMock()
+    
+    @staticmethod
+    def main(skip_loader: bool = False, skip_api: bool = False) -> None:
+        return None
+
 class BeautifulSoup(BaseMock):
     def __init__(self, *args, **kwargs):
         super().__init__()
@@ -210,6 +255,14 @@ class BeautifulSoup(BaseMock):
     
     def get_text(self, *args, **kwargs):
         return ""
+
+class FastAPI(BaseMock):
+    def __init__(self, *args, **kwargs):
+        super().__init__()
+
+class BaseModel(BaseMock):
+    def __init__(self, *args, **kwargs):
+        super().__init__()
 
 
 # Create mock for Pydantic ConfigDict
@@ -255,6 +308,21 @@ class RecursiveUrlLoader(BaseMock):
 # Add the mock classes to the system
 sys.modules.update(
     {
+        "fastapi": type(
+            "fastapi",
+            (),
+            {
+                "FastAPI": FastAPI,
+                "HTTPException": Exception,
+            }
+        ),
+        "pydantic": type(
+            "pydantic",
+            (),
+            {
+                "BaseModel": BaseModel,
+            }
+        ),
         "bs4": type(
             "bs4",
             (),
