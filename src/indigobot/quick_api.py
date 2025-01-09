@@ -15,7 +15,7 @@ from typing import Sequence
 
 import uvicorn
 import json
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
 from pydantic import BaseModel

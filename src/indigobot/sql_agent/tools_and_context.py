@@ -18,7 +18,7 @@ from langchain_core.tools import InjectedToolArg, tool
 from langgraph.store.base import BaseStore
 from typing_extensions import Annotated
 
-from indigobot.config import llm, vectorstore
+from indigobot.config import vectorstore
 
 retriever = vectorstore.as_retriever()
 

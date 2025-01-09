@@ -2,13 +2,9 @@
 This is the main chatbot program/file for conversational capabilities and info distribution.
 """
 
-import os
 import readline  # Required for using arrow keys in CLI
-import subprocess
 import threading
-import time
 
-from indigobot.config import CURRENT_DIR
 from indigobot.context import chatbot_app
 from indigobot.quick_api import start_api
 from indigobot.utils.custom_loader import start_loader
@@ -82,7 +78,7 @@ def main(skip_loader: bool = False, skip_api: bool = False) -> None:
                     {"input": line},
                     config=thread_config,
                 )
-                print(f"\n{result["answer"]}")
+                print(f"\n{result['answer']}")
             else:
                 break
         except Exception as e:
