@@ -9,16 +9,10 @@ It also defines dicts for LLMs and vector embeddings.
 import os
 from typing import Final, List
 
-from langchain_anthropic import ChatAnthropic
 from langchain_chroma import Chroma
-from langchain_google_genai import GoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
-llms = {
-    "gpt": ChatOpenAI(model="gpt-4o"),
-    "gemini": GoogleGenerativeAI(model="gemini-1.5-pro-latest", temperature=0),
-    "claude": ChatAnthropic(model="claude-3-5-sonnet-latest"),
-}
+llm = ChatOpenAI(model="gpt-4o")
 
 # Directory paths
 CURRENT_DIR: Final[str] = os.path.dirname(__file__)
@@ -30,27 +24,13 @@ CRAWLER_DIR: Final[str] = os.path.join(CURRENT_DIR, "utils/jf_crawler")
 
 # OpenAI embeddings
 try:
-    gpt_vstore = Chroma(
+    vectorstore = Chroma(
         persist_directory=os.path.join(CHROMA_DIR, "openai"),
         embedding_function=OpenAIEmbeddings(model="text-embedding-3-large"),
     )
 except Exception as e:
     print(f"Error initializing OpenAI vectorstore: {e}")
     raise
-
-# Google embeddings
-try:
-    gem_vstore = Chroma(
-        persist_directory=os.path.join(CHROMA_DIR, "gemini"),
-        embedding_function=GoogleGenerativeAIEmbeddings(
-            model="models/embedding-001", task_type="retrieval_query"
-        ),
-    )
-except Exception as e:
-    print(f"Error initializing Google vectorstore: {e}")
-    raise
-
-vectorstores = {"gpt": gpt_vstore, "gemini": gem_vstore}
 
 # URLs for API endpoints that return JSON data
 url_list: List[str] = [

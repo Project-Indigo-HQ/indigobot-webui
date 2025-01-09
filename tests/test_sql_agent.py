@@ -1,20 +1,13 @@
 import os
-import pytest
 import sqlite3
 import tempfile
 from unittest.mock import Mock, patch
 
+import pytest
 from langchain.schema import Document
 from langchain_community.utilities import SQLDatabase
 
-from indigobot.utils.sql_agent import (
-    init_db,
-    load_docs,
-    load_urls,
-    query_database,
-    format_docs,
-    main,
-)
+from indigobot.sql_agent.sql_agent import init_db, main
 
 
 @pytest.fixture
@@ -31,7 +24,8 @@ def sample_docs():
     """Fixture to create sample documents"""
     return [
         Document(
-            page_content="Test document 1", metadata={"source": "test1.txt", "page": 1}
+            page_content="Test document 1",
+            metadata={"source": "test1.txt", "page": 1},
         ),
         Document(
             page_content="Test document 2",
@@ -40,145 +34,233 @@ def sample_docs():
     ]
 
 
-def test_init_db(temp_db_path):
-    """Test database initialization"""
-    db = init_db(temp_db_path)
-    assert isinstance(db, SQLDatabase)
-
-    # Verify tables were created
+@pytest.fixture
+def db_connection(temp_db_path):
+    """Fixture to provide a database connection"""
     conn = sqlite3.connect(temp_db_path)
-    cursor = conn.cursor()
-
-    # Check if documents table exists
-    cursor.execute(
-        """
-        SELECT name FROM sqlite_master
-        WHERE type='table' AND name='documents'
-    """
-    )
-    assert cursor.fetchone() is not None
-
+    yield conn
     conn.close()
 
 
-def test_load_docs(temp_db_path, sample_docs):
-    """Test loading documents into database"""
-    load_docs(sample_docs, temp_db_path)
+class TestDatabase:
+    def test_init_db(self, temp_db_path):
+        """Test database initialization"""
+        db = init_db(temp_db_path)
+        assert isinstance(db, SQLDatabase)
 
-    # Verify documents were inserted
-    results = query_database("SELECT COUNT(*) FROM documents", db_path=temp_db_path)
-    assert results[0][0] == len(sample_docs)
+        # Verify tables were created
+        conn = sqlite3.connect(temp_db_path)
+        cursor = conn.cursor()
 
+        # Check if required tables exist
+        for table in ["documents", "embedding_metadata"]:
+            cursor.execute(
+                """
+                SELECT name FROM sqlite_master
+                WHERE type='table' AND name=?
+                """,
+                (table,),
+            )
+            assert cursor.fetchone() is not None, f"Table {table} was not created"
 
-@patch("indigobot.utils.sql_agent.AsyncHtmlLoader")
-def test_load_urls(mock_loader, temp_db_path):
-    """Test loading documents from URLs"""
-    mock_docs = [
-        Document(page_content="Web content 1"),
-        Document(page_content="Web content 2"),
-    ]
-    mock_loader_instance = Mock()
-    mock_loader_instance.load.return_value = mock_docs
-    mock_loader.return_value = mock_loader_instance
+        conn.close()
 
-    urls = ["http://example.com"]
-    load_urls(urls, temp_db_path)
+    def test_database_query(self, temp_db_path):
+        """Test basic database querying"""
+        db = init_db(temp_db_path)
+        conn = sqlite3.connect(temp_db_path)
+        cursor = conn.cursor()
+        cursor.execute("SELECT 1")
+        result = cursor.fetchone()
+        assert result[0] == 1
+        conn.close()
 
-    mock_loader.assert_called_once_with(urls)
-    mock_loader_instance.load.assert_called_once()
+    def test_init_db_with_invalid_path(self):
+        """Test database initialization with invalid path"""
+        with pytest.raises(Exception):
+            init_db("/invalid/path/to/db.sqlite")
 
+    def test_table_schema(self, temp_db_path):
+        """Test that tables have correct schema"""
+        db = init_db(temp_db_path)
+        conn = sqlite3.connect(temp_db_path)
+        cursor = conn.cursor()
 
-def test_format_docs(sample_docs):
-    """Test document formatting"""
-    formatted = format_docs(sample_docs)
-    assert "Test document 1" in formatted
-    assert "Test document 2" in formatted
-    assert formatted.count("\n\n") == 1  # Documents should be separated by newlines
+        # Check documents table schema
+        cursor.execute("PRAGMA table_info(documents)")
+        columns = cursor.fetchall()
+        expected_columns = {
+            "id": "INTEGER",
+            "content": "TEXT",
+            "key": "TEXT",
+            "string_value": "TEXT",
+            "int_value": "INTEGER",
+            "float_value": "REAL",
+            "bool_value": "BOOLEAN",
+        }
+        for col in columns:
+            name, type_ = col[1], col[2]
+            assert name in expected_columns
+            assert expected_columns[name] in type_
 
+        # Check embedding_metadata table schema
+        cursor.execute("PRAGMA table_info(embedding_metadata)")
+        columns = cursor.fetchall()
+        expected_columns = {
+            "id": "INTEGER",
+            "document_id": "INTEGER",
+            "embedding": "BLOB",
+            "metadata": "TEXT",
+        }
+        for col in columns:
+            name, type_ = col[1], col[2]
+            assert name in expected_columns
+            assert expected_columns[name] in type_
 
-def test_query_database(temp_db_path, sample_docs):
-    """Test database querying"""
-    load_docs(sample_docs, temp_db_path)
-
-    # Test basic query
-    results = query_database("SELECT COUNT(*) FROM documents", db_path=temp_db_path)
-    assert results[0][0] == len(sample_docs)
-
-    # Test query with parameters
-    results = query_database(
-        "SELECT * FROM documents WHERE id = ?", params=(1,), db_path=temp_db_path
-    )
-    assert len(results) > 0
-
-
-@pytest.mark.parametrize(
-    "invalid_query",
-    [
-        "SELECT * FROM nonexistent_table",
-        "INVALID SQL QUERY",
-    ],
-)
-def test_query_database_errors(temp_db_path, invalid_query):
-    """Test database query error handling"""
-    with pytest.raises(sqlite3.Error):
-        query_database(invalid_query, db_path=temp_db_path)
-
-
-def test_main_function_initialization():
-    """Test main function initialization"""
-    with patch("indigobot.utils.sql_agent.init_db") as mock_init_db, patch(
-        "indigobot.utils.sql_agent.hub.pull"
-    ) as mock_hub_pull, patch(
-        "indigobot.utils.sql_agent.create_react_agent"
-    ) as mock_create_agent, patch(
-        "builtins.input", side_effect=["quit"]
-    ):
-
-        mock_prompt = Mock()
-        mock_prompt.messages = [Mock()]
-        mock_hub_pull.return_value = mock_prompt
-
-        main()
-
-        mock_init_db.assert_called_once()
-        mock_hub_pull.assert_called_once_with("langchain-ai/sql-agent-system-prompt")
-        mock_create_agent.assert_called_once()
+        conn.close()
 
 
-def test_load_docs_with_various_metadata_types(temp_db_path):
-    """Test loading documents with different metadata types"""
-    docs = [
-        Document(
-            page_content="Test content",
-            metadata={
-                "string_field": "test",
-                "int_field": 42,
-                "float_field": 3.14,
-                "bool_field": True,
-            },
+class TestDocumentHandling:
+    """Test class for document handling functionality"""
+
+    def test_insert_document(self, temp_db_path):
+        """Test inserting a document into the database"""
+        db = init_db(temp_db_path)
+        conn = sqlite3.connect(temp_db_path)
+        cursor = conn.cursor()
+
+        # Insert test document
+        cursor.execute(
+            """
+            INSERT INTO documents (content, key, string_value)
+            VALUES (?, ?, ?)
+            """,
+            ("Test content", "test_key", "test_value"),
         )
-    ]
+        conn.commit()
 
-    load_docs(docs, temp_db_path)
+        # Verify document was inserted
+        cursor.execute("SELECT content FROM documents WHERE key = ?", ("test_key",))
+        result = cursor.fetchone()
+        assert result is not None
+        assert result[0] == "Test content"
 
-    # Verify all metadata types were stored correctly
-    results = query_database(
-        "SELECT key, string_value, int_value, float_value, bool_value FROM documents WHERE id = 1",
-        db_path=temp_db_path,
-    )
+        conn.close()
 
-    metadata_values = {row[0]: row[1:] for row in results}
-    assert metadata_values["string_field"][0] == "test"
-    assert metadata_values["int_field"][1] == 42
-    assert metadata_values["float_field"][2] == 3.14
-    assert metadata_values["bool_field"][3] == 1
+    def test_document_metadata_relationship(self, temp_db_path):
+        """Test relationship between documents and embedding_metadata"""
+        db = init_db(temp_db_path)
+        conn = sqlite3.connect(temp_db_path)
+        cursor = conn.cursor()
+
+        # Insert test document
+        cursor.execute(
+            """
+            INSERT INTO documents (content, key)
+            VALUES (?, ?)
+            """,
+            ("Test content", "test_key"),
+        )
+        doc_id = cursor.lastrowid
+
+        # Insert test metadata
+        test_embedding = b"test_embedding_data"
+        test_metadata = '{"source": "test"}'
+        cursor.execute(
+            """
+            INSERT INTO embedding_metadata (document_id, embedding, metadata)
+            VALUES (?, ?, ?)
+            """,
+            (doc_id, test_embedding, test_metadata),
+        )
+        conn.commit()
+
+        # Verify relationship
+        cursor.execute(
+            """
+            SELECT d.content, em.metadata 
+            FROM documents d
+            JOIN embedding_metadata em ON d.id = em.document_id
+            WHERE d.key = ?
+            """,
+            ("test_key",),
+        )
+        result = cursor.fetchone()
+        assert result is not None
+        assert result[0] == "Test content"
+        assert result[1] == test_metadata
+
+        conn.close()
 
 
-def test_database_connection_timeout(temp_db_path):
-    """Test database connection timeout handling"""
-    with patch("sqlite3.connect") as mock_connect:
-        mock_connect.side_effect = sqlite3.OperationalError("database is locked")
+class TestMainFunction:
+    def test_main_function_initialization(self):
+        """Test main function initialization"""
+        with patch("indigobot.utils.sql_agent.init_db") as mock_init_db, patch(
+            "indigobot.utils.sql_agent.hub.pull"
+        ) as mock_hub_pull, patch(
+            "indigobot.utils.sql_agent.create_react_agent"
+        ) as mock_create_agent, patch(
+            "builtins.input", side_effect=["quit"]
+        ):
+            # Create a mock SQLDatabase
+            mock_db = Mock(spec=SQLDatabase)
+            mock_init_db.return_value = mock_db
 
-        with pytest.raises(sqlite3.Error) as exc_info:
-            query_database("SELECT 1", db_path=temp_db_path)
-        assert "database is locked" in str(exc_info.value)
+            mock_prompt = Mock()
+            mock_prompt.messages = [Mock()]
+            mock_hub_pull.return_value = mock_prompt
+
+            main()
+
+            mock_init_db.assert_called_once()
+            mock_hub_pull.assert_called_once_with(
+                "langchain-ai/sql-agent-system-prompt"
+            )
+            mock_create_agent.assert_called_once()
+
+    def test_main_function_with_query(self):
+        """Test main function with a sample query"""
+        with patch("indigobot.utils.sql_agent.init_db") as mock_init_db, patch(
+            "indigobot.utils.sql_agent.hub.pull"
+        ) as mock_hub_pull, patch(
+            "indigobot.utils.sql_agent.create_react_agent"
+        ) as mock_create_agent, patch(
+            "builtins.input", side_effect=["Show tables", "quit"]
+        ), patch(
+            "builtins.print"
+        ) as mock_print:
+            # Setup mocks
+            mock_db = Mock(spec=SQLDatabase)
+            mock_init_db.return_value = mock_db
+
+            mock_prompt = Mock()
+            mock_prompt.messages = [Mock()]
+            mock_hub_pull.return_value = mock_prompt
+
+            mock_agent = Mock()
+            mock_agent.stream.return_value = [
+                {"messages": [Mock(content="Tables: documents, embedding_metadata")]}
+            ]
+            mock_create_agent.return_value = mock_agent
+
+            main()
+
+            # Verify agent was called with query
+            assert mock_agent.stream.called
+            mock_print.assert_called()
+
+    def test_main_function_error_handling(self):
+        """Test main function error handling"""
+        with patch("indigobot.utils.sql_agent.init_db") as mock_init_db, patch(
+            "builtins.print"
+        ) as mock_print:
+            # Simulate database initialization error
+            mock_init_db.side_effect = Exception("Database error")
+
+            with pytest.raises(Exception):
+                try:
+                    main()
+                except Exception:
+                    mock_print.assert_called_with("Error: Database error")
+                    raise

@@ -26,14 +26,9 @@ from langchain_community.agent_toolkits import SQLDatabaseToolkit
 from langchain_community.utilities import SQLDatabase
 from langgraph.prebuilt import create_react_agent
 
-from indigobot.config import GPT_DB, llms, vectorstores
+from indigobot.config import GPT_DB, llm, vectorstore
 
-llm = llms["gpt"]
-vectorstore = vectorstores["gpt"]
-
-# NOTE: not sure best combo/individual options for these
-# included_tables = ["documents"]
-included_tables = ["documents", "embedding_fulltext_search_content"]
+included_tables = ["embedding_metadata"]
 
 
 def init_db(db_path=None):
@@ -71,6 +66,18 @@ def init_db(db_path=None):
             );
             """
         )
+
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS embedding_metadata (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                document_id INTEGER,
+                embedding BLOB,
+                metadata TEXT,
+                FOREIGN KEY(document_id) REFERENCES documents(id)
+            );
+            """
+        )
         conn.commit()
         conn.close()
 
@@ -95,7 +102,6 @@ def main():
     prompt_template = hub.pull("langchain-ai/sql-agent-system-prompt")
 
     assert len(prompt_template.messages) == 1
-    prompt_template.messages[0].pretty_print()
     system_message = prompt_template.format(dialect="SQLite", top_k=5)
 
     retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
@@ -116,6 +122,8 @@ def main():
 
     agent_executor = create_react_agent(llm, tools, state_modifier=system_message)
 
+    print(f"\nI can answer queestions about this dataabse: {GPT_DB}")
+
     while True:
         line = input("llm>> ")
         if line.strip().lower() == "quit":
@@ -135,4 +143,10 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\nExiting...")
+    except Exception as e:
+        print(f"Error: {e}")
+        raise

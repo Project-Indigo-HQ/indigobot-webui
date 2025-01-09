@@ -3,14 +3,13 @@ fastapi
 jq
 langchain
 langchainhub
-langchain_anthropic
 langchain-chroma
 langchain-community
-langchain_google_genai
 langchain-experimental
 langchain_openai
 langgraph
 pypdf
 requests
+sqlalchemy
 unidecode
 uvicorn

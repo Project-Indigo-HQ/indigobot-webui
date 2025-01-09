@@ -6,7 +6,7 @@ import pytest
 from langchain_core.messages import AIMessage, HumanMessage
 from langgraph.graph import START
 
-from indigobot.__main__ import call_model, workflow
+from indigobot.context import call_model, workflow
 
 
 @pytest.fixture
@@ -17,7 +17,7 @@ def test_state():
         "chat_history": [],
         "context": "test context",
         "answer": None,
-        "input": "test question"
+        "input": "test question",
     }
 
 
@@ -86,7 +86,7 @@ def test_workflow_structure():
 
 @patch("builtins.input")
 @patch("indigobot.__main__.app")
-@patch("indigobot.__main__.retriever") 
+@patch("indigobot.__main__.retriever")
 @patch("indigobot.__main__.custom_loader")
 def test_main_function(mock_custom_loader, mock_retriever, mock_app, mock_input):
     """Test main function with skip_loader"""
@@ -95,7 +95,7 @@ def test_main_function(mock_custom_loader, mock_retriever, mock_app, mock_input)
     # Mock the retriever's vectorstore response
     mock_retriever.vectorstore.get.return_value = {
         "metadatas": [{"source": "test_source.pdf"}],
-        "documents": ["test document"]
+        "documents": ["test document"],
     }
 
     # Mock the app's invoke response
@@ -103,14 +103,14 @@ def test_main_function(mock_custom_loader, mock_retriever, mock_app, mock_input)
         "answer": "test response",
         "messages": [
             HumanMessage(content="test input"),
-            AIMessage(content="test response")
+            AIMessage(content="test response"),
         ],
         "chat_history": [
             HumanMessage(content="test input"),
-            AIMessage(content="test response")
+            AIMessage(content="test response"),
         ],
         "context": "test context",
-        "input": "test input"
+        "input": "test input",
     }
 
     # Mock user input sequence

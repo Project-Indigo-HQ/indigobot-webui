@@ -5,10 +5,10 @@
 
 import os
 import sys
+from unittest.mock import MagicMock
 
 # Add the project root directory to the Python path
 sys.path.insert(0, os.path.abspath("../.."))
-from unittest.mock import MagicMock
 
 
 class Mock(MagicMock):
@@ -26,14 +26,32 @@ os.environ["SPHINX_BUILD"] = "1"
 
 MOCK_MODULES = [
     "langchain",
+    "langchain.chains",
+    "langchain.chains.combine_documents",
     "langchain_core",
     "langchain_community",
+    "langchain_community.document_loaders.async_html",
+    "langchain_community.document_loaders.html",
+    "langchain_text_splitters",
     "langchain_anthropic",
+    "unidecode",
+    "bs4",
+    "beautifulsoup4",
+    "fastapi",
+    "uvicorn",
+    "langchain_core.messages",
+    "langgraph.graph.message",
     "langchain_openai",
     "anthropic",
     "openai",
     "chromadb",
     "typing_extensions",
+    "langgraph",
+    "langgraph.checkpoint",
+    "langgraph.checkpoint.memory",
+    "langgraph.graph",
+    "indigobot.config",
+    "indigobot.__main__",
     "requests",
     "requests.exceptions",
     "bs4",
@@ -196,6 +214,64 @@ class BaseMock(MagicMock):
         return self
 
 
+class StateGraph(BaseMock):
+    def add_edge(self, *args, **kwargs):
+        return self
+
+    def add_node(self, *args, **kwargs):
+        return self
+
+    def compile(self, *args, **kwargs):
+        return self
+
+
+class MemorySaver(BaseMock):
+    pass
+
+
+class Config(BaseMock):
+    RAG_DIR = "/mock/rag/dir"
+    llms = {"gpt": BaseMock()}
+    vectorstores = {"gpt": BaseMock()}
+    r_url_list = []
+    url_list = []
+
+
+class Main(BaseMock):
+    @staticmethod
+    def load():
+        return BaseMock()
+
+    @staticmethod
+    def api():
+        return BaseMock()
+
+    @staticmethod
+    def main(skip_loader: bool = False, skip_api: bool = False) -> None:
+        return None
+
+
+class BeautifulSoup(BaseMock):
+    def __init__(self, *args, **kwargs):
+        super().__init__()
+
+    def find(self, *args, **kwargs):
+        return self
+
+    def get_text(self, *args, **kwargs):
+        return ""
+
+
+class FastAPI(BaseMock):
+    def __init__(self, *args, **kwargs):
+        super().__init__()
+
+
+class BaseModel(BaseMock):
+    def __init__(self, *args, **kwargs):
+        super().__init__()
+
+
 # Create mock for Pydantic ConfigDict
 class ConfigDict(BaseMock):
     pass
@@ -230,9 +306,33 @@ class TextSplitter(BaseMock):
     pass
 
 
+class AsyncHtmlLoader(BaseMock):
+    pass
+
+
+class RecursiveUrlLoader(BaseMock):
+    pass
+
+
 # Add the mock classes to the system
 sys.modules.update(
     {
+        "fastapi": type(
+            "fastapi",
+            (),
+            {
+                "FastAPI": FastAPI,
+                "HTTPException": Exception,
+            },
+        ),
+        "pydantic": type(
+            "pydantic",
+            (),
+            {
+                "BaseModel": BaseModel,
+            },
+        ),
+        "bs4": type("bs4", (), {"BeautifulSoup": BeautifulSoup}),
         "langchain_core.language_models.base": type(
             "langchain_core.language_models.base",
             (),
@@ -263,6 +363,14 @@ sys.modules.update(
                 "RecursiveCharacterTextSplitter": TextSplitter,
             },
         ),
+        "langchain_community.document_loaders": type(
+            "langchain_community.document_loaders",
+            (),
+            {
+                "AsyncHtmlLoader": AsyncHtmlLoader,
+                "RecursiveUrlLoader": RecursiveUrlLoader,
+            },
+        ),
     }
 )
 
@@ -291,8 +399,24 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.viewcode",
     "sphinx.ext.todo",
+    "sphinx.ext.napoleon",
     "sphinx_copybutton",
+    "sphinx.ext.inheritance_diagram",
 ]
+
+# Napoleon settings
+napoleon_google_docstring = True
+napoleon_numpy_docstring = True
+napoleon_include_init_with_doc = True
+napoleon_include_private_with_doc = True
+napoleon_include_special_with_doc = True
+napoleon_use_admonition_for_examples = True
+napoleon_use_admonition_for_notes = True
+napoleon_use_admonition_for_references = True
+napoleon_use_ivar = True
+napoleon_use_param = True
+napoleon_use_rtype = True
+napoleon_type_aliases = None
 
 # Add source file mappings
 source_suffix = {

@@ -1,5 +1,4 @@
 import json
-import os
 import unittest
 from unittest.mock import mock_open, patch
 
@@ -83,22 +82,26 @@ class TestRefineHtml(unittest.TestCase):
             self.assertEqual(len(calls), 1)
             saved_data = calls[0][0][0]  # First arg of first call
             self.assertEqual(saved_data["title"], "Test Page")
-            self.assertEqual(len(saved_data["headers"]), 3)  # h1, h2, h3
+            self.assertEqual(len(saved_data["headers"]), 4)  # h1, h2, h3, p
+            # Verify content
+            headers = saved_data["headers"]
+            self.assertEqual(headers[0]["tag"], "h1")
+            self.assertEqual(headers[0]["text"], "Main Header")
+            self.assertEqual(headers[3]["tag"], "p")
+            self.assertEqual(headers[3]["text"], "Some content")
 
-    @patch(
-        "builtins.open",
-        new_callable=mock_open,
-        read_data='{"headers": [{"text": "Test Header"}]}',
-    )
     @patch("os.listdir")
-    def test_load_JSON_files(self, mock_listdir, mock_file):
+    def test_load_JSON_files(self, mock_listdir):
+        mock_data = {"headers": [{"text": "Test Header 1"}, {"text": "Test Header 2"}]}
+        m = mock_open(read_data=json.dumps(mock_data))
         mock_listdir.return_value = ["test1.json", "test2.json", "other.txt"]
 
-        documents = load_JSON_files("/fake/path")
-        self.assertEqual(len(documents), 2)  # Two JSON files processed
-        self.assertEqual(documents[0].page_content, "Test Header")
-        self.assertEqual(documents[0].metadata["source"], "test1.json")
-        self.assertTrue(all(isinstance(doc, Document) for doc in documents))
+        with patch("builtins.open", m):
+            documents = load_JSON_files("/fake/path")
+            self.assertEqual(len(documents), 4)  # 2 headers × 2 files
+            self.assertEqual(documents[0].page_content, "Test Header 1")
+            self.assertEqual(documents[0].metadata["source"], "test1.json")
+            self.assertTrue(all(isinstance(doc, Document) for doc in documents))
 
     def test_load_JSON_files_invalid_json(self):
         with patch("os.listdir") as mock_listdir, patch(
