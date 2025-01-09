@@ -14,7 +14,8 @@ import os
 from typing import Sequence
 
 import uvicorn
-from fastapi import FastAPI, HTTPException
+import json
+from fastapi import FastAPI, HTTPException, Request
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
 from pydantic import BaseModel
@@ -38,6 +39,34 @@ class QueryRequest(BaseModel):
         json_schema_extra = {
             "example": {"input": "What are the key concepts of LLM agents?"}
         }
+
+    @classmethod
+    def validate_request(cls, data: dict) -> "QueryRequest":
+        """Custom validation to handle various input formats"""
+        if isinstance(data, dict):
+            if "input" in data:
+                return cls(input=str(data["input"]))
+            # Try to convert the first value found to input
+            for val in data.values():
+                return cls(input=str(val))
+        # If we get a string directly, use it as input
+        if isinstance(data, str):
+            return cls(input=data)
+        raise ValueError("Invalid input format")
+
+    @classmethod
+    def validate_request(cls, data: dict) -> "QueryRequest":
+        """Custom validation to handle various input formats"""
+        if isinstance(data, dict):
+            if "input" in data:
+                return cls(input=str(data["input"]))
+            # Try to convert the first value found to input
+            for val in data.values():
+                return cls(input=str(val))
+        # If we get a string directly, use it as input
+        if isinstance(data, str):
+            return cls(input=data)
+        raise ValueError("Invalid input format")
 
 
 class QueryResponse(BaseModel):
@@ -110,7 +139,7 @@ app = FastAPI(
     summary="Query the RAG system",
     response_description="The answer and supporting context",
 )
-async def query_model(request: QueryRequest):
+async def query_model(query_request: QueryRequest):
     """Query the RAG pipeline with a question.
 
     The system performs the following steps:
@@ -118,18 +147,23 @@ async def query_model(request: QueryRequest):
     2. Generate an answer based on the context
     3. Return both the answer and the supporting context
 
-    :param request: The query request containing the input question
-    :type request: QueryRequest
+    :param query_request: The query request containing the input question
+    :type query_request: QueryRequest
     :return: Response containing the generated answer
     :rtype: QueryResponse
     :raises HTTPException: 400 if the input is invalid, 500 if there's an internal error
     """
-    if not request.input.strip():
+    if not query_request.input.strip():
         raise HTTPException(status_code=400, detail="Input query cannot be empty")
 
     try:
+
+        if not query_request.input or not query_request.input.strip():
+            raise HTTPException(status_code=400, detail="Input query cannot be empty")
         # Initialize state with empty chat history if none provided
-        state = State(input=request.input, chat_history=[], context="").model_dump()
+        state = State(
+            input=query_request.input, chat_history=[], context=""
+        ).model_dump()
         response = chatbot_rag_chain.invoke(state)
         # Format context from documents into a concise string
         context = ""
@@ -141,14 +175,19 @@ async def query_model(request: QueryRequest):
                 # Try to extract service description if it exists
                 if "service_description" in content:
                     try:
-                        import json
-
-                        data = json.loads("{" + content.split("{", 1)[1])
-                        desc = data.get("service_description", "")
-                        if desc:
-                            if len(desc) > 150:
-                                desc = desc[:150] + "..."
-                            contexts.append(desc)
+                        content_parts = content.split("{", 1)
+                        if len(content_parts) > 1:
+                            data = json.loads("{" + content_parts[1])
+                            desc = data.get("service_description", "")
+                            if desc:
+                                if len(desc) > 150:
+                                    desc = desc[:150] + "..."
+                                contexts.append(desc)
+                        else:
+                            # Handle content without JSON
+                            if len(content) > 150:
+                                content = content[:150] + "..."
+                            contexts.append(content)
                     except Exception as e:
                         # Fallback to simple truncation if JSON parsing fails
                         if len(content) > 150:
@@ -260,20 +299,16 @@ def start_api():
     :raises Exception: If Uvicorn fails to start or encounters runtime errors
     """
     # Get port from environment variable or use default 8000
+    """Start FastAPI server"""
     port = int(os.getenv("PORT", 8000))
     host = "0.0.0.0"  # Explicitly bind to all interfaces
+
     print(f"\nStarting server on http://{host}:{port}")
     print("To access from another machine, use your VM's external IP address")
     print(f"Make sure your GCP firewall allows incoming traffic on port {port}\n")
 
     try:
-        uvicorn.run(
-            "indigobot.context:chatbot_app",
-            host=host,
-            port=port,
-            reload=True,
-            access_log=True,
-        )
+        uvicorn.run(app, host=host, port=port, reload=False, access_log=True)
     except Exception as e:
         print(f"Failure running Uvicorn: {e}")
 

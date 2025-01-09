@@ -5,10 +5,12 @@ This is the main chatbot program/file for conversational capabilities and info d
 import os
 import readline  # Required for using arrow keys in CLI
 import subprocess
+import threading
 import time
 
 from indigobot.config import CURRENT_DIR
 from indigobot.context import chatbot_app
+from indigobot.quick_api import start_api
 from indigobot.utils.custom_loader import start_loader
 
 
@@ -41,11 +43,10 @@ def api():
     load_res = input("Would you like to enable the API? (y/n) ")
     if load_res == "y":
         try:
-            api_path = os.path.join(CURRENT_DIR, "quick_api.py")
-            subprocess.Popen(["python", api_path])
-            time.sleep(10)
+            api_thread = threading.Thread(target=start_api, daemon=True)
+            api_thread.start()
         except Exception as e:
-            print(f"Error booting api: {e}")
+            print(f"Error booting API: {e}")
 
 
 def main(skip_loader: bool = False, skip_api: bool = False) -> None:
