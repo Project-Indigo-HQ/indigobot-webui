@@ -15,10 +15,10 @@ from indigobot.utils.custom_loader import start_loader
 def load():
     """
     Prompt user to execute the document loader functionality.
-    
+
     Asks the user if they want to run the document loader and executes it if confirmed.
     Uses the start_loader() function from custom_loader module.
-    
+
     :raises: Exception if the loader encounters an error
     """
     load_res = input("Would you like to execute the loader? (y/n) ")
@@ -32,10 +32,10 @@ def load():
 def api():
     """
     Prompt user to start the API server.
-    
+
     Asks the user if they want to enable the API server and starts it if confirmed.
     Launches quick_api.py as a subprocess and waits 10 seconds for initialization.
-    
+
     :raises: Exception if the API server fails to start
     """
     load_res = input("Would you like to enable the API? (y/n) ")
@@ -51,7 +51,7 @@ def api():
 def main(skip_loader: bool = False, skip_api: bool = False) -> None:
     """
     Main function that runs the interactive chat loop.
-    
+
     Initializes the chatbot environment and starts an interactive CLI session.
     Handles user input and displays model responses in a loop until the user exits
     by entering an empty line.

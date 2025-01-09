@@ -8,8 +8,7 @@ It uses SQLAlchemy for database operations and Pydantic for data validation.
 import os
 
 import uvicorn
-from fastapi import Depends, FastAPI, HTTPException
-from pydantic import BaseModel
+from fastapi import FastAPI
 
 from indigobot.config import RAG_DIR
 

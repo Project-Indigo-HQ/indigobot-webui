@@ -23,10 +23,9 @@ from langgraph.graph import START, StateGraph
 from langgraph.graph.message import add_messages
 from typing_extensions import Annotated, TypedDict
 
-from indigobot.config import llms, vectorstores
+from indigobot.config import llm, vectorstore
 
-llm = llms["gpt"]
-chatbot_retriever = vectorstores["gpt"].as_retriever()
+chatbot_retriever = vectorstore.as_retriever()
 
 
 class ChatState(TypedDict):
@@ -55,7 +54,7 @@ def call_model(state: ChatState):
     :return: Updated state dictionary with new chat history, context, and answer
     :rtype: dict
     :raises Exception: If the model call fails or returns invalid response
-    
+
     Example:
         >>> state = {"input": "Hello", "chat_history": [], "context": "", "answer": ""}
         >>> result = call_model(state)

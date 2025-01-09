@@ -26,10 +26,7 @@ from langchain_community.agent_toolkits import SQLDatabaseToolkit
 from langchain_community.utilities import SQLDatabase
 from langgraph.prebuilt import create_react_agent
 
-from indigobot.config import GPT_DB, llms, vectorstores
-
-llm = llms["gpt"]
-vectorstore = vectorstores["gpt"]
+from indigobot.config import GPT_DB, llm, vectorstore
 
 included_tables = ["embedding_metadata"]
 

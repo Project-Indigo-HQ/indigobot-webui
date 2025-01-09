@@ -18,10 +18,8 @@ from langchain_core.tools import InjectedToolArg, tool
 from langgraph.store.base import BaseStore
 from typing_extensions import Annotated
 
-from indigobot.config import llms, vectorstores
+from indigobot.config import llm, vectorstore
 
-llm = llms["gpt"]
-vectorstore = vectorstores["gpt"]
 retriever = vectorstore.as_retriever()
 
 

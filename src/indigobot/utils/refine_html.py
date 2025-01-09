@@ -20,7 +20,7 @@ def load_html_files(folder_path):
     :rtype: list[str]
     :raises OSError: If the folder_path doesn't exist or isn't accessible
     :raises TypeError: If folder_path is not a string
-    
+
     Example:
         >>> html_files = load_html_files('/path/to/html/files')
         >>> print(html_files)
@@ -50,7 +50,7 @@ def parse_and_save(file_path):
     :raises FileNotFoundError: If the input file doesn't exist
     :raises OSError: If there are issues reading the file or creating output directory
     :raises Exception: If HTML parsing fails or JSON serialization fails
-    
+
     The output JSON structure follows this format:
     {
         "title": "Page Title",
@@ -139,11 +139,11 @@ def load_JSON_files(folder_path):
     :raises OSError: If the folder_path doesn't exist or isn't accessible
     :raises json.JSONDecodeError: If any JSON file is malformed
     :raises Exception: If Document creation fails
-    
+
     Each Document object contains:
     - page_content: The extracted text from headers
     - metadata: A dictionary with 'source' set to the original filename
-    
+
     Example:
         >>> docs = load_JSON_files('/path/to/json/files')
         >>> print(docs[0].page_content)
@@ -187,7 +187,7 @@ def refine_text():
 
     :return: None
     :raises Exception: If the HTML processing pipeline fails at any stage
-    
+
     Directory structure used:
     - Input: RAG_DIR/crawl_temp/html_files/*.html
     - Output: RAG_DIR/crawl_temp/processed_text/*.json

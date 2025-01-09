@@ -22,7 +22,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import AsyncHtmlLoader
 from langchain_community.document_loaders.recursive_url_loader import RecursiveUrlLoader
 
-from indigobot.config import RAG_DIR, r_url_list, url_list, vectorstores
+from indigobot.config import RAG_DIR, r_url_list, url_list, vectorstore
 from indigobot.utils.jf_crawler import crawl
 from indigobot.utils.refine_html import load_JSON_files, refine_text
 
@@ -78,7 +78,7 @@ def chunking(documents):
     return chunks
 
 
-def load_docs(docs, vectorstore):
+def load_docs(docs):
     """
     Split text of documents into chunks and load them into the Chroma vector store.
 
@@ -88,16 +88,14 @@ def load_docs(docs, vectorstore):
 
     :param docs: List of Document objects to process and load
     :type docs: list[Document]
-    :param vectorstore: Chroma vector store instance
-    :type vectorstore: chromadb.api.models.Collection
-    :raises Exception: If chunking or vector store operations fail
+    :raises Exception: If chunking operations fail
     """
 
     chunks = chunking(docs)
-    add_docs(vectorstore, chunks, 300)
+    add_docs(chunks, 300)
 
 
-def load_urls(urls, vectorstore):
+def load_urls(urls):
     """
     Asynchronously load and process web pages from URLs into the vector store.
 
@@ -106,11 +104,9 @@ def load_urls(urls, vectorstore):
 
     :param urls: List of URLs to scrape and process
     :type urls: list[str]
-    :param vectorstore: Chroma vector store instance
-    :type vectorstore: chromadb.api.models.Collection
     :raises Exception: If URL loading or processing fails
     """
-    load_docs(AsyncHtmlLoader(urls).load(), vectorstore)
+    load_docs(AsyncHtmlLoader(urls).load())
 
 
 def extract_text(html):
@@ -166,15 +162,13 @@ def scrape_main(url, depth):
     return docs
 
 
-def add_docs(vectorstore, chunks, n):
+def add_docs(chunks, n):
     """
     Adds document chunks to the vector store in batches.
 
     Processes chunks in batches of size n to prevent memory issues
     and optimize vector store operations.
 
-    :param vectorstore: Chroma vector store instance
-    :type vectorstore: chromadb.api.models.Collection
     :param chunks: List of Document chunks to add
     :type chunks: list[Document]
     :param n: Batch size for adding documents
@@ -185,7 +179,7 @@ def add_docs(vectorstore, chunks, n):
         vectorstore.add_documents(chunks[i : i + n])
 
 
-def scrape_urls(urls, vectorstore):
+def scrape_urls(urls):
     """
     Processes multiple URLs by scraping and loading them into the vector store.
 
@@ -196,17 +190,15 @@ def scrape_urls(urls, vectorstore):
 
     :param urls: List of URLs to process
     :type urls: list[str]
-    :param vectorstore: Chroma vector store instance
-    :type vectorstore: chromadb.api.models.Collection
     :raises Exception: If scraping or processing fails for any URL
     """
     for url in urls:
         docs = scrape_main(url, 12)
         chunks = chunking(docs)
-        add_docs(vectorstore, chunks, 300)
+        add_docs(chunks, 300)
 
 
-def jf_loader(vectorstore):
+def jf_loader():
     """
     Fetches and refines documents from the website source and loads them into the vector database.
 
@@ -216,8 +208,6 @@ def jf_loader(vectorstore):
     3. Loads processed JSON files from the crawl_temp directory
     4. Adds documents to the vector store
 
-    :param vectorstore: Chroma vector store instance
-    :type vectorstore: chromadb.api.models.Collection
     :raises Exception: If crawling, refinement, or loading fails
     """
 
@@ -232,7 +222,7 @@ def jf_loader(vectorstore):
     json_docs = load_JSON_files(JSON_DOCS_DIR)
     print(f"Loaded {len(json_docs)} documents.")
 
-    load_docs(json_docs, vectorstore)
+    load_docs(json_docs)
 
 
 def start_loader():
@@ -247,14 +237,13 @@ def start_loader():
 
     :raises Exception: If loading fails for all vector stores
     """
-    for vectorstore in vectorstores.values():
-        try:
-            # scrape_urls(r_url_list, vectorstore)
-            # load_urls(url_list, vectorstore)
-            jf_loader(vectorstore)
-        except Exception as e:
-            print(f"Error loading vectorstore: {e}")
-            raise
+    try:
+        scrape_urls(r_url_list)
+        load_urls(url_list)
+        jf_loader()
+    except Exception as e:
+        print(f"Error loading vectorstore: {e}")
+        raise
 
 
 if __name__ == "__main__":

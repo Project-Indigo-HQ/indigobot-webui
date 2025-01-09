@@ -31,7 +31,7 @@ MOCK_MODULES = [
     "langchain_core",
     "langchain_community",
     "langchain_community.document_loaders.async_html",
-    "langchain_community.document_loaders.html", 
+    "langchain_community.document_loaders.html",
     "langchain_text_splitters",
     "langchain_anthropic",
     "unidecode",
@@ -213,18 +213,21 @@ class BaseMock(MagicMock):
     def __call__(self, *args, **kwargs):
         return self
 
+
 class StateGraph(BaseMock):
     def add_edge(self, *args, **kwargs):
         return self
-    
+
     def add_node(self, *args, **kwargs):
         return self
-    
+
     def compile(self, *args, **kwargs):
         return self
 
+
 class MemorySaver(BaseMock):
     pass
+
 
 class Config(BaseMock):
     RAG_DIR = "/mock/rag/dir"
@@ -233,32 +236,36 @@ class Config(BaseMock):
     r_url_list = []
     url_list = []
 
+
 class Main(BaseMock):
     @staticmethod
     def load():
         return BaseMock()
-    
+
     @staticmethod
     def api():
         return BaseMock()
-    
+
     @staticmethod
     def main(skip_loader: bool = False, skip_api: bool = False) -> None:
         return None
 
+
 class BeautifulSoup(BaseMock):
     def __init__(self, *args, **kwargs):
         super().__init__()
-    
+
     def find(self, *args, **kwargs):
         return self
-    
+
     def get_text(self, *args, **kwargs):
         return ""
+
 
 class FastAPI(BaseMock):
     def __init__(self, *args, **kwargs):
         super().__init__()
+
 
 class BaseModel(BaseMock):
     def __init__(self, *args, **kwargs):
@@ -298,8 +305,10 @@ class BaseDocumentTransformer(BaseMock):
 class TextSplitter(BaseMock):
     pass
 
+
 class AsyncHtmlLoader(BaseMock):
     pass
+
 
 class RecursiveUrlLoader(BaseMock):
     pass
@@ -314,20 +323,16 @@ sys.modules.update(
             {
                 "FastAPI": FastAPI,
                 "HTTPException": Exception,
-            }
+            },
         ),
         "pydantic": type(
             "pydantic",
             (),
             {
                 "BaseModel": BaseModel,
-            }
+            },
         ),
-        "bs4": type(
-            "bs4",
-            (),
-            {"BeautifulSoup": BeautifulSoup}
-        ),
+        "bs4": type("bs4", (), {"BeautifulSoup": BeautifulSoup}),
         "langchain_core.language_models.base": type(
             "langchain_core.language_models.base",
             (),

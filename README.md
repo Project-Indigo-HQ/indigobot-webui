@@ -18,4 +18,4 @@ pip install -e .
 **Thanks to Professors Bruce Irvin and Wu-chang Feng**
 
 Team Indigo is:
-Melissa Shanks, JunFan Lin, Grace Trieu, Sam Nelson, Avesta Mirashrafi, Karl Rosenberg, and Kyle Klein
+Melissa Shanks, JunFan Lin, Grace Trieu, Sam Nelson, Avesta Mirashrafi, Karl Rosenberg, Kyle Klein
