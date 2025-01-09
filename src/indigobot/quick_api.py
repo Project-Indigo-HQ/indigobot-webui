@@ -54,20 +54,6 @@ class QueryRequest(BaseModel):
             return cls(input=data)
         raise ValueError("Invalid input format")
 
-    @classmethod
-    def validate_request(cls, data: dict) -> "QueryRequest":
-        """Custom validation to handle various input formats"""
-        if isinstance(data, dict):
-            if "input" in data:
-                return cls(input=str(data["input"]))
-            # Try to convert the first value found to input
-            for val in data.values():
-                return cls(input=str(val))
-        # If we get a string directly, use it as input
-        if isinstance(data, str):
-            return cls(input=data)
-        raise ValueError("Invalid input format")
-
 
 class QueryResponse(BaseModel):
     """Response model for the query endpoint.
