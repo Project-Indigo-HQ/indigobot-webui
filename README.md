@@ -11,7 +11,9 @@ pip install -e .
 
 ## Usage
 
-## Purpose
+```bash
+python3 -m indigobot
+```
 
 ### [Read the Docs](https://indigobot.readthedocs.io/en/latest/)
 
