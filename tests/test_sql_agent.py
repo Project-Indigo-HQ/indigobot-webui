@@ -196,10 +196,10 @@ class TestDocumentHandling:
 class TestMainFunction:
     def test_main_function_initialization(self):
         """Test main function initialization"""
-        with patch("indigobot.utils.sql_agent.init_db") as mock_init_db, patch(
-            "indigobot.utils.sql_agent.hub.pull"
+        with patch("indigobot.sql_agent.sql_agent.init_db") as mock_init_db, patch(
+            "indigobot.sql_agent.sql_agent.hub.pull"
         ) as mock_hub_pull, patch(
-            "indigobot.utils.sql_agent.create_react_agent"
+            "indigobot.sql_agent.sql_agent.create_react_agent"
         ) as mock_create_agent, patch(
             "builtins.input", side_effect=["quit"]
         ):
@@ -221,10 +221,10 @@ class TestMainFunction:
 
     def test_main_function_with_query(self):
         """Test main function with a sample query"""
-        with patch("indigobot.utils.sql_agent.init_db") as mock_init_db, patch(
-            "indigobot.utils.sql_agent.hub.pull"
+        with patch("indigobot.sql_agent.sql_agent.init_db") as mock_init_db, patch(
+            "indigobot.sql_agent.sql_agent.hub.pull"
         ) as mock_hub_pull, patch(
-            "indigobot.utils.sql_agent.create_react_agent"
+            "indigobot.sql_agent.sql_agent.create_react_agent"
         ) as mock_create_agent, patch(
             "builtins.input", side_effect=["Show tables", "quit"]
         ), patch(
@@ -252,7 +252,7 @@ class TestMainFunction:
 
     def test_main_function_error_handling(self):
         """Test main function error handling"""
-        with patch("indigobot.utils.sql_agent.init_db") as mock_init_db, patch(
+        with patch("indigobot.sql_agent.sql_agent.init_db") as mock_init_db, patch(
             "builtins.print"
         ) as mock_print:
             # Simulate database initialization error
