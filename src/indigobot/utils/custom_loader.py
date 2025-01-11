@@ -13,7 +13,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import AsyncHtmlLoader
 from langchain_community.document_loaders.recursive_url_loader import RecursiveUrlLoader
 
-from indigobot.config import RAG_DIR, r_url_list, url_list, vectorstores
+from indigobot.config import RAG_DIR, r_url_list, url_list, vectorstores, cls_url_list
 from indigobot.utils import jf_crawler, refine_html
 
 
@@ -182,9 +182,15 @@ def main():
     """
     for vectorstore in vectorstores.values():
         try:
-            scrape_urls(r_url_list, vectorstore)
-            load_urls(url_list, vectorstore)
-            jf_loader(vectorstore)
+            # scrape_urls(r_url_list, vectorstore)
+            # load_urls(url_list, vectorstore)
+            # jf_loader(vectorstore)
+
+            # temp
+            scrape_urls(cls_url_list, vectorstore)
+            print("temp executed successfully")
+            # temp
+
         except Exception as e:
             print(f"Error loading vectorstore: {e}")
             raise
