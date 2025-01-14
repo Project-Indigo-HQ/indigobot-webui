@@ -25,6 +25,11 @@ from typing_extensions import Annotated, TypedDict
 
 from indigobot.config import llm, vectorstore
 
+from hashlib import sha256
+from functools import lru_cache
+import hashlib
+from langchain_core.messages import AIMessage, HumanMessage
+
 chatbot_retriever = vectorstore.as_retriever()
 
 
@@ -38,39 +43,132 @@ class ChatState(TypedDict):
     context: str
     answer: str
 
+class ChatbotCache:
+    def __init__(self):
+        self.cache = {}
 
+    def get(self, input_text: str, chat_history: tuple, context: str):
+        key = (input_text, tuple(chat_history), context)  # Convert chat_history to tuple for hashability
+        return self.cache.get(key, None)
+
+    def set(self, input_text: str, chat_history: tuple, context: str, response: dict):
+        key = (input_text, tuple(chat_history), context)  # Convert chat_history to tuple for hashability
+        self.cache[key] = response
+
+
+# Instantiate the cache
+chatbot_cache = ChatbotCache()
+
+def hash_cache_key(input_text, chat_history, context):
+    """
+    Generate a hash of the cache key based on input_text, limited chat_history, and context.
+    """
+    # Limit chat history to the last 3 messages
+    truncated_history = tuple(
+        str(message) for message in chat_history[-3:]
+    )
+    
+    # Create a key string to hash
+    key_string = f"{input_text}|{truncated_history}|{context}"
+    
+    # Return a hashed version of the key
+    return hashlib.sha256(key_string.encode('utf-8')).hexdigest()
+
+# Cache Decorator with hashed keys
+def cache_decorator(func):
+    """
+    Decorator to handle caching of model responses.
+    It tracks cache hits and misses.
+    """
+    def wrapper(state: ChatState):
+        input_text = state["input"]
+        
+        # Generate a hashed cache key based on input_text and limited chat history
+        chat_history = [
+            message.content if isinstance(message, BaseMessage) else str(message)
+            for message in state["chat_history"]
+        ]
+        context = str(state["context"])
+        
+        # Generate the hash of the cache key
+        cache_key = hash_cache_key(input_text, chat_history, context)
+        
+        # Check cache first
+        cached_response = chatbot_cache.get(input_text, cache_key, context)
+        if cached_response:
+            print(f"Cache hit for input: {input_text}")  # Logging cache hit
+            return cached_response
+        else:
+            print(f"Cache miss for input: {input_text}")  # Logging cache miss
+            response = func(state)  # Call the original function (i.e., call_model)
+            chatbot_cache.set(input_text, cache_key, context, response)  # Cache the result
+            return response
+
+    return wrapper
+
+# Updated cached_model_call to use the hashed key for caching
+def cached_model_call(input_text: str, chat_history: list, context: str):
+    """
+    Cached version of the model call to reduce redundant API requests.
+
+    :param input_text: The user's input.
+    :type input_text: str
+    :param chat_history: The chat history as a list of message objects (e.g., HumanMessage, AIMessage).
+    :type chat_history: list
+    :param context: The current context of the conversation.
+    :type context: str
+    :return: The model's response as a dictionary.
+    :rtype: dict
+    """
+    # Prepare the state for the model call
+    state = {
+        "input": input_text,
+        "chat_history": chat_history,  # Ensure chat history is passed as a list
+        "context": context,
+        "answer": "",
+    }
+
+    # Call the model and return the response
+    return chatbot_rag_chain.invoke(state)
+
+@cache_decorator
 def call_model(state: ChatState):
     """
-    Call the language model with the given state and return the response.
+    Call the language model with caching and return the updated state.
 
-    This function:
-    1. Invokes the RAG chain with the current state
-    2. Processes the model's response
-    3. Updates the chat history with the new interaction
-    4. Returns the updated state
-
-    :param state: Current chat state containing input, history, context, and previous answer
+    :param state: Current chat state containing input, history, context, and previous answer.
     :type state: ChatState
-    :return: Updated state dictionary with new chat history, context, and answer
+    :return: Updated state dictionary with new chat history, context, and answer.
     :rtype: dict
-    :raises Exception: If the model call fails or returns invalid response
-
-    Example:
-        >>> state = {"input": "Hello", "chat_history": [], "context": "", "answer": ""}
-        >>> result = call_model(state)
-        >>> isinstance(result["answer"], str)
-        True
     """
-    response = chatbot_rag_chain.invoke(state)
+    input_text = state["input"]
+
+    # Ensure chat_history is a list of message objects (HumanMessage, AIMessage)
+    chat_history = [
+        HumanMessage(message.content) if isinstance(message, BaseMessage) else HumanMessage(str(message))
+        for message in state["chat_history"]
+    ]
+
+    # Ensure context is a string (for hashing purposes)
+    context = str(state["context"])
+
+    # Call the cached model function
+    try:
+        response = cached_model_call(input_text, chat_history, context)
+    except Exception as e:
+        raise ValueError(f"Error in cached_model_call: {e}") from e
+
+    # Update chat history and return the updated state
+    updated_chat_history = list(state["chat_history"]) + [
+        HumanMessage(input_text),
+        AIMessage(response["answer"]),
+    ]
+
     return {
-        "chat_history": [
-            HumanMessage(state["input"]),
-            AIMessage(response["answer"]),
-        ],
+        "chat_history": updated_chat_history,
         "context": response["context"],
         "answer": response["answer"],
     }
-
 
 # Prompt configuration for question contextualization
 contextualize_q_system_prompt = (
