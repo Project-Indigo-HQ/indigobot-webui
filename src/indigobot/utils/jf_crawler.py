@@ -3,12 +3,15 @@ import random
 import time
 import xml.etree.ElementTree as ET
 
+import urllib.robotparser
+from urllib.parse import urlparse
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
 from indigobot.config import RAG_DIR, sitemaps
 
+USER_AGENT = "SocialServiceChatBot/1.0 (StudentProject; Python)"
 
 # create a REST session
 def start_session():
@@ -25,8 +28,21 @@ def start_session():
     session.mount("https://", HTTPAdapter(max_retries=retries))
     return session
 
+# Read robots.txt from the website and store its information into "terms"
+def fetch_robot_txt(base_url):
+    # Intialize robot parser and check if allowed
+    rp = urllib.robotparser.RobotFileParser()
+    rp.set_url(f"{base_url}/robots.txt")
+    rp.read()
+    return rp
 
-# Function to fetch and parse XML from a URL with retry mechanism
+# Extract the base URL from any URL
+def get_base_url(url):
+    parsed_url = urlparse(url)
+    base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
+    return base_url
+
+# Fetch and parse XML from a URL with retry mechanism
 def fetch_xml(url, session):
     """
     Fetch XML content from a given URL using a session with retries.
@@ -39,12 +55,20 @@ def fetch_xml(url, session):
     :rtype: bytes
     :raises Exception: If the URL cannot be fetched successfully.
     """
+    # Permission check
+    base_url = get_base_url(url)
+    rp = fetch_robot_txt(base_url)
+
+    if not rp.can_fetch(USER_AGENT,url):
+        print(f"Disallowed by robots.txt: {url}")
+        return None
+
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        "User-Agent": USER_AGENT
     }
     response = session.get(url, headers=headers)
     if response.status_code == 200:
-        time.sleep(1)
+        time.sleep(5)
         return response.content
     else:
         raise Exception(
@@ -90,6 +114,14 @@ def retrieve_final_urls(base_url, session):
     while urls_to_cehck:
         time.sleep(1)
         current_url = urls_to_cehck.pop(0)
+
+        # Check permission
+        temp_url = get_base_url(current_url)
+        rp = fetch_robot_txt(temp_url)
+        if not rp.can_fetch(USER_AGENT, current_url):
+            print(f"Disallowed by robots.txt: {current_url}")
+            continue
+        
         # If reached a stiemap, extract the URLs and add them to the list to check
         if is_sitemap(current_url,session):
             print(f"Processing sitemap: {current_url}")
@@ -100,6 +132,7 @@ def retrieve_final_urls(base_url, session):
         else:
             print(f"Found terminal URL: {current_url}")
             final_urls.append(current_url)
+
     return final_urls
 
 
@@ -114,7 +147,7 @@ def download_and_save_html(urls, session):
     :type session: requests.Session
     """
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        "User-Agent": USER_AGENT
     }
 
     for url in urls:
