@@ -110,18 +110,18 @@ def is_sitemap(url, session):
 def retrieve_final_urls(base_url, session):
     urls_to_cehck = [base_url]
     final_urls = []
+    temp_url = get_base_url(current_url)
+    rp = fetch_robot_txt(temp_url)
     
     while urls_to_cehck:
         time.sleep(1)
         current_url = urls_to_cehck.pop(0)
 
         # Check permission
-        temp_url = get_base_url(current_url)
-        rp = fetch_robot_txt(temp_url)
         if not rp.can_fetch(USER_AGENT, current_url):
             print(f"Disallowed by robots.txt: {current_url}")
             continue
-        
+
         # If reached a stiemap, extract the URLs and add them to the list to check
         if is_sitemap(current_url,session):
             print(f"Processing sitemap: {current_url}")
