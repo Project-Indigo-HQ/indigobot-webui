@@ -1,0 +1,25 @@
+# Ignore the .git folder
+.git
+
+# Ignore temporary files
+*.tmp
+
+# Ignore logs
+logs/
+*.log
+
+# Ignore local environment files
+.env
+
+# Ignore node_modules for Node.js projects
+node_modules/
+
+# Ignore Python compiled files
+__pycache__/
+*.pyc
+
+
+src/indigobot/env/
+
+.aider.input.history
+.aider.chat.history.md
