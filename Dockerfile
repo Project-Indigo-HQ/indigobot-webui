@@ -9,11 +9,15 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy source code
-COPY src/indigobot /app/indigobot
+COPY src/indigobot/ /app/indigobot
 
 # Set environment variables
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
+ENV PORT=8000
 
-# Run the bot
+# Expose the port the app runs on
+EXPOSE 8000
+
+# Run the API server
 CMD ["python", "-m", "indigobot"]

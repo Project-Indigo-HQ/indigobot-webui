@@ -13,7 +13,8 @@ from indigobot.config import CURRENT_DIR
 
 
 def load():
-    load_res = input("Would you like to execute the loader? (y/n) ")
+    load_res = "n"
+    #load_res = input("Would you like to execute the loader? (y/n) ")
     if load_res == "y":
         try:
             start_loader()
@@ -22,7 +23,8 @@ def load():
 
 
 def api():
-    load_res = input("Would you like to enable the API? (y/n) ")
+    load_res = "y"
+    #load_res = input("Would you like to enable the API? (y/n) ")
     if load_res == "y":
         try:
             from indigobot.quick_api import start_api
@@ -33,44 +35,18 @@ def api():
             print(f"Error booting API: {e}")
 
 
-def main(skip_loader: bool = False, skip_api: bool = False) -> None:
+def main() -> None:
     """
-    Main function that runs the interactive chat loop.
-    Handles user input and displays model responses.
-    Exits when user enters an empty line.
-
-    Args:
-        skip_loader (bool): If True, skips the loader prompt. Useful for testing.
+    Main function that runs the API server.
     """
-    if not skip_loader:
-        load()
-
-    if not skip_api:
-        api()
-
-    # Configuration constants
-    thread_config = {"configurable": {"thread_id": "abc123"}}
-
-    while True:
-        try:
-            print()
-            line = input("llm>> ")
-            if line:
-                result = chatbot_app.invoke(
-                    {"input": line},
-                    config=thread_config,
-                )
-                print()
-                print(result["answer"])
-            else:
-                break
-        except Exception as e:
-            print(f"Error with llm input: {e}")
+    # Start the API server
+    from indigobot.quick_api import start_api
+    start_api()
 
 
 if __name__ == "__main__":
     try:
-        main(skip_loader=False, skip_api=False)
+        main()
     except KeyboardInterrupt:
         print("\nExiting...")
     except Exception as e:

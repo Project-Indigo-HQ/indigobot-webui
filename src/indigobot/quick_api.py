@@ -90,11 +90,17 @@ async def query_model(query_request: QueryRequest):
         HTTPException(500): If there's an internal error
     """
     try:
+        # Validate and clean input
+        input_text = query_request.input
+        if isinstance(input_text, dict):
+            input_text = str(input_text.get('input', ''))
+        input_text = str(input_text).strip()
             
-        if not query_request.input or not query_request.input.strip():
+        if not input_text:
             raise HTTPException(status_code=400, detail="Input query cannot be empty")
+        
         # Initialize state with empty chat history if none provided
-        state = State(input=query_request.input, chat_history=[], context="").model_dump()
+        state = State(input=input_text, chat_history=[], context="").model_dump()
         response = chatbot_rag_chain.invoke(state)
         # Format context from documents into a concise string
         context = ""
@@ -177,11 +183,11 @@ def start_api():
     """Start FastAPI server"""
     port = int(os.getenv("PORT", 8000))
     host = "0.0.0.0"  # Explicitly bind to all interfaces
-    
+    '''
     print(f"\nStarting server on http://{host}:{port}")
     print("To access from another machine, use your VM's external IP address")
     print(f"Make sure your GCP firewall allows incoming traffic on port {port}\n")
-
+    '''
     try:
         uvicorn.run(
             app,
