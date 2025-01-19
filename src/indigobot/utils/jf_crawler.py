@@ -28,12 +28,45 @@ def start_session():
     session.mount("https://", HTTPAdapter(max_retries=retries))
     return session
 
+#TODO remember to choose which one will work better
 # Read robots.txt from the website and store its information into "terms"
-def fetch_robot_txt(base_url):
+def fetch_robot_txt_old(base_url):
     # Intialize robot parser and check if allowed
     rp = urllib.robotparser.RobotFileParser()
     rp.set_url(f"{base_url}/robots.txt")
     rp.read()
+    return rp
+
+def fetch_robot_txt_new(base_url):
+    """
+    Fetch and parse robots.txt, explicitly handling edge cases for empty Disallow directives.
+    
+    :param base_url: The base URL of the website (e.g., "https://centralcityconcern.org").
+    :return: An updated RobotFileParser instance.
+    """
+    robots_url = f"{base_url}/robots.txt"
+    rp = urllib.robotparser.RobotFileParser()
+
+    # Fetch the robots.txt file
+    response = requests.get(robots_url)
+    if response.status_code != 200:
+        raise Exception(f"Failed to fetch robots.txt from {robots_url}")
+
+    # Parse the robots.txt content
+    robots_txt_content = response.text.strip()
+    if "Disallow:" in robots_txt_content and "Disallow:\n" not in robots_txt_content:
+        # Handle empty Disallow explicitly
+        lines = robots_txt_content.splitlines()
+        adjusted_lines = []
+        for line in lines:
+            if line.strip().lower().startswith("disallow:") and line.strip() == "Disallow:":
+                adjusted_lines.append("Disallow: /")  # Fallback if urllib.robotparser misinterprets
+            else:
+                adjusted_lines.append(line)
+        robots_txt_content = "\n".join(adjusted_lines)
+
+    # Feed the (possibly adjusted) content into the RobotFileParser
+    rp.parse(robots_txt_content.splitlines())
     return rp
 
 # Extract the base URL from any URL
@@ -57,7 +90,7 @@ def fetch_xml(url, session):
     """
     # Permission check
     base_url = get_base_url(url)
-    rp = fetch_robot_txt(base_url)
+    rp = fetch_robot_txt_new(base_url)
 
     if not rp.can_fetch(USER_AGENT,url):
         print(f"Disallowed by robots.txt: {url}")
@@ -121,7 +154,7 @@ def retrieve_final_urls(base_url, session):
     urls_to_check = [base_url]
     final_urls = []
     temp_url = get_base_url(base_url)
-    rp = fetch_robot_txt(temp_url)
+    rp = fetch_robot_txt_new(temp_url)
     
     while urls_to_check:
         time.sleep(1)
