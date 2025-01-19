@@ -13,7 +13,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import AsyncHtmlLoader
 from langchain_community.document_loaders.recursive_url_loader import RecursiveUrlLoader
 
-from indigobot.config import RAG_DIR, r_url_list, url_list, vectorstores, cls_url_list
+from indigobot.config import RAG_DIR, r_url_list, url_list, vectorstores, cls_url_list, test_url_list_HTML, test_url_list_XML
 from indigobot.utils import jf_crawler, refine_html
 
 
@@ -185,10 +185,12 @@ def main():
             # scrape_urls(r_url_list, vectorstore)
             # load_urls(url_list, vectorstore)
             # jf_loader(vectorstore)
+            # scrape_urls(cls_url_list, vectorstore)
 
-            # temp
-            scrape_urls(cls_url_list, vectorstore)
-            print("temp executed successfully")
+            # temp for testing          #TODO Remember to change back
+            # scrape_urls(test_url_list, vectorstore)
+            jf_loader(vectorstore)
+            print("finished successfully")
             # temp
 
         except Exception as e:

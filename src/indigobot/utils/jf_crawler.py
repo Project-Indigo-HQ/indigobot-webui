@@ -9,7 +9,7 @@ import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
-from indigobot.config import RAG_DIR, sitemaps
+from indigobot.config import RAG_DIR, sitemaps, test_url_list_HTML,test_url_list_XML
 
 USER_AGENT = "SocialServiceChatBot/1.0 (StudentProject; Python)"
 
@@ -108,14 +108,24 @@ def is_sitemap(url, session):
 
 # Recursive function to retrive final list of URLs
 def retrieve_final_urls(base_url, session):
-    urls_to_cehck = [base_url]
+    """
+    Locate content page under to current sitemap
+
+    :param base_url: The starting point, must be a sitemap
+    :type base_rul: str
+    :param session : The current session 
+    :type base_rul: requests.Session
+    :return: A list of URLs extracted from the XML.
+    :rtype: list[str]
+    """
+    urls_to_check = [base_url]
     final_urls = []
-    temp_url = get_base_url(current_url)
+    temp_url = get_base_url(base_url)
     rp = fetch_robot_txt(temp_url)
     
-    while urls_to_cehck:
+    while urls_to_check:
         time.sleep(1)
-        current_url = urls_to_cehck.pop(0)
+        current_url = urls_to_check.pop(0)
 
         # Check permission
         if not rp.can_fetch(USER_AGENT, current_url):
@@ -127,7 +137,7 @@ def retrieve_final_urls(base_url, session):
             print(f"Processing sitemap: {current_url}")
             sitemaps_content = fetch_xml(current_url, session)
             extracted_urls = extract_xml(sitemaps_content)
-            urls_to_cehck.extend(extracted_urls)
+            urls_to_check.extend(extracted_urls)
         # If it is not a sitemap, add it to the final_urls
         else:
             print(f"Found terminal URL: {current_url}")
@@ -185,8 +195,17 @@ def crawl():
     url_list = []
 
     # Scrape URLs from the sitemap
+    """
     for page in sitemaps:
         url_list.extend(retrieve_final_urls(page,session))
+    """
+    #TODO remember to change back
+    # Temp
+    for page in test_url_list_XML + test_url_list_HTML:
+        url_list.extend(retrieve_final_urls(page,session))
+        print(f"current page{page}")
+    print("crawl finish")
+    # Temp
 
     # Download all resource page as html
     download_and_save_html(url_list, session)
