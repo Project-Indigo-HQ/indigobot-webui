@@ -82,9 +82,6 @@ sitemaps: List[str] = [
 
 #TODO remember to move these
 # A serious of URL for test
-test_url_list_HTML: List[str] = [
+url_list_XML: List[str] = [
     "https://cameronscrusaders.org/amazing-charities-that-help-with-medical-bills/" #help with medical buill
-]
-test_url_list_XML: List[str] = [
-    "https://centralcityconcern.org/jobs-sitemap.xml",
 ]

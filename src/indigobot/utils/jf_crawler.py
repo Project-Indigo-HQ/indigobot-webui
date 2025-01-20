@@ -8,10 +8,11 @@ from urllib.parse import urlparse
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
+from time import sleep
 
-from indigobot.config import RAG_DIR, sitemaps, test_url_list_HTML,test_url_list_XML
+from indigobot.config import RAG_DIR, sitemaps, url_list_XML
 
-USER_AGENT = "SocialServiceChatBot/1.0 (StudentProject; Python)"
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) SocialServiceChatBot/1.0 (Python)"
 
 # create a REST session
 def start_session():
@@ -28,46 +29,56 @@ def start_session():
     session.mount("https://", HTTPAdapter(max_retries=retries))
     return session
 
-#TODO remember to choose which one will work better
-# Read robots.txt from the website and store its information into "terms"
-def fetch_robot_txt_old(base_url):
-    # Intialize robot parser and check if allowed
-    rp = urllib.robotparser.RobotFileParser()
-    rp.set_url(f"{base_url}/robots.txt")
-    rp.read()
-    return rp
 
-def fetch_robot_txt_new(base_url):
+def fetch_robot_txt(base_url):
     """
-    Fetch and parse robots.txt, explicitly handling edge cases for empty Disallow directives.
+    Fetch and parse robots.txt with a retry mechanism for handling failures.
     
     :param base_url: The base URL of the website (e.g., "https://centralcityconcern.org").
+    :param retries: Number of retry attempts for fetching robots.txt (default: 3).
+    :param backoff_factor: Multiplier for the delay between retries (default: 2).
     :return: An updated RobotFileParser instance.
     """
     robots_url = f"{base_url}/robots.txt"
     rp = urllib.robotparser.RobotFileParser()
+    retries=3
+    backoff_factor=2
+    attempt = 0
+    while attempt < retries:
+        try:
+            # Fetch the robots.txt file
+            response = requests.get(robots_url, timeout=5)
+            if response.status_code == 200:
+                robots_txt_content = response.text.strip()
+                
+                # Handle edge cases for empty Disallow directives
+                if "Disallow:" in robots_txt_content and "Disallow:\n" not in robots_txt_content:
+                    lines = robots_txt_content.splitlines()
+                    adjusted_lines = []
+                    for line in lines:
+                        if line.strip().lower().startswith("disallow:") and line.strip() == "Disallow:":
+                            adjusted_lines.append("Disallow: /")
+                        else:
+                            adjusted_lines.append(line)
+                    robots_txt_content = "\n".join(adjusted_lines)
 
-    # Fetch the robots.txt file
-    response = requests.get(robots_url)
-    if response.status_code != 200:
-        raise Exception(f"Failed to fetch robots.txt from {robots_url}")
-
-    # Parse the robots.txt content
-    robots_txt_content = response.text.strip()
-    if "Disallow:" in robots_txt_content and "Disallow:\n" not in robots_txt_content:
-        # Handle empty Disallow explicitly
-        lines = robots_txt_content.splitlines()
-        adjusted_lines = []
-        for line in lines:
-            if line.strip().lower().startswith("disallow:") and line.strip() == "Disallow:":
-                adjusted_lines.append("Disallow: /")  # Fallback if urllib.robotparser misinterprets
+                # Parse the (possibly adjusted) content into the RobotFileParser
+                rp.parse(robots_txt_content.splitlines())
+                return rp
             else:
-                adjusted_lines.append(line)
-        robots_txt_content = "\n".join(adjusted_lines)
+                print(f"Failed to fetch robots.txt (status code {response.status_code}), retrying...")
+        except requests.RequestException as e:
+            print(f"Error fetching robots.txt: {e}, retrying...")
 
-    # Feed the (possibly adjusted) content into the RobotFileParser
-    rp.parse(robots_txt_content.splitlines())
+        # Retry with exponential backoff
+        attempt += 1
+        sleep(backoff_factor ** attempt)
+
+    # If all retries fail, configure rp to disallow all
+    print(f"Failed to fetch robots.txt from {robots_url} after {retries} retries. Returning a disallow-all policy.")
+    rp.parse(["User-agent: *", "Disallow: /"])
     return rp
+
 
 # Extract the base URL from any URL
 def get_base_url(url):
@@ -90,7 +101,7 @@ def fetch_xml(url, session):
     """
     # Permission check
     base_url = get_base_url(url)
-    rp = fetch_robot_txt_new(base_url)
+    rp = fetch_robot_txt(base_url)
 
     if not rp.can_fetch(USER_AGENT,url):
         print(f"Disallowed by robots.txt: {url}")
@@ -154,7 +165,7 @@ def retrieve_final_urls(base_url, session):
     urls_to_check = [base_url]
     final_urls = []
     temp_url = get_base_url(base_url)
-    rp = fetch_robot_txt_new(temp_url)
+    rp = fetch_robot_txt(temp_url)
     
     while urls_to_check:
         time.sleep(1)
@@ -228,18 +239,10 @@ def crawl():
     url_list = []
 
     # Scrape URLs from the sitemap
-    """
-    for page in sitemaps:
-        url_list.extend(retrieve_final_urls(page,session))
-    """
-    #TODO remember to change back
-    # Temp
-    for page in test_url_list_XML + test_url_list_HTML:
-        url_list.extend(retrieve_final_urls(page,session))
-        print(f"current page{page}")
-    print("crawl finish")
-    # Temp
 
+    for page in url_list_XML:
+        url_list.extend(retrieve_final_urls(page,session))
+    
     # Download all resource page as html
     download_and_save_html(url_list, session)
 

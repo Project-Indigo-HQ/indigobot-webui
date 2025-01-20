@@ -121,7 +121,7 @@ def load_JSON_files(folder_path):
     return JSON_files
 
 
-# TODO make this works anywhere
+
 def refine_text():
     """
     Execute the process of loading, parsing, and saving HTML content as JSON.

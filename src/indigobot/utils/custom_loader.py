@@ -182,16 +182,10 @@ def main():
     """
     for vectorstore in vectorstores.values():
         try:
-            # scrape_urls(r_url_list, vectorstore)
-            # load_urls(url_list, vectorstore)
-            # jf_loader(vectorstore)
-            # scrape_urls(cls_url_list, vectorstore)
-
-            # temp for testing          #TODO Remember to change back
-            # scrape_urls(test_url_list, vectorstore)
+            scrape_urls(r_url_list, vectorstore)
+            load_urls(url_list, vectorstore)
             jf_loader(vectorstore)
-            print("finished successfully")
-            # temp
+            scrape_urls(cls_url_list, vectorstore)
 
         except Exception as e:
             print(f"Error loading vectorstore: {e}")
