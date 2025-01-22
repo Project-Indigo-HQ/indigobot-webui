@@ -240,7 +240,7 @@ def crawl():
 
     # Scrape URLs from the sitemap
 
-    for page in url_list_XML:
+    for page in url_list_XML, sitemaps:
         url_list.extend(retrieve_final_urls(page,session))
     
     # Download all resource page as html

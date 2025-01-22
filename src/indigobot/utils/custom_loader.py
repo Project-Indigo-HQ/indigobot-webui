@@ -13,7 +13,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import AsyncHtmlLoader
 from langchain_community.document_loaders.recursive_url_loader import RecursiveUrlLoader
 
-from indigobot.config import RAG_DIR, r_url_list, url_list, vectorstores, cls_url_list, test_url_list_HTML, test_url_list_XML
+from indigobot.config import RAG_DIR, r_url_list, url_list, vectorstores, cls_url_list
 from indigobot.utils import jf_crawler, refine_html
 
 
