@@ -59,38 +59,53 @@ class ChatbotCache:
 # Instantiate the cache
 chatbot_cache = ChatbotCache()
 
+def normalize_text(text):
+    """
+    Normalize a text string by stripping whitespace and converting to lowercase.
+    """
+    if isinstance(text, str):
+        return text.strip().lower()
+    return str(text).strip().lower()
+
 def hash_cache_key(input_text, chat_history, context):
     """
-    Generate a hash of the cache key based on input_text, limited chat_history, and context.
+    Generate a hash of the cache key based on normalized input_text, chat_history, and context.
     """
-    # Limit chat history to the last 3 messages
-    truncated_history = tuple(
-        str(message) for message in chat_history[-3:]
+    # Normalize input_text
+    normalized_input = normalize_text(input_text)
+
+    # Normalize chat history (last 2 messages)
+    normalized_history = tuple(
+        normalize_text(str(message)) for message in chat_history[-2:]
     )
-    
+
+    # Normalize context
+    normalized_context = normalize_text(context)
+
     # Create a key string to hash
-    key_string = f"{input_text}|{truncated_history}|{context}"
-    
+    key_string = f"{normalized_input}|{normalized_history}|{normalized_context}"
+
     # Return a hashed version of the key
-    return hashlib.sha256(key_string.encode('utf-8')).hexdigest()
+    return hashlib.sha256(key_string.encode("utf-8")).hexdigest()
 
 # Cache Decorator with hashed keys
 def cache_decorator(func):
     """
-    Decorator to handle caching of model responses.
-    It tracks cache hits and misses.
+    Decorator to handle caching of model responses with normalized keys.
     """
     def wrapper(state: ChatState):
-        input_text = state["input"]
+        input_text = normalize_text(state["input"])
         
-        # Generate a hashed cache key based on input_text and limited chat history
+        # Normalize chat history
         chat_history = [
-            message.content if isinstance(message, BaseMessage) else str(message)
+            normalize_text(message.content if isinstance(message, BaseMessage) else str(message))
             for message in state["chat_history"]
         ]
-        context = str(state["context"])
         
-        # Generate the hash of the cache key
+        # Normalize context
+        context = normalize_text(state["context"])
+        
+        # Generate the hash of the normalized cache key
         cache_key = hash_cache_key(input_text, chat_history, context)
         
         # Check cache first
@@ -123,7 +138,7 @@ def cached_model_call(input_text: str, chat_history: list, context: str):
     # Prepare the state for the model call
     state = {
         "input": input_text,
-        "chat_history": chat_history,  # Ensure chat history is passed as a list
+        "chat_history": chat_history,
         "context": context,
         "answer": "",
     }
@@ -135,22 +150,17 @@ def cached_model_call(input_text: str, chat_history: list, context: str):
 def call_model(state: ChatState):
     """
     Call the language model with caching and return the updated state.
-
-    :param state: Current chat state containing input, history, context, and previous answer.
-    :type state: ChatState
-    :return: Updated state dictionary with new chat history, context, and answer.
-    :rtype: dict
     """
-    input_text = state["input"]
+    input_text = normalize_text(state["input"])
 
-    # Ensure chat_history is a list of message objects (HumanMessage, AIMessage)
+    # Normalize chat history
     chat_history = [
-        HumanMessage(message.content) if isinstance(message, BaseMessage) else HumanMessage(str(message))
+        HumanMessage(normalize_text(message.content)) if isinstance(message, BaseMessage) else HumanMessage(normalize_text(str(message)))
         for message in state["chat_history"]
     ]
 
-    # Ensure context is a string (for hashing purposes)
-    context = str(state["context"])
+    # Normalize context
+    context = normalize_text(state["context"])
 
     # Call the cached model function
     try:
