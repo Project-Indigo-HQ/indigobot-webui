@@ -66,7 +66,7 @@ def fetch_robot_txt(base_url):
                 rp.parse(robots_txt_content.splitlines())
                 return rp
             else:
-                print(f"Failed to fetch robots.txt (status code {response.status_code}), retrying...")
+                print(f"Failed to fetch {robots_url} (status code {response.status_code}), retrying...")
         except requests.RequestException as e:
             print(f"Error fetching robots.txt: {e}, retrying...")
 
@@ -101,11 +101,6 @@ def fetch_xml(url, session):
     """
     # Permission check
     base_url = get_base_url(url)
-    rp = fetch_robot_txt(base_url)
-
-    if not rp.can_fetch(USER_AGENT,url):
-        print(f"Disallowed by robots.txt: {url}")
-        return None
 
     headers = {
         "User-Agent": USER_AGENT
@@ -165,16 +160,10 @@ def retrieve_final_urls(base_url, session):
     urls_to_check = [base_url]
     final_urls = []
     temp_url = get_base_url(base_url)
-    rp = fetch_robot_txt(temp_url)
     
     while urls_to_check:
         time.sleep(1)
         current_url = urls_to_check.pop(0)
-
-        # Check permission
-        if not rp.can_fetch(USER_AGENT, current_url):
-            print(f"Disallowed by robots.txt: {current_url}")
-            continue
 
         # If reached a stiemap, extract the URLs and add them to the list to check
         if is_sitemap(current_url,session):
@@ -240,7 +229,7 @@ def crawl():
 
     # Scrape URLs from the sitemap
 
-    for page in url_list_XML, sitemaps:
+    for page in url_list_XML + sitemaps:
         url_list.extend(retrieve_final_urls(page,session))
     
     # Download all resource page as html

@@ -80,7 +80,7 @@ sitemaps: List[str] = [
     "https://centralcityconcern.org/jobs-sitemap.xml",
 ]
 
-#TODO remember to move these
+
 # A serious of URL for test
 url_list_XML: List[str] = [
     "https://cameronscrusaders.org/amazing-charities-that-help-with-medical-bills/" #help with medical buill
