@@ -5,6 +5,8 @@ from indigobot.utils.jf_crawler import (
     download_and_save_html,
     extract_xml,
     fetch_xml,
+    load_urls,
+    parse_url,
     start_session,
 )
 
@@ -93,6 +95,17 @@ class TestCrawler(unittest.TestCase):
             # Verify file was opened for writing
             mock_file.assert_called_once()
 
+    @patch("indigobot.utils.jf_crawler.fetch_xml")
+    @patch("indigobot.utils.jf_crawler.extract_xml")
+    def test_parse_url(self, mock_extract_xml, mock_fetch_xml):
+        mock_extract_xml.return_value = ["https://example.com/page1"]
+        mock_fetch_xml.return_value = self.test_xml.encode()
+
+        session = Mock()
+        urls = parse_url("https://example.com/sitemap.xml", session)
+
+        self.assertEqual(len(urls), 1)
+        self.assertEqual(urls[0], "https://example.com/page1")
 
 
 if __name__ == "__main__":
