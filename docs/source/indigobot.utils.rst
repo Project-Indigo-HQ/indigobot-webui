@@ -12,14 +12,6 @@ indigobot.utils.custom\_loader module
    :undoc-members:
    :show-inheritance:
 
-indigobot.utils.doctool module
-------------------------------
-
-.. automodule:: indigobot.utils.doctool
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 indigobot.utils.jf\_crawler module
 ----------------------------------
 
@@ -32,14 +24,6 @@ indigobot.utils.refine\_html module
 -----------------------------------
 
 .. automodule:: indigobot.utils.refine_html
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-indigobot.utils.sql\_agent module
----------------------------------
-
-.. automodule:: indigobot.utils.sql_agent
    :members:
    :undoc-members:
    :show-inheritance:

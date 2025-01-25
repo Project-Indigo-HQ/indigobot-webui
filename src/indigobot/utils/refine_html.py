@@ -1,3 +1,19 @@
+"""
+This module provides functionality for processing HTML files and converting them into
+a more structured JSON format. It extracts meaningful content like titles and headers 
+while preserving the document structure.
+
+The module supports:
+- Loading HTML files from a directory
+- Parsing HTML content using BeautifulSoup
+- Extracting structured content (titles, headers, paragraphs)
+- Saving processed content as JSON
+- Converting JSON back into Document objects for further processing
+
+The processed documents maintain metadata about their source and structure while
+making the content more accessible for NLP tasks.
+"""
+
 import json
 import os
 
@@ -11,10 +27,12 @@ def load_html_files(folder_path):
     """
     Load all HTML files from a specified directory.
 
-    :param folder_path: Path to the directory containing HTML files.
+    :param folder_path: Path to the directory containing HTML files
     :type folder_path: str
-    :return: List of file paths to HTML files.
-    :rtype: list
+    :return: List of absolute paths to HTML files
+    :rtype: list[str]
+    :raises OSError: If the folder_path doesn't exist or isn't accessible
+    :raises TypeError: If folder_path is not a string
     """
     html_files = []
     for filename in os.listdir(folder_path):
@@ -28,9 +46,12 @@ def parse_and_save(file_path):
     """
     Parse an HTML file to extract the title and headers, and save the result as a JSON file.
 
-    :param file_path: Path to the HTML file to be parsed.
+    :param file_path: Path to the HTML file to be parsed
     :type file_path: str
     :return: None
+    :raises FileNotFoundError: If the input file doesn't exist
+    :raises OSError: If there are issues reading the file or creating output directory
+    :raises Exception: If HTML parsing fails or JSON serialization fails
     """
     # Load file
     try:
@@ -54,8 +75,8 @@ def parse_and_save(file_path):
             ),
             "headers": [],
         }
-        # Extract all element wrapped around <*h></*h> and their subtrees
-        for header in soup.find_all(
+        # Extract all headers and paragraphs
+        for element in soup.find_all(
             [
                 "h1",
                 "h2",
@@ -63,14 +84,15 @@ def parse_and_save(file_path):
                 "h4",
                 "h5",
                 "h6",
+                # "p", #NOTE: What would this add to the processing? -Kyle
             ]
         ):
-            header_content = {
-                "tag": header.name,
-                "text": header.get_text(strip=True),
-                "html": str(header),
+            content = {
+                "tag": element.name,
+                "text": element.get_text(strip=False),
+                "html": str(element),
             }
-            data["headers"].append(header_content)
+            data["headers"].append(content)
     except Exception as e:
         print(f"Error parsing HTML content from {file_path}: {e}")
         return
@@ -85,7 +107,7 @@ def parse_and_save(file_path):
     try:
         with open(json_path, "w", encoding="utf-8") as json_file:
             json.dump(data, json_file, indent=4)
-        print(f"Extracted data save to {json_path}")
+        print(f"Extracted data saved to {json_path}")
     except Exception as e:
         print(f"Error saving JSON to {json_path}: {e}")
 
@@ -93,11 +115,17 @@ def parse_and_save(file_path):
 def load_JSON_files(folder_path):
     """
     Load JSON files from a directory and parse them into Document objects.
+    Each Document object contains:
+    - page_content: The extracted text from headers
+    - metadata: A dictionary with 'source' set to the original filename
 
-    :param folder_path: Path to the directory containing JSON files.
+    :param folder_path: Path to the directory containing JSON files
     :type folder_path: str
-    :return: List of Document objects with parsed content and metadata.
-    :rtype: list
+    :return: List of Document objects with parsed content and metadata
+    :rtype: list[Document]
+    :raises OSError: If the folder_path doesn't exist or isn't accessible
+    :raises json.JSONDecodeError: If any JSON file is malformed
+    :raises Exception: If Document creation fails
     """
     JSON_files = []
     for filename in os.listdir(folder_path):
@@ -121,12 +149,12 @@ def load_JSON_files(folder_path):
     return JSON_files
 
 
-
 def refine_text():
     """
     Execute the process of loading, parsing, and saving HTML content as JSON.
 
     :return: None
+    :raises Exception: If the HTML processing pipeline fails at any stage
     """
     # Load HTML files from "html_files" directory
     html_files_dir = os.path.join(RAG_DIR, "crawl_temp/html_files")
@@ -139,6 +167,12 @@ def refine_text():
 
 # Main Function
 def main():
+    """
+    Main entry point for the HTML refinement process.
+
+    :return: None
+    :raises SystemExit: If critical errors occur during processing
+    """
     refine_text()
 
 

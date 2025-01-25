@@ -1,13 +1,13 @@
 indigobot package
 =================
 
-Subpackages
------------
+Module contents
+---------------
 
-.. toctree::
-   :maxdepth: 4
-
-   indigobot.utils
+.. automodule:: indigobot
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Submodules
 ----------
@@ -20,10 +20,18 @@ indigobot.config module
    :undoc-members:
    :show-inheritance:
 
-Module contents
----------------
+indigobot.context module
+-----------------------
 
-.. automodule:: indigobot
+.. automodule:: indigobot.context
    :members:
    :undoc-members:
    :show-inheritance:
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   indigobot.utils

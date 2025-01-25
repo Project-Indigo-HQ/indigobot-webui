@@ -5,13 +5,12 @@ isort
 jq
 langchain
 langchainhub
-langchain_anthropic
 langchain-chroma
 langchain-community
 langchain-experimental
-langchain_google_genai
 langchain_openai
 langgraph
+myst-parser
 pylama[all]
 pylama[toml]
 pypdf
@@ -21,6 +20,9 @@ requests
 setuptools
 setuptools-scm
 sphinx
+sphinx-copybutton
 sphinx-rtd-theme
+sphinx-autodoc-typehints
+sqlalchemy
 types-pyyaml
 unidecode
