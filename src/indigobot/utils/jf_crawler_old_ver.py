@@ -3,13 +3,18 @@ import random
 import time
 import xml.etree.ElementTree as ET
 
+import urllib.robotparser
+from urllib.parse import urlparse
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
+from time import sleep
 
-from indigobot.config import RAG_DIR, sitemaps
+from indigobot.config import RAG_DIR, sitemaps, url_list_XML
 
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) SocialServiceChatBot/1.0 (Python)"
 
+# create a REST session
 def start_session():
     """
     Create and configure a REST session with retry mechanisms and backoff.
@@ -31,25 +36,80 @@ def start_session():
     return session
 
 
+def fetch_robot_txt(base_url):
+    """
+    Fetch and parse robots.txt with a retry mechanism for handling failures.
+    
+    :param base_url: The base URL of the website (e.g., "https://centralcityconcern.org").
+    :param retries: Number of retry attempts for fetching robots.txt (default: 3).
+    :param backoff_factor: Multiplier for the delay between retries (default: 2).
+    :return: An updated RobotFileParser instance.
+    """
+    robots_url = f"{base_url}/robots.txt"
+    rp = urllib.robotparser.RobotFileParser()
+    retries=3
+    backoff_factor=2
+    attempt = 0
+    while attempt < retries:
+        try:
+            # Fetch the robots.txt file
+            response = requests.get(robots_url, timeout=5)
+            if response.status_code == 200:
+                robots_txt_content = response.text.strip()
+                
+                # Handle edge cases for empty Disallow directives
+                if "Disallow:" in robots_txt_content and "Disallow:\n" not in robots_txt_content:
+                    lines = robots_txt_content.splitlines()
+                    adjusted_lines = []
+                    for line in lines:
+                        if line.strip().lower().startswith("disallow:") and line.strip() == "Disallow:":
+                            adjusted_lines.append("Disallow: /")
+                        else:
+                            adjusted_lines.append(line)
+                    robots_txt_content = "\n".join(adjusted_lines)
+
+                # Parse the (possibly adjusted) content into the RobotFileParser
+                rp.parse(robots_txt_content.splitlines())
+                return rp
+            else:
+                print(f"Failed to fetch {robots_url} (status code {response.status_code}), retrying...")
+        except requests.RequestException as e:
+            print(f"Error fetching robots.txt: {e}, retrying...")
+
+        # Retry with exponential backoff
+        attempt += 1
+        sleep(backoff_factor ** attempt)
+
+    # If all retries fail, configure rp to disallow all
+    print(f"Failed to fetch robots.txt from {robots_url} after {retries} retries. Returning a disallow-all policy.")
+    rp.parse(["User-agent: *", "Disallow: /"])
+    return rp
+
+
+# Extract the base URL from any URL
+def get_base_url(url):
+    parsed_url = urlparse(url)
+    base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
+    return base_url
+
+# Fetch and parse XML from a URL with retry mechanism
 def fetch_xml(url, session):
     """
     Fetch XML content from a given URL using a session with retries.
 
-    Makes an HTTP GET request to the specified URL using the provided session.
-    Uses a custom User-Agent header to identify the crawler.
-    Implements a 5-second delay between requests for politeness.
-
-    :param url: The URL to fetch XML content from
+    :param url: The URL to fetch XML from.
     :type url: str
-    :param session: The requests session to use for fetching
+    :param session: The requests session to use for fetching.
     :type session: requests.Session
-    :return: Raw XML content from the response
+    :return: The XML content of the response.
     :rtype: bytes
-    :raises requests.exceptions.RequestException: If the request fails after retries
-    :raises Exception: If response status code is not 200
+    :raises Exception: If the URL cannot be fetched successfully.
     """
+    # Permission check
+    base_url = get_base_url(url)
+
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        "User-Agent": USER_AGENT
     }
     response = session.get(url, headers=headers)
     if response.status_code == 200:
@@ -61,6 +121,7 @@ def fetch_xml(url, session):
         )
 
 
+# Functionn to parse a list of url to resource page from sitemap
 def extract_xml(xml):
     """
     Parse XML content from a sitemap to extract URLs.
@@ -86,32 +147,50 @@ def extract_xml(xml):
         url_list.append(loc)
     return url_list
 
+# Check if the given URL is a sitemap
+def is_sitemap(url, session):
+    try:
+        content = fetch_xml(url, session)
+        root = ET.fromstring(content)
+        return root.tag.endswith("sitemapindex") or root.tag.endswith("urlset")
+    except Exception:
+        return False
 
-def load_urls(folder_path):
+# Recursive function to retrive final list of URLs
+def retrieve_final_urls(base_url, session):
     """
-    Load URLs from all text files in a specified folder.
+    Locate content page under to current sitemap
 
-    Reads all .txt files in the given folder and extracts URLs,
-    assuming one URL per line. Combines URLs from all files into
-    a single list.
-
-    :param folder_path: Path to folder containing URL text files
-    :type folder_path: str
-    :return: Combined list of URLs from all text files
+    :param base_url: The starting point, must be a sitemap
+    :type base_rul: str
+    :param session : The current session 
+    :type base_rul: requests.Session
+    :return: A list of URLs extracted from the XML.
     :rtype: list[str]
-    :raises FileNotFoundError: If folder_path doesn't exist
-    :raises IOError: If there are problems reading the files
-    :raises UnicodeDecodeError: If files aren't valid UTF-8
     """
-    urls = []
-    for filename in os.listdir(folder_path):
-        if filename.endswith(".txt"):
-            file_path = os.path.join(folder_path, filename)
-            with open(file_path, "r", encoding="utf-8") as file:
-                urls.extend(file.read().splitlines())
-    return urls
+    urls_to_check = [base_url]
+    final_urls = []
+    temp_url = get_base_url(base_url)
+    
+    while urls_to_check:
+        time.sleep(1)
+        current_url = urls_to_check.pop(0)
+
+        # If reached a stiemap, extract the URLs and add them to the list to check
+        if is_sitemap(current_url,session):
+            print(f"Processing sitemap: {current_url}")
+            sitemaps_content = fetch_xml(current_url, session)
+            extracted_urls = extract_xml(sitemaps_content)
+            urls_to_check.extend(extracted_urls)
+        # If it is not a sitemap, add it to the final_urls
+        else:
+            print(f"Found terminal URL: {current_url}")
+            final_urls.append(current_url)
+
+    return final_urls
 
 
+# Get the HTML file for each URL and save it
 def download_and_save_html(urls, session):
     """
     Download HTML content from URLs and save to files.
@@ -130,11 +209,11 @@ def download_and_save_html(urls, session):
     :raises requests.exceptions.RequestException: If downloads fail
     """
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        "User-Agent": USER_AGENT
     }
 
     for url in urls:
-        time.sleep(random.randint(3, 6))
+        time.sleep(random.randint(1, 2))
         response = session.get(url, headers=headers)
 
         if response.status_code == 200:
@@ -154,73 +233,6 @@ def download_and_save_html(urls, session):
             print(f"Faile to fetch {url}, Status code: {response.status_code}")
 
 
-def parse_url_and_save(sitemap_url, target_file_name, session):
-    """
-    Parse URLs from a sitemap XML and save them to a text file.
-
-    1. Fetches sitemap XML from URL
-    2. Extracts URLs using extract_xml()
-    3. Prints extracted URLs to console
-    4. Creates crawl_temp/extracted_urls/ directory if needed
-    5. Saves URLs to specified file, one per line
-    6. Implements 5-second delay after processing
-
-    :param sitemap_url: URL of the sitemap to parse
-    :type sitemap_url: str
-    :param target_file_name: Name for output file (without .txt extension)
-    :type target_file_name: str
-    :param session: Requests session for fetching sitemap
-    :type session: requests.Session
-    :raises OSError: If directory creation or file writing fails
-    :raises Exception: If sitemap fetching or parsing fails
-    """
-    urls = extract_xml(fetch_xml(sitemap_url, session))
-
-    # Output all housing URLs
-    print("Extracted Housing URLs:")
-    for url in urls:
-        print(url)
-
-    # Ensure 'urls' directory exists
-    if not os.path.exists(os.path.join(RAG_DIR, "crawl_temp/extracted_urls")):
-        os.makedirs("crawl_temp/extracted_urls")
-
-    # Save URLs to a file
-    with open(f"crawl_temp/extracted_urls/{target_file_name}.txt", "w") as file:
-        for url in urls:
-            file.write(url + "\n")
-    time.sleep(5)
-
-
-def parse_url(sitemap_url, session):
-    """
-    Parse URLs from a sitemap XML and return them as a list.
-
-    Similar to parse_url_and_save() but doesn't save to file.
-    1. Fetches sitemap XML from URL
-    2. Extracts URLs using extract_xml()
-    3. Prints extracted URLs to console
-    4. Returns list of URLs
-
-    :param sitemap_url: URL of the sitemap to parse
-    :type sitemap_url: str
-    :param session: Requests session for fetching sitemap
-    :type session: requests.Session
-    :return: List of URLs extracted from sitemap
-    :rtype: list[str]
-    :raises requests.exceptions.RequestException: If sitemap fetch fails
-    :raises xml.etree.ElementTree.ParseError: If XML parsing fails
-    """
-    urls = []
-    page_content = extract_xml(fetch_xml(sitemap_url, session))
-
-    # Display all  URLs
-    print("Extracting URLs:")
-    for url in page_content:
-        print(url)
-        urls.append(url)
-
-    return urls
 
 
 def crawl():
@@ -249,9 +261,10 @@ def crawl():
     url_list = []
 
     # Scrape URLs from the sitemap
-    for page in sitemaps:
-        url_list.extend(parse_url(page, session))
 
+    for page in url_list_XML + sitemaps:
+        url_list.extend(retrieve_final_urls(page,session))
+    
     # Download all resource page as html
     download_and_save_html(url_list, session)
 
@@ -260,15 +273,7 @@ def crawl():
 
 def main():
     """
-    Main entry point for running the crawler as a standalone script.
-
-    Executes the crawl() function and handles any exceptions
-    that might occur during the crawling process.
-
-    This function can be called directly when running the script
-    or imported and used as part of a larger application.
-
-    :raises SystemExit: If critical errors occur during crawling
+    The main entry point for the crawler script.
     """
     crawl()
 
