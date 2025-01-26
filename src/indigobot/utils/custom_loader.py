@@ -22,7 +22,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import AsyncHtmlLoader
 from langchain_community.document_loaders.recursive_url_loader import RecursiveUrlLoader
 
-from indigobot.config import RAG_DIR, r_url_list, url_list, vectorstore
+from indigobot.config import RAG_DIR, r_url_list, url_list, vectorstore, cls_url_list
 from indigobot.utils.jf_crawler import crawl
 from indigobot.utils.refine_html import load_JSON_files, refine_text
 
@@ -239,6 +239,7 @@ def start_loader():
     """
     try:
         scrape_urls(r_url_list)
+        scrape_urls(cls_url_list)
         load_urls(url_list)
         jf_loader()
     except Exception as e:

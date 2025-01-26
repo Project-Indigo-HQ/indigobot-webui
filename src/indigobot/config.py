@@ -45,10 +45,23 @@ r_url_list: List[str] = [
     "https://www.multco.us/dd",  # Developmental disabilities
 ]
 
+# URLs for web pages that need recursive scraping from https://www.clackamas.us/
+cls_url_list: List[str] = [
+    "https://www.clackamas.us/guide/low-income-services", # low income help
+    "https://www.clackamas.us/guide/housing-resources", # Housing
+    "https://www.clackamas.us/guide/seniors-and-older-adults", # Senior assistance
+]
+
 # Sitemap URLs
 sitemaps: List[str] = [
     "https://centralcityconcern.org/housing-sitemap.xml",
     "https://centralcityconcern.org/healthcare-sitemap.xml",
     "https://centralcityconcern.org/recovery-sitemap.xml",
     "https://centralcityconcern.org/jobs-sitemap.xml",
+]
+
+
+# A serious of URL for test
+url_list_XML: List[str] = [
+    "https://cameronscrusaders.org/amazing-charities-that-help-with-medical-bills/" #help with medical buill
 ]
