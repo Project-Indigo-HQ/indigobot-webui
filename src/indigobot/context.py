@@ -25,10 +25,11 @@ from typing_extensions import Annotated, TypedDict
 
 from indigobot.config import llm, vectorstore
 
-from hashlib import sha256
-from functools import lru_cache
+import sqlite3
+import json
 import hashlib
 from langchain_core.messages import AIMessage, HumanMessage
+from langchain.schema import BaseMessage, HumanMessage, AIMessage
 
 chatbot_retriever = vectorstore.as_retriever()
 
@@ -44,19 +45,80 @@ class ChatState(TypedDict):
     answer: str
 
 class ChatbotCache:
-    def __init__(self):
-        self.cache = {}
+    def __init__(self, db_path="chat_cache.db"):
+        """Initialize the SQLite cache database."""
+        self.conn = sqlite3.connect(db_path, check_same_thread=False)
+        self.cursor = self.conn.cursor()
+        self._create_table()
 
-    def get(self, input_text: str, chat_history: tuple, context: str):
-        key = (input_text, tuple(chat_history), context)  # Convert chat_history to tuple for hashability
-        return self.cache.get(key, None)
+    def _create_table(self):
+        """Create cache table if it doesn't exist."""
+        self.cursor.execute("""
+        CREATE TABLE IF NOT EXISTS cache (
+            cache_key TEXT PRIMARY KEY,
+            input_text TEXT,
+            context TEXT,
+            response TEXT
+        )
+        """)
+        self.conn.commit()
 
-    def set(self, input_text: str, chat_history: tuple, context: str, response: dict):
-        key = (input_text, tuple(chat_history), context)  # Convert chat_history to tuple for hashability
-        self.cache[key] = response
+    def _serialize_messages(self, messages):
+        """Convert LangChain messages into JSON serializable format."""
+        return json.dumps([{"type": type(msg).__name__, "content": msg.content} for msg in messages])
 
+    def _deserialize_messages(self, messages_json):
+        """Convert stored JSON messages back into LangChain message objects."""
+        messages = json.loads(messages_json)
+        deserialized_messages = []
+        for msg in messages:
+            if msg["type"] == "HumanMessage":
+                deserialized_messages.append(HumanMessage(content=msg["content"]))
+            elif msg["type"] == "AIMessage":
+                deserialized_messages.append(AIMessage(content=msg["content"]))
+            else:
+                deserialized_messages.append(BaseMessage(content=msg["content"]))  # Fallback
+        return deserialized_messages
+
+    def get(self, input_text, cache_key, context):
+    #Retrieve a cached response and deserialize it correctly.
+        self.cursor.execute("SELECT response FROM cache WHERE cache_key = ?", (cache_key,))
+        result = self.cursor.fetchone()
+    
+        if result:
+            response_json = result[0]  # Ensure this is a JSON string
+            try:
+                return self._deserialize_messages(response_json)  # Convert back to message objects
+            except json.JSONDecodeError:
+                return [AIMessage(content=response_json)]  # Fallback to treating as raw text
+
+        return None  # No cached result
+
+    def set(self, input_text, cache_key, context, response):
+        """Store a response in the cache, ensuring it's an AIMessage."""
+        
+        # Ensure response is wrapped in a message object
+        if isinstance(response, dict) and "answer" in response:
+            response = [AIMessage(content=response["answer"])]  # Convert to list of messages
+
+        response_json = self._serialize_messages(response)  # Serialize response
+        self.cursor.execute(
+            "INSERT OR REPLACE INTO cache (cache_key, input_text, context, response) VALUES (?, ?, ?, ?)",
+            (cache_key, input_text, context, response_json),
+        )
+        self.conn.commit()
+
+    def clear_cache(self):
+        """Clear all cached responses."""
+        self.cursor.execute("DELETE FROM cache")
+        self.conn.commit()
+
+    def close(self):
+        """Close the database connection."""
+        self.conn.close()
 
 # Instantiate the cache
+# create a sql database version
 chatbot_cache = ChatbotCache()
 
 def normalize_text(text):
@@ -91,32 +153,36 @@ def hash_cache_key(input_text, chat_history, context):
 # Cache Decorator with hashed keys
 def cache_decorator(func):
     """
-    Decorator to handle caching of model responses with normalized keys.
+    Decorator to handle caching of model responses using SQLite.
     """
     def wrapper(state: ChatState):
-        input_text = normalize_text(state["input"])
-        
-        # Normalize chat history
+        input_text = state["input"]
+
+        # Generate a hashed cache key based on input_text and limited chat history
         chat_history = [
-            normalize_text(message.content if isinstance(message, BaseMessage) else str(message))
+            message.content if isinstance(message, BaseMessage) else str(message)
             for message in state["chat_history"]
         ]
-        
-        # Normalize context
-        context = normalize_text(state["context"])
-        
-        # Generate the hash of the normalized cache key
+        context = str(state["context"])
+
+        # Generate the hash of the cache key
         cache_key = hash_cache_key(input_text, chat_history, context)
-        
+
         # Check cache first
         cached_response = chatbot_cache.get(input_text, cache_key, context)
         if cached_response:
-            print(f"Cache hit for input: {input_text}")  # Logging cache hit
-            return cached_response
+            print(f"Cache hit for input: {input_text}")
+
+            # Ensure cached response is formatted as a dictionary that matches ChatState
+            return {
+                "chat_history": list(state["chat_history"]) + cached_response,
+                "context": context,
+                "answer": cached_response[-1].content if cached_response else "",
+            }
         else:
-            print(f"Cache miss for input: {input_text}")  # Logging cache miss
-            response = func(state)  # Call the original function (i.e., call_model)
-            chatbot_cache.set(input_text, cache_key, context, response)  # Cache the result
+            print(f"Cache miss for input: {input_text}")
+            response = func(state)  # Call the original function
+            chatbot_cache.set(input_text, cache_key, context, response["chat_history"][-1:])
             return response
 
     return wrapper
