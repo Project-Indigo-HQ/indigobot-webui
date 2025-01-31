@@ -2,14 +2,6 @@
 This module provides functionality for processing HTML files and converting them into
 a more structured JSON format. It extracts meaningful content like titles and headers 
 while preserving the document structure.
-
-The module supports:
-- Loading HTML files from a directory
-- Parsing HTML content using BeautifulSoup
-- Extracting structured content (titles, headers, paragraphs)
-- Saving processed content as JSON
-- Converting JSON back into Document objects for further processing
-
 The processed documents maintain metadata about their source and structure while
 making the content more accessible for NLP tasks.
 """
