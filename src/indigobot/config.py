@@ -65,3 +65,7 @@ sitemaps: List[str] = [
 url_list_XML: List[str] = [
     "https://cameronscrusaders.org/amazing-charities-that-help-with-medical-bills/" #help with medical buill
 ]
+
+tracked_urls = [
+
+]

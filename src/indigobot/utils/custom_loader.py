@@ -15,6 +15,7 @@ Functions:
 
 import os
 import re
+import json
 
 import unidecode
 from bs4 import BeautifulSoup
@@ -22,7 +23,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import AsyncHtmlLoader
 from langchain_community.document_loaders.recursive_url_loader import RecursiveUrlLoader
 
-from indigobot.config import RAG_DIR, r_url_list, url_list, vectorstore, cls_url_list
+from indigobot.config import RAG_DIR, r_url_list, url_list, vectorstore, cls_url_list, tracked_urls
 from indigobot.utils.jf_crawler import crawl
 from indigobot.utils.refine_html import load_JSON_files, refine_text
 
@@ -106,7 +107,9 @@ def load_urls(urls):
     :type urls: list[str]
     :raises Exception: If URL loading or processing fails
     """
-    load_docs(AsyncHtmlLoader(urls).load())
+    temp_urls = check_duplicate(tracked_urls,urls)
+    traking_urls_update(temp_urls)
+    load_docs(AsyncHtmlLoader(temp_urls).load())
 
 
 def extract_text(html):
@@ -192,7 +195,10 @@ def scrape_urls(urls):
     :type urls: list[str]
     :raises Exception: If scraping or processing fails for any URL
     """
-    for url in urls:
+    temp_urls = check_duplicate(tracked_urls,urls)
+    traking_urls_update(temp_urls)
+
+    for url in temp_urls:
         docs = scrape_main(url, 12)
         chunks = chunking(docs)
         add_docs(chunks, 300)
@@ -224,6 +230,32 @@ def jf_loader():
 
     load_docs(json_docs)
 
+def check_duplicate(base_url,urls):
+    """
+    Check if the URL is already loded
+
+    param base_url: List of base URL to check
+    param url: URL to check
+
+    return: Return urls that are not loaded
+    """
+    urls_to_load = []
+    for url in urls:
+        if url in base_url:
+            continue
+        else:
+            urls_to_load.append(url)
+    return urls_to_load            
+
+def traking_urls_update(new_urls):
+    """
+    Update the tracking URL list with the new URLs
+    """
+    for url in new_urls:
+        if url not in tracked_urls:
+            tracked_urls.append(url)
+    with open("../config.py") as file:
+        file.write(f"tracked_urls = {json.dumps(tracked_urls)}")
 
 def start_loader():
     """
