@@ -6,8 +6,9 @@ import xml.etree.ElementTree as ET
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
+from indigobot.utils.custom_loader import check_duplicate, traking_urls_update
 
-from indigobot.config import RAG_DIR, sitemaps
+from indigobot.config import RAG_DIR, sitemaps, tracked_urls
 
 
 def start_session():
@@ -248,8 +249,11 @@ def crawl():
     session = start_session()
     url_list = []
 
+    temp_urls = check_duplicate(tracked_urls,sitemaps)
+    traking_urls_update(temp_urls)
+
     # Scrape URLs from the sitemap
-    for page in sitemaps:
+    for page in temp_urls:
         url_list.extend(parse_url(page, session))
 
     # Download all resource page as html
