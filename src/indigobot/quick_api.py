@@ -181,7 +181,7 @@ async def list_sources():
 
 def start_api():
     """Start FastAPI server"""
-    port = int(os.getenv("PORT", 8000))
+    port = int(os.getenv("PORT", 8080))
     host = "0.0.0.0"  # Explicitly bind to all interfaces
     '''
     print(f"\nStarting server on http://{host}:{port}")
