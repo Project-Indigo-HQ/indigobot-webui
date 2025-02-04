@@ -14,10 +14,10 @@ COPY src/indigobot/ /app/indigobot
 # Set environment variables
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
-ENV PORT=8000
+ENV PORT=8080
 
 # Expose the port the app runs on
-EXPOSE 8000
+EXPOSE 8080
 
 # Run the API server
 CMD ["python", "-m", "indigobot"]
