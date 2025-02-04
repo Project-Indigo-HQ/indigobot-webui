@@ -286,7 +286,7 @@ def start_api():
     """
     # Get port from environment variable or use default 8000
     """Start FastAPI server"""
-    port = int(os.getenv("PORT", 8080))
+    port = int(os.getenv("PORT", 8000))
     host = "0.0.0.0"  # Explicitly bind to all interfaces
 
     print(f"\nStarting server on http://{host}:{port}")
