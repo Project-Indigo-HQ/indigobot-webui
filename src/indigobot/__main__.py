@@ -19,7 +19,8 @@ def load():
 
     :raises: Exception if the loader encounters an error
     """
-    load_res = input("Would you like to execute the loader? (y/n) ")
+    #load_res = input("Would you like to execute the loader? (y/n) ")
+    load_res = "n"
     if load_res == "y":
         try:
             start_loader()
@@ -36,7 +37,8 @@ def api():
 
     :raises: Exception if the API server fails to start
     """
-    load_res = input("Would you like to enable the API? (y/n) ")
+    #load_res = input("Would you like to enable the API? (y/n) ")
+    load_res = "y"
     if load_res == "y":
         try:
             api_thread = threading.Thread(target=start_api, daemon=True)
@@ -69,7 +71,6 @@ def main(skip_loader: bool = False, skip_api: bool = False) -> None:
 
     # Configuration constants
     thread_config = {"configurable": {"thread_id": "abc123"}}
-
     while True:
         try:
             line = input("\nllm>> ")
@@ -83,7 +84,6 @@ def main(skip_loader: bool = False, skip_api: bool = False) -> None:
                 break
         except Exception as e:
             print(f"Error with llm input: {e}")
-
 
 if __name__ == "__main__":
     try:

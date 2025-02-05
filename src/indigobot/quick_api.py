@@ -18,10 +18,17 @@ import uvicorn
 from fastapi import FastAPI, HTTPException
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing_extensions import Annotated
 
+from typing import Optional, List, Dict
+from fastapi import Request, Header
+from fastapi.responses import JSONResponse
+from pydantic import ValidationError
+
 from indigobot.context import chatbot_rag_chain, chatbot_retriever
+
+CHATWOOT_ACCESS_TOKEN = os.getenv("CHATWOOT_ACCESS_TOKEN")
 
 
 # Define API models
@@ -70,6 +77,8 @@ class QueryResponse(BaseModel):
             "example": {"answer": "LLM agents are AI systems that can..."}
         }
 
+class Message(BaseModel):
+    content: Optional[str]  # To capture the user's message
 
 class WebhookRequest(BaseModel):
     """Request model for the webhook endpoint.
@@ -80,7 +89,14 @@ class WebhookRequest(BaseModel):
                   Defaults to 'webhook'.
     :type source: str
     """
+    messages: List[Message] = []   # List of messages from Chatwoot
+    source: Optional[str] = "webhook"
 
+
+    class Config:
+            extra = "allow"
+
+'''
     message: str
     source: str = "webhook"
 
@@ -88,7 +104,7 @@ class WebhookRequest(BaseModel):
         json_schema_extra = {
             "example": {"message": "Process this message", "source": "slack"}
         }
-
+'''
 
 class State(BaseModel):
     """Pydantic model for maintaining and validating chat state.
@@ -117,6 +133,24 @@ app = FastAPI(
     version="1.0.0",
 )
 
+@app.exception_handler(ValidationError)
+async def validation_exception_handler(request: Request, exc: ValidationError):
+    print("Validation Error Occurred!")
+    print(exc.json())  # This will print the validation errors to the terminal
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors()},
+    )
+
+@app.exception_handler(ValidationError)
+async def validation_exception_handler(request: WebhookRequest, exc: ValidationError):
+    print("Validation Error Occurred!")
+    print(exc.json())  # This will print the validation errors to the terminal
+    return JSONResponse(
+        status_code=422,
+        content={"detail": exc.errors()},
+    )
+
 
 # Define API endpoints
 @app.post(
@@ -139,6 +173,7 @@ async def query_model(query_request: QueryRequest):
     :rtype: QueryResponse
     :raises HTTPException: 400 if the input is invalid, 500 if there's an internal error
     """
+    print("hello")
     if not query_request.input.strip():
         raise HTTPException(status_code=400, detail="Input query cannot be empty")
 
@@ -200,7 +235,7 @@ async def query_model(query_request: QueryRequest):
 
 
 @app.post("/webhook", response_model=QueryResponse, summary="Webhook endpoint")
-async def webhook(request: WebhookRequest):
+async def webhook(request: WebhookRequest, authorization: str = Header(None)):
     """Webhook endpoint to receive messages from external services.
 
     The system performs the following steps:
@@ -214,6 +249,38 @@ async def webhook(request: WebhookRequest):
     :rtype: QueryResponse
     :raises HTTPException: 400 if the webhook payload is invalid, 500 if there's an internal error
     """
+    try:
+        print("Webhook triggered!")
+        print("Received WebhookRequest:", request)
+
+        # Extract the first message's content
+        content = None
+        if request.messages:
+            content = request.messages[0].content  # Assuming we're interested in the latest message
+
+        if not content or not content.strip():
+            print("Content is empty!")
+            raise HTTPException(status_code=400, detail="Webhook message cannot be empty")
+
+        print("Content received:", content)
+
+        # Process State
+        state = State(input=content, chat_history=[], context="").model_dump()
+        print("Generated State:", state)
+
+        # Invoke chatbot
+        response = chatbot_rag_chain.invoke(state)
+        print("Response from chatbot_rag_chain:", response)
+
+        return QueryResponse(answer=response["answer"])
+
+    except Exception as e:
+        print(f"Unhandled Error: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"detail": f"Unhandled error: {str(e)}"}
+        )
+'''
     if not request.message.strip():
         raise HTTPException(status_code=400, detail="Webhook message cannot be empty")
 
@@ -228,6 +295,7 @@ async def webhook(request: WebhookRequest):
         raise HTTPException(
             status_code=500, detail=f"Error processing webhook: {str(e)}"
         )
+'''
 
 
 @app.get("/", summary="Health check", response_description="Basic server status")
