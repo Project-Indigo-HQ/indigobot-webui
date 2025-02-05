@@ -13,6 +13,7 @@ The API uses FastAPI for HTTP handling and Pydantic for request/response validat
 import json
 import os
 from typing import Sequence
+import requests
 
 import uvicorn
 from fastapi import FastAPI, HTTPException
@@ -29,7 +30,32 @@ from pydantic import ValidationError
 from indigobot.context import chatbot_rag_chain, chatbot_retriever
 
 CHATWOOT_ACCESS_TOKEN = os.getenv("CHATWOOT_ACCESS_TOKEN")
+CHATWOOT_API_URL = os.getenv("CHATWOOT_API_URL", "https://your-chatwoot-instance.com")
+CHATWOOT_ACCOUNT_ID = os.getenv("CHATWOOT_ACCOUNT_ID")  # Add this if needed
 
+
+def send_message_to_chatwoot(conversation_id, message):
+    url = f"{CHATWOOT_API_URL}/api/v1/accounts/{CHATWOOT_ACCOUNT_ID}/conversations/{conversation_id}/messages"
+    print(url)
+    headers = {
+        "api_access_token": CHATWOOT_ACCESS_TOKEN,
+#        "Authorization": f"Bearer {CHATWOOT_ACCESS_TOKEN}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "content": message,
+        "message_type": "outgoing"
+    }
+    print(f"🔍 Sending message to: {url}")
+    print(f"🔑 Headers: {headers}")
+    print(f"📦 Payload: {payload}")
+
+    response = requests.post(url, json=payload, headers=headers)
+
+    if response.status_code == 200:
+        print("Message sent back to Chatwoot successfully.")
+    else:
+        print(f"Failed to send message: {response.status_code} {response.text}")
 
 # Define API models
 class QueryRequest(BaseModel):
@@ -253,33 +279,33 @@ async def webhook(request: WebhookRequest, authorization: str = Header(None)):
         print("Webhook triggered!")
         print("Received WebhookRequest:", request)
 
-        # Extract the first message's content
-        content = None
-        if request.messages:
-            content = request.messages[0].content  # Assuming we're interested in the latest message
+        # Extract message content
+        content = request.messages[0].content if request.messages else ""
+
+        # Extract conversation ID directly from the root payload
+        conversation_id = request.id  # This should capture 'id=33'
+
+        print(f"Conversation ID: {conversation_id}")
 
         if not content or not content.strip():
-            print("Content is empty!")
-            raise HTTPException(status_code=400, detail="Webhook message cannot be empty")
+            raise HTTPException(status_code=400, detail="Message content cannot be empty")
 
-        print("Content received:", content)
-
-        # Process State
+        # Process with LangChain
         state = State(input=content, chat_history=[], context="").model_dump()
-        print("Generated State:", state)
-
-        # Invoke chatbot
         response = chatbot_rag_chain.invoke(state)
-        print("Response from chatbot_rag_chain:", response)
+        answer = response["answer"]
 
-        return QueryResponse(answer=response["answer"])
+        # Send response back to Chatwoot
+        if conversation_id:
+            send_message_to_chatwoot(conversation_id, answer)
+        else:
+            print("⚠️ conversation_id is missing!")
+
+        return {"answer": answer}
 
     except Exception as e:
-        print(f"Unhandled Error: {e}")
-        return JSONResponse(
-            status_code=500,
-            content={"detail": f"Unhandled error: {str(e)}"}
-        )
+        print(f"❌ Error: {e}")
+        raise HTTPException(status_code=500, detail=f"Error processing webhook: {str(e)}")
 '''
     if not request.message.strip():
         raise HTTPException(status_code=400, detail="Webhook message cannot be empty")
