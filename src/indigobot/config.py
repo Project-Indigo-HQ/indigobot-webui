@@ -18,14 +18,12 @@ llm = ChatOpenAI(model="gpt-4o")
 CURRENT_DIR: Final[str] = os.path.dirname(__file__)
 RAG_DIR: Final[str] = os.path.join(CURRENT_DIR, "rag_data")
 CHROMA_DIR: Final[str] = os.path.join(RAG_DIR, ".chromadb")
-GEM_DB: Final[str] = os.path.join(CHROMA_DIR, "gemini/chroma.sqlite3")
-GPT_DB: Final[str] = os.path.join(CHROMA_DIR, "openai/chroma.sqlite3")
+SQL_DB: Final[str] = os.path.join(CHROMA_DIR, "vectorstore/chroma.sqlite3")
 CRAWLER_DIR: Final[str] = os.path.join(CURRENT_DIR, "utils/jf_crawler")
 
-# OpenAI embeddings
 try:
     vectorstore = Chroma(
-        persist_directory=os.path.join(CHROMA_DIR, "openai"),
+        persist_directory=CHROMA_DIR,
         embedding_function=OpenAIEmbeddings(model="text-embedding-3-large"),
     )
 except Exception as e:
@@ -47,9 +45,9 @@ r_url_list: List[str] = [
 
 # URLs for web pages that need recursive scraping from https://www.clackamas.us/
 cls_url_list: List[str] = [
-    "https://www.clackamas.us/guide/low-income-services", # low income help
-    "https://www.clackamas.us/guide/housing-resources", # Housing
-    "https://www.clackamas.us/guide/seniors-and-older-adults", # Senior assistance
+    "https://www.clackamas.us/guide/low-income-services",  # low income help
+    "https://www.clackamas.us/guide/housing-resources",  # Housing
+    "https://www.clackamas.us/guide/seniors-and-older-adults",  # Senior assistance
 ]
 
 # Sitemap URLs
@@ -63,7 +61,7 @@ sitemaps: List[str] = [
 
 # A serious of URL for test
 url_list_XML: List[str] = [
-    "https://cameronscrusaders.org/amazing-charities-that-help-with-medical-bills/" #help with medical buill
+    "https://cameronscrusaders.org/amazing-charities-that-help-with-medical-bills/"  # help with medical buill
 ]
 
 tracked_urls = [

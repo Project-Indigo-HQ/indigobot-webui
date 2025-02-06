@@ -2,15 +2,6 @@
 A customized document loader for processing and storing various document types.
 The module uses Chroma as a vector database for storing processed documents. It includes
 utilities for text cleaning, chunking, and batch processing of documents.
-
-Functions:
-    clean_text: Cleans and normalizes text content
-    clean_documents: Processes a list of documents
-    chunking: Splits documents into manageable chunks
-    load_docs: Loads documents into the vector store
-    load_urls: Processes URLs and loads their content
-    scrape_urls: Scrapes and processes website content
-    start_loader: Main entry point for document loading process
 """
 
 import os
@@ -24,7 +15,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import AsyncHtmlLoader
 from langchain_community.document_loaders.recursive_url_loader import RecursiveUrlLoader
 
-from indigobot.config import RAG_DIR, r_url_list, url_list, vectorstore, cls_url_list, tracked_urls
+from indigobot.config import RAG_DIR, cls_url_list, r_url_list, url_list, vectorstore, tracked_urls
 from indigobot.utils.jf_crawler import crawl
 from indigobot.utils.refine_html import load_JSON_files, refine_text
 from indigobot.utils.redudency_check import check_duplicate, traking_urls_update
@@ -49,9 +40,6 @@ def clean_documents(documents):
     """
     Cleans the page_content text of a list of Documents.
 
-    Processes each document in the list by cleaning its page_content
-    using the clean_text() function.
-
     :param documents: List of Document objects to clean
     :type documents: list[Document]
     :return: List of Document objects with cleaned page_content
@@ -66,9 +54,6 @@ def clean_documents(documents):
 def chunking(documents):
     """
     Splits text of documents into smaller chunks for processing.
-
-    Uses RecursiveCharacterTextSplitter to break documents into chunks
-    of approximately 10000 characters with 1000 character overlap.
 
     :param documents: List of Document objects to split
     :type documents: list[Document]
@@ -85,10 +70,6 @@ def load_docs(docs):
     """
     Split text of documents into chunks and load them into the Chroma vector store.
 
-    Processes documents by:
-    1. Splitting them into chunks using chunking()
-    2. Adding chunks to the vector store in batches of 300
-
     :param docs: List of Document objects to process and load
     :type docs: list[Document]
     :raises Exception: If chunking operations fail
@@ -102,24 +83,22 @@ def load_urls(urls):
     """
     Asynchronously load and process web pages from URLs into the vector store.
 
-    Uses AsyncHtmlLoader to fetch web pages concurrently, then processes
-    and loads them into the Chroma vector store.
-
     :param urls: List of URLs to scrape and process
     :type urls: list[str]
     :raises Exception: If URL loading or processing fails
     """
-    temp_urls = check_duplicate(tracked_urls,urls)
-    traking_urls_update(temp_urls)
-    load_docs(AsyncHtmlLoader(temp_urls).load())
+    try:
+        temp_urls = check_duplicate(tracked_urls,urls)
+        traking_urls_update(temp_urls)
+        load_docs(AsyncHtmlLoader(temp_urls).load())
+    except Exception as e:
+        print(f"Error in load_urls: {e}")
+        raise
 
 
 def extract_text(html):
     """
     Extracts text from a div tag with id of 'main' from HTML content.
-
-    Attempts to find and extract text from a div with id='main',
-    falling back to all text content if the main div isn't found.
 
     :param html: Raw HTML content to parse
     :type html: str
@@ -136,9 +115,7 @@ def extract_text(html):
 
 def scrape_main(url, depth):
     """
-    Recursively scrapes a URL and its linked pages up to specified depth.
-
-    Uses RecursiveUrlLoader with async loading and safety checks:
+     Uses RecursiveUrlLoader with async loading and safety checks:
     - Prevents scraping outside the original domain
     - Checks response status codes
     - Uses timeouts to prevent hanging
@@ -171,9 +148,6 @@ def add_docs(chunks, n):
     """
     Adds document chunks to the vector store in batches.
 
-    Processes chunks in batches of size n to prevent memory issues
-    and optimize vector store operations.
-
     :param chunks: List of Document chunks to add
     :type chunks: list[Document]
     :param n: Batch size for adding documents
@@ -188,33 +162,26 @@ def scrape_urls(urls):
     """
     Processes multiple URLs by scraping and loading them into the vector store.
 
-    For each URL:
-    1. Scrapes content recursively using scrape_main()
-    2. Splits content into chunks
-    3. Adds chunks to vector store in batches
-
     :param urls: List of URLs to process
     :type urls: list[str]
     :raises Exception: If scraping or processing fails for any URL
     """
-    temp_urls = check_duplicate(tracked_urls,urls)
-    traking_urls_update(temp_urls)
+    try:
+        temp_urls = check_duplicate(tracked_urls,urls)
+        traking_urls_update(temp_urls)
 
-    for url in temp_urls:
-        docs = scrape_main(url, 12)
-        chunks = chunking(docs)
-        add_docs(chunks, 300)
+        for url in temp_urls:
+                docs = scrape_main(url, 12)
+                chunks = chunking(docs)
+                add_docs(chunks, 300)
+    except Exception as e:
+        print(f"Error scraping URLs: {e}")
+        raise
 
 
 def jf_loader():
     """
     Fetches and refines documents from the website source and loads them into the vector database.
-
-    Process flow:
-    1. Crawls website using crawl()
-    2. Refines text content using refine_text()
-    3. Loads processed JSON files from the crawl_temp directory
-    4. Adds documents to the vector store
 
     :raises Exception: If crawling, refinement, or loading fails
     """
@@ -236,12 +203,6 @@ def jf_loader():
 def start_loader():
     """
     Execute the document loading process by scraping web pages and loading local files.
-
-    Main entry point for document processing that:
-    1. Iterates through configured vector stores
-    2. Processes URLs from r_url_list and url_list
-    3. Loads documents using jf_loader
-    4. Handles errors for each vector store independently
 
     :raises Exception: If loading fails for all vector stores
     """
