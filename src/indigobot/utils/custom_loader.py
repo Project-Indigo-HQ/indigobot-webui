@@ -249,7 +249,7 @@ def start_loader():
         scrape_urls(r_url_list)
         scrape_urls(cls_url_list)
         load_urls(url_list)
-        #jf_loader()
+        jf_loader()
     except Exception as e:
         print(f"Error loading vectorstore: {e}")
         raise
