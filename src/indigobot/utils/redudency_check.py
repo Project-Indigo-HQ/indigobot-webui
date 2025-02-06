@@ -2,14 +2,16 @@ import os
 import json
 import importlib
 
-def check_duplicate(base_url,urls):
+def check_duplicate(base_url, urls):
     """
-    Check if the URL is already loded
+    Check if the URL is already loaded.
 
-    param base_url: List of base URL to check
-    param url: URL to check
-
-    return: Return urls that are not loaded
+    :param base_url: List of base URLs to check against
+    :type base_url: list[str]
+    :param urls: List of URLs to check
+    :type urls: list[str]
+    :return: List of URLs that are not loaded
+    :rtype: list[str]
     """
     urls_to_load = []
     for url in urls:
@@ -17,15 +19,22 @@ def check_duplicate(base_url,urls):
             continue
         else:
             urls_to_load.append(url)
-    return urls_to_load            
+    return urls_to_load
 
 def traking_urls_update(new_urls):
     """
-    Update the tracking URL list with the new URLs
+    Update the tracking URL list with the new URLs.
+
+    This function dynamically imports the config module, updates the tracked_urls
+    list with new URLs, and writes the updated list back to the config.py file.
+
+    :param new_urls: List of new URLs to add to the tracking list
+    :type new_urls: list[str]
     """
     # Dynamically import the config module
     config = importlib.import_module('indigobot.config')
     
+    # Append new URLs to the tracked_urls list if they are not already present
     for url in new_urls:
         if url not in config.tracked_urls:
             config.tracked_urls.append(url)
