@@ -16,6 +16,7 @@ Functions:
 import os
 import re
 import json
+import importlib
 
 import unidecode
 from bs4 import BeautifulSoup
@@ -26,6 +27,7 @@ from langchain_community.document_loaders.recursive_url_loader import RecursiveU
 from indigobot.config import RAG_DIR, r_url_list, url_list, vectorstore, cls_url_list, tracked_urls
 from indigobot.utils.jf_crawler import crawl
 from indigobot.utils.refine_html import load_JSON_files, refine_text
+from indigobot.utils.redudency_check import check_duplicate, traking_urls_update
 
 
 def clean_text(text):
@@ -230,32 +232,6 @@ def jf_loader():
 
     load_docs(json_docs)
 
-def check_duplicate(base_url,urls):
-    """
-    Check if the URL is already loded
-
-    param base_url: List of base URL to check
-    param url: URL to check
-
-    return: Return urls that are not loaded
-    """
-    urls_to_load = []
-    for url in urls:
-        if url in base_url:
-            continue
-        else:
-            urls_to_load.append(url)
-    return urls_to_load            
-
-def traking_urls_update(new_urls):
-    """
-    Update the tracking URL list with the new URLs
-    """
-    for url in new_urls:
-        if url not in tracked_urls:
-            tracked_urls.append(url)
-    with open("../config.py") as file:
-        file.write(f"tracked_urls = {json.dumps(tracked_urls)}")
 
 def start_loader():
     """
@@ -273,7 +249,7 @@ def start_loader():
         scrape_urls(r_url_list)
         scrape_urls(cls_url_list)
         load_urls(url_list)
-        jf_loader()
+        #jf_loader()
     except Exception as e:
         print(f"Error loading vectorstore: {e}")
         raise

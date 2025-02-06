@@ -6,9 +6,10 @@ import xml.etree.ElementTree as ET
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
-from indigobot.utils.custom_loader import check_duplicate, traking_urls_update
 
 from indigobot.config import RAG_DIR, sitemaps, tracked_urls
+from indigobot.utils.redudency_check import check_duplicate, traking_urls_update
+
 
 
 def start_session():

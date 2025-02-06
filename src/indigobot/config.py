@@ -67,5 +67,11 @@ url_list_XML: List[str] = [
 ]
 
 tracked_urls = [
-
+    "https://www.multco.us/food-assistance/get-food-guide",
+    "https://www.multco.us/dchs/rent-housing-shelter",
+    "https://www.multco.us/veterans",
+    "https://www.multco.us/dd",
+    "https://www.clackamas.us/guide/low-income-services",
+    "https://www.clackamas.us/guide/housing-resources",
+    "https://www.clackamas.us/guide/seniors-and-older-adults"
 ]
