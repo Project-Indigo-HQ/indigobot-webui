@@ -3,7 +3,7 @@ A program that provides an AI agent for generating Sphinx-style docstrings, unit
 
 This module uses LangChain to create an AI agent that can analyze Python source files and generate:
 - Sphinx-style docstrings for all functions and classes
-- Unit tests compatible with the unittest framework  
+- Unit tests compatible with the unittest framework
 - Detailed code summaries and suggestions
 
 The agent assumes provided files are in the current working directory unless a full path is specified.

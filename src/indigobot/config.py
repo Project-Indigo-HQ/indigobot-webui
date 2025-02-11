@@ -17,6 +17,10 @@ llm = ChatOpenAI(model="gpt-4o")
 # Directory paths
 CURRENT_DIR: Final[str] = os.path.dirname(__file__)
 RAG_DIR: Final[str] = os.path.join(CURRENT_DIR, "rag_data")
+CRAWL_TEMP = os.path.join(RAG_DIR, "crawl_temp")
+HTML_DIR = os.path.join(CRAWL_TEMP, "html_files")
+JSON_DOCS_DIR = os.path.join(CRAWL_TEMP, "processed_text")
+TRACKED_URLS_FILE: Final[str] = os.path.join(RAG_DIR, "tracked_urls.txt")
 CHROMA_DIR: Final[str] = os.path.join(RAG_DIR, ".chromadb")
 SQL_DB: Final[str] = os.path.join(CHROMA_DIR, "vectorstore/chroma.sqlite3")
 CRAWLER_DIR: Final[str] = os.path.join(CURRENT_DIR, "utils/jf_crawler")
@@ -58,18 +62,7 @@ sitemaps: List[str] = [
     "https://centralcityconcern.org/jobs-sitemap.xml",
 ]
 
-
-# A serious of URL for test
+# A series of URLs for test
 url_list_XML: List[str] = [
-    "https://cameronscrusaders.org/amazing-charities-that-help-with-medical-bills/"  # help with medical buill
-]
-
-tracked_urls = [
-    "https://www.multco.us/food-assistance/get-food-guide",
-    "https://www.multco.us/dchs/rent-housing-shelter",
-    "https://www.multco.us/veterans",
-    "https://www.multco.us/dd",
-    "https://www.clackamas.us/guide/low-income-services",
-    "https://www.clackamas.us/guide/housing-resources",
-    "https://www.clackamas.us/guide/seniors-and-older-adults"
+    "https://cameronscrusaders.org/amazing-charities-that-help-with-medical-bills/"  # help with medical bills
 ]

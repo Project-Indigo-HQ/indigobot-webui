@@ -1,4 +1,5 @@
 bs4
+chainlit
 fastapi
 jq
 langchain
