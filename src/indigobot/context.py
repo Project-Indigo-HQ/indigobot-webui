@@ -37,6 +37,12 @@ chatbot_retriever = vectorstore.as_retriever()
 class ChatState(TypedDict):
     """
     A dictionary that represents the state of a chat interaction/history.
+
+    Attributes:
+        input (str): The user's input.
+        chat_history (Sequence[BaseMessage]): The chat history comprising message objects.
+        context (str): The current context of the conversation.
+        answer (str): The response generated for the current input.
     """
 
     input: str
@@ -45,14 +51,27 @@ class ChatState(TypedDict):
     answer: str
 
 class ChatbotCache:
+    """
+    A class to handle caching of chatbot responses using an SQLite database.
+
+    Methods:
+        __init__(self, db_path="chat_cache.db"): Initialize the cache database.
+        _create_table(self): Create the cache table if it doesn't exist.
+        _serialize_messages(self, messages): Serialize message objects for storage.
+        _deserialize_messages(self, messages_json): Deserialize stored messages.
+        get(self, input_text, cache_key, context): Retrieve a cached response.
+        set(self, input_text, cache_key, context, response): Cache a new response.
+        clear_cache(self): Clear all cached responses.
+        close(self): Close the database connection.
+    """
     def __init__(self, db_path="chat_cache.db"):
-        """Initialize the SQLite cache database."""
+        # Initialize the SQLite cache database.
         self.conn = sqlite3.connect(db_path, check_same_thread=False)
         self.cursor = self.conn.cursor()
         self._create_table()
 
     def _create_table(self):
-        """Create cache table if it doesn't exist."""
+        # Create cache table if it doesn't exist.
         self.cursor.execute("""
         CREATE TABLE IF NOT EXISTS cache (
             cache_key TEXT PRIMARY KEY,
@@ -64,11 +83,11 @@ class ChatbotCache:
         self.conn.commit()
 
     def _serialize_messages(self, messages):
-        """Convert LangChain messages into JSON serializable format."""
+        # Convert LangChain messages into JSON serializable format.
         return json.dumps([{"type": type(msg).__name__, "content": msg.content} for msg in messages])
 
     def _deserialize_messages(self, messages_json):
-        """Convert stored JSON messages back into LangChain message objects."""
+        # Convert stored JSON messages back into LangChain message objects.
         messages = json.loads(messages_json)
         deserialized_messages = []
         for msg in messages:
@@ -81,7 +100,7 @@ class ChatbotCache:
         return deserialized_messages
 
     def get(self, input_text, cache_key, context):
-    #Retrieve a cached response and deserialize it correctly.
+    # Retrieve a cached response and deserialize it correctly.
         self.cursor.execute("SELECT response FROM cache WHERE cache_key = ?", (cache_key,))
         result = self.cursor.fetchone()
     
@@ -95,11 +114,11 @@ class ChatbotCache:
         return None  # No cached result
 
     def set(self, input_text, cache_key, context, response):
-        """Store a response in the cache, ensuring it's an AIMessage."""
+        # Store a response in the cache, ensuring it's an AIMessage.
         
         # Ensure response is wrapped in a message object
         if isinstance(response, dict) and "answer" in response:
-            response = [AIMessage(content=response["answer"])]  # Convert to list of messages
+            response = [AIMessage(content=response["answer"])]
 
         response_json = self._serialize_messages(response)  # Serialize response
         self.cursor.execute(
@@ -124,6 +143,12 @@ chatbot_cache = ChatbotCache()
 def normalize_text(text):
     """
     Normalize a text string by stripping whitespace and converting to lowercase.
+
+    Args:
+        text (str): The text to normalize.
+
+    Returns:
+        str: The normalized text.
     """
     if isinstance(text, str):
         return text.strip().lower()
@@ -132,6 +157,14 @@ def normalize_text(text):
 def hash_cache_key(input_text, chat_history, context):
     """
     Generate a hash of the cache key based on normalized input_text, chat_history, and context.
+
+    Args:
+        input_text (str): The user's input.
+        chat_history (Sequence[BaseMessage]): The chat history.
+        context (str): The current context of the conversation.
+
+    Returns:
+        str: A hashed version of the cache key.
     """
     # Normalize input_text
     normalized_input = normalize_text(input_text)
@@ -154,6 +187,12 @@ def hash_cache_key(input_text, chat_history, context):
 def cache_decorator(func):
     """
     Decorator to handle caching of model responses using SQLite.
+
+    Args:
+        func (callable): The function to wrap with caching logic.
+
+    Returns:
+        callable: The wrapped function with caching.
     """
     def wrapper(state: ChatState):
         input_text = state["input"]
@@ -171,7 +210,8 @@ def cache_decorator(func):
         # Check cache first
         cached_response = chatbot_cache.get(input_text, cache_key, context)
         if cached_response:
-            print(f"Cache hit for input: {input_text}")
+            # Debug print
+            #print(f"Cache hit for input: {input_text}")
 
             # Ensure cached response is formatted as a dictionary that matches ChatState
             return {
@@ -180,7 +220,8 @@ def cache_decorator(func):
                 "answer": cached_response[-1].content if cached_response else "",
             }
         else:
-            print(f"Cache miss for input: {input_text}")
+            # Debug print
+            #print(f"Cache miss for input: {input_text}")
             response = func(state)  # Call the original function
             chatbot_cache.set(input_text, cache_key, context, response["chat_history"][-1:])
             return response
