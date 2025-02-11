@@ -8,7 +8,8 @@ import threading
 from indigobot.context import chatbot_app
 from indigobot.quick_api import start_api
 from indigobot.utils.custom_loader import start_loader
-import propbot.cl
+
+import indigobot.cl
 
 
 def load():
@@ -61,11 +62,11 @@ def main(cl_message, skip_loader: bool = False, skip_api: bool = False) -> None:
     :raises: KeyboardInterrupt if user interrupts with Ctrl+C
     :raises: Exception for any other runtime errors
     """
-    if not skip_loader:
-        load()
+    # if not skip_loader:
+    #     load()
 
-    if not skip_api:
-        api()
+    # if not skip_api:
+    #     api()
 
     # Configuration constants
     thread_config = {"configurable": {"thread_id": "abc123"}}

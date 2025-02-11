@@ -15,6 +15,12 @@ pip install -e .
 python3 -m indigobot
 ```
 
+## Chainlit
+
+```bash
+chainlit
+```
+
 ## Local Docker Usage
 
 ```bash
