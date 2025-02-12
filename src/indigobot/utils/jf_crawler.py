@@ -15,7 +15,8 @@ import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
-from indigobot.config import RAG_DIR, sitemaps
+from indigobot.config import CRAWL_TEMP, HTML_DIR, sitemaps
+from indigobot.utils.redundancy_check import check_duplicate
 
 
 def start_session():
@@ -124,20 +125,22 @@ def download_and_save_html(urls, session):
         response = session.get(url, headers=headers)
 
         if response.status_code == 200:
-            # Extract last section of url as file name
-            filename = url.rstrip("/").split("/")[-1] + ".html"
+            try:
+                # Extract last section of url as file name
+                filename = url.rstrip("/").split("/")[-1] + ".html"
 
-            html_files_dir = os.path.join(RAG_DIR, "crawl_temp/html_files")
-            os.makedirs(html_files_dir, exist_ok=True)
+                os.makedirs(HTML_DIR, exist_ok=True)
 
-            # save the content to html
-            with open(
-                os.path.join(html_files_dir, filename), "w", encoding="utf-8"
-            ) as file:
-                file.write(response.text)
-                print(f"Save html content to {html_files_dir}")
+                # save the content to html
+                with open(
+                    os.path.join(HTML_DIR, filename), "w", encoding="utf-8"
+                ) as file:
+                    file.write(response.text)
+                    print(f"Save html content to {HTML_DIR}")
+            except Exception as e:
+                print(f"Error extracting html: {e}")
         else:
-            print(f"Faile to fetch {url}, Status code: {response.status_code}")
+            print(f"Failed to fetch {url}, Status code: {response.status_code}")
 
 
 def parse_url_and_save(sitemap_url, target_file_name, session):
@@ -161,8 +164,8 @@ def parse_url_and_save(sitemap_url, target_file_name, session):
         print(url)
 
     # Ensure 'urls' directory exists
-    if not os.path.exists(os.path.join(RAG_DIR, "crawl_temp/extracted_urls")):
-        os.makedirs("crawl_temp/extracted_urls")
+    extracted_urls = os.path.join(CRAWL_TEMP, "extracted_urls")
+    os.makedirs(extracted_urls, exist_ok=True)
 
     # Save URLs to a file
     with open(f"crawl_temp/extracted_urls/{target_file_name}.txt", "w") as file:
@@ -208,14 +211,21 @@ def crawl():
     session = start_session()
     url_list = []
 
-    # Scrape URLs from the sitemap
-    for page in sitemaps:
-        url_list.extend(parse_url(page, session))
+    temp_urls = check_duplicate(sitemaps)
 
-    # Download all resource page as html
-    download_and_save_html(url_list, session)
+    if temp_urls:
+        # Scrape URLs from the sitemap
+        for page in temp_urls:
+            url_list.extend(parse_url(page, session))
 
-    print("\nThe crawler is finished")
+        # Download all resource page as html
+        download_and_save_html(url_list, session)
+
+        print("\nThe crawler is finished")
+        return True
+
+    else:
+        return False
 
 
 def main():

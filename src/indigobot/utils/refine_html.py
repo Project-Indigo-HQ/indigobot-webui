@@ -1,6 +1,6 @@
 """
 This module provides functionality for processing HTML files and converting them into
-a more structured JSON format. It extracts meaningful content like titles and headers 
+a more structured JSON format. It extracts meaningful content like titles and headers
 while preserving the document structure.
 The processed documents maintain metadata about their source and structure while
 making the content more accessible for NLP tasks.
@@ -12,7 +12,7 @@ import os
 from bs4 import BeautifulSoup
 from langchain.schema import Document
 
-from indigobot.config import RAG_DIR
+from indigobot.config import HTML_DIR, JSON_DOCS_DIR
 
 
 def load_html_files(folder_path):
@@ -91,10 +91,8 @@ def parse_and_save(file_path):
 
     # Save extracted data as .json
     json_filename = os.path.basename(file_path).replace(".html", ".json")
-    json_folder = os.path.join(RAG_DIR, "crawl_temp/processed_text")
-    if not os.path.exists(json_folder):
-        os.makedirs(json_folder)
-    json_path = os.path.join(json_folder, json_filename)
+    os.makedirs(JSON_DOCS_DIR, exist_ok=True)
+    json_path = os.path.join(JSON_DOCS_DIR, json_filename)
 
     try:
         with open(json_path, "w", encoding="utf-8") as json_file:
@@ -149,8 +147,8 @@ def refine_text():
     :raises Exception: If the HTML processing pipeline fails at any stage
     """
     # Load HTML files from "html_files" directory
-    html_files_dir = os.path.join(RAG_DIR, "crawl_temp/html_files")
-    html_files = load_html_files(html_files_dir)
+    os.makedirs(HTML_DIR, exist_ok=True)
+    html_files = load_html_files(HTML_DIR)
 
     # Parse and save JSON content for each HTML file individually
     for html_file in html_files:
