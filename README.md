@@ -15,6 +15,12 @@ pip install -e .
 python3 -m indigobot
 ```
 
+##Chainlit
+
+```bash
+chainlit run src/propbot/__main__.py -w
+```
+
 ## Local Docker Usage
 
 ```bash
