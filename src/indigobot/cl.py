@@ -1,7 +1,7 @@
 """ This module handles Chainlit Web UI integration"""
 
 import chainlit as cl
-from indigobot.__main__ import main as pb
+from propbot.__main__ import main as pb
 
 
 @cl.on_message

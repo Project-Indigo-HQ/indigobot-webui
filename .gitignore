@@ -12,4 +12,3 @@ project_indigo.egg-info
 **/rag_data
 .vscode
 .coverage
-.chainlit
