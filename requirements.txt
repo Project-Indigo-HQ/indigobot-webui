@@ -1,6 +1,7 @@
 black
 bs4
 build
+chainlit
 isort
 jq
 langchain
