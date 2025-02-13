@@ -18,7 +18,7 @@ python3 -m indigobot
 ##Chainlit
 
 ```bash
-chainlit run src/propbot/__main__.py -w
+chainlit run src/indigobot/__main__.py -w
 ```
 
 ## Local Docker Usage
