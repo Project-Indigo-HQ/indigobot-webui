@@ -48,8 +48,7 @@ def api():
 def main(skip_loader: bool = False, skip_api: bool = False) -> None:
     """
     Main function that runs the interactive chat loop.
-
-    Initializes the chatbot environment and starts an interactive CLI session.
+    Initializes the chatbot environment and starts an interactive session.
     Handles user input and displays model responses in a loop until the user exits
     by entering an empty line.
 

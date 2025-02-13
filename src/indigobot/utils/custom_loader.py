@@ -6,6 +6,7 @@ utilities for text cleaning, chunking, and batch processing of documents.
 
 import os
 import re
+from shutil import rmtree
 
 import unidecode
 from bs4 import BeautifulSoup
@@ -13,8 +14,16 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import AsyncHtmlLoader
 from langchain_community.document_loaders.recursive_url_loader import RecursiveUrlLoader
 
-from indigobot.config import RAG_DIR, r_url_list, url_list, vectorstore
+from indigobot.config import (
+    CRAWL_TEMP,
+    JSON_DOCS_DIR,
+    cls_url_list,
+    r_url_list,
+    url_list,
+    vectorstore,
+)
 from indigobot.utils.jf_crawler import crawl
+from indigobot.utils.redundancy_check import check_duplicate
 from indigobot.utils.refine_html import load_JSON_files, refine_text
 
 
@@ -86,7 +95,13 @@ def load_urls(urls):
     :type urls: list[str]
     :raises Exception: If URL loading or processing fails
     """
-    load_docs(AsyncHtmlLoader(urls).load())
+    try:
+        temp_urls = check_duplicate(urls)
+        if temp_urls:
+            load_docs(AsyncHtmlLoader(temp_urls).load())
+    except Exception as e:
+        print(f"Error in load_urls: {e}")
+        raise
 
 
 def extract_text(html):
@@ -155,10 +170,16 @@ def scrape_urls(urls):
     :type urls: list[str]
     :raises Exception: If scraping or processing fails for any URL
     """
-    for url in urls:
-        docs = scrape_main(url, 12)
-        chunks = chunking(docs)
-        add_docs(chunks, 300)
+    try:
+        temp_urls = check_duplicate(urls)
+        if temp_urls:
+            for url in temp_urls:
+                docs = scrape_main(url, 12)
+                chunks = chunking(docs)
+                add_docs(chunks, 300)
+    except Exception as e:
+        print(f"Error scraping URLs: {e}")
+        raise
 
 
 def jf_loader():
@@ -169,17 +190,20 @@ def jf_loader():
     """
 
     # Fetching document from website then save to for further process
-    crawl()
+    new_url = crawl()
 
-    # # Refine text by removing meanless conent from the XML files
-    refine_text()
+    # If new URLs: refine text by removing meanless conent from the XML files
+    if new_url is True:
+        refine_text()
 
-    # Load the content into vectorstore database
-    JSON_DOCS_DIR = os.path.join(RAG_DIR, "crawl_temp/processed_text")
-    json_docs = load_JSON_files(JSON_DOCS_DIR)
-    print(f"Loaded {len(json_docs)} documents.")
+        # Load the content into vectorstore database
+        os.makedirs(JSON_DOCS_DIR, exist_ok=True)
+        json_docs = load_JSON_files(JSON_DOCS_DIR)
+        print(f"Loaded {len(json_docs)} documents.")
 
-    load_docs(json_docs)
+        load_docs(json_docs)
+    else:
+        print("no new URLs...")
 
 
 def start_loader():
@@ -190,11 +214,16 @@ def start_loader():
     """
     try:
         scrape_urls(r_url_list)
+        scrape_urls(cls_url_list)
         load_urls(url_list)
         jf_loader()
+
     except Exception as e:
         print(f"Error loading vectorstore: {e}")
         raise
+
+    if os.path.exists(CRAWL_TEMP):
+        rmtree(CRAWL_TEMP)
 
 
 if __name__ == "__main__":

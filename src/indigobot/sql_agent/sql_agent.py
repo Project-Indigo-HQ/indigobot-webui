@@ -7,12 +7,13 @@ Usage:
 
     The interactive prompt accepts natural language queries that will be processed
     by the SQL agent to search and analyze the loaded content.
-    
+
     Example queries:
     - "What tables exist in the database?"
     - "Show me the first 5 documents"
     - "Find documents containing the word 'housing'"
-    
+    - "How many total entries contain the word housing?"
+
     Type 'quit' to exit the interactive prompt.
 """
 
@@ -125,6 +126,7 @@ def main():
     print(f"\nI can answer queestions about this dataabse: {GPT_DB}")
 
     while True:
+        print()
         line = input("llm>> ")
         if line.strip().lower() == "quit":
             print("Exiting the program...")

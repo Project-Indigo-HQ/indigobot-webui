@@ -17,16 +17,18 @@ llm = ChatOpenAI(model="gpt-4o")
 # Directory paths
 CURRENT_DIR: Final[str] = os.path.dirname(__file__)
 RAG_DIR: Final[str] = os.path.join(CURRENT_DIR, "rag_data")
+CRAWL_TEMP = os.path.join(RAG_DIR, "crawl_temp")
+HTML_DIR = os.path.join(CRAWL_TEMP, "html_files")
+JSON_DOCS_DIR = os.path.join(CRAWL_TEMP, "processed_text")
+TRACKED_URLS_FILE: Final[str] = os.path.join(RAG_DIR, "tracked_urls.txt")
 CHROMA_DIR: Final[str] = os.path.join(RAG_DIR, ".chromadb")
 CACHE_DB: Final[str] = os.path.join(RAG_DIR, "chat_cache.db")
-GEM_DB: Final[str] = os.path.join(CHROMA_DIR, "gemini/chroma.sqlite3")
-GPT_DB: Final[str] = os.path.join(CHROMA_DIR, "openai/chroma.sqlite3")
+SQL_DB: Final[str] = os.path.join(CHROMA_DIR, "vectorstore/chroma.sqlite3")
 CRAWLER_DIR: Final[str] = os.path.join(CURRENT_DIR, "utils/jf_crawler")
 
-# OpenAI embeddings
 try:
     vectorstore = Chroma(
-        persist_directory=os.path.join(CHROMA_DIR, "openai"),
+        persist_directory=CHROMA_DIR,
         embedding_function=OpenAIEmbeddings(model="text-embedding-3-large"),
     )
 except Exception as e:
@@ -46,10 +48,22 @@ r_url_list: List[str] = [
     "https://www.multco.us/dd",  # Developmental disabilities
 ]
 
+# URLs for web pages that need recursive scraping from https://www.clackamas.us/
+cls_url_list: List[str] = [
+    "https://www.clackamas.us/guide/low-income-services",  # low income help
+    "https://www.clackamas.us/guide/housing-resources",  # Housing
+    "https://www.clackamas.us/guide/seniors-and-older-adults",  # Senior assistance
+]
+
 # Sitemap URLs
 sitemaps: List[str] = [
     "https://centralcityconcern.org/housing-sitemap.xml",
     "https://centralcityconcern.org/healthcare-sitemap.xml",
     "https://centralcityconcern.org/recovery-sitemap.xml",
     "https://centralcityconcern.org/jobs-sitemap.xml",
+]
+
+# A series of URLs for test
+url_list_XML: List[str] = [
+    "https://cameronscrusaders.org/amazing-charities-that-help-with-medical-bills/"  # help with medical bills
 ]
