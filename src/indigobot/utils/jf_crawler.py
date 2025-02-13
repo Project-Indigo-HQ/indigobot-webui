@@ -1,3 +1,9 @@
+"""
+This module implements a web crawler with built-in retry mechanisms and polite
+crawling behavior. It can process XML sitemaps, extract URLs, and download HTML
+content while respecting rate limits and server constraints.
+"""
+
 import os
 import random
 import time
@@ -14,11 +20,6 @@ def start_session():
     """
     Create and configure a REST session with retry mechanisms and backoff.
 
-    Creates a requests Session object configured with:
-    - Up to 5 retries for failed requests
-    - Exponential backoff starting at 1 second
-    - Retries on specific HTTP error codes (403, 500, 502, 503, 504)
-
     :return: A configured requests Session object ready for making HTTP requests
     :rtype: requests.Session
     :raises ImportError: If the requests package is not available
@@ -34,10 +35,6 @@ def start_session():
 def fetch_xml(url, session):
     """
     Fetch XML content from a given URL using a session with retries.
-
-    Makes an HTTP GET request to the specified URL using the provided session.
-    Uses a custom User-Agent header to identify the crawler.
-    Implements a 5-second delay between requests for politeness.
 
     :param url: The URL to fetch XML content from
     :type url: str
@@ -65,9 +62,6 @@ def extract_xml(xml):
     """
     Parse XML content from a sitemap to extract URLs.
 
-    Parses XML using ElementTree and extracts all URLs from <loc> tags
-    within <url> elements in the sitemap namespace.
-
     :param xml: Raw XML content from a sitemap
     :type xml: bytes
     :return: List of URLs found in the sitemap
@@ -91,10 +85,6 @@ def load_urls(folder_path):
     """
     Load URLs from all text files in a specified folder.
 
-    Reads all .txt files in the given folder and extracts URLs,
-    assuming one URL per line. Combines URLs from all files into
-    a single list.
-
     :param folder_path: Path to folder containing URL text files
     :type folder_path: str
     :return: Combined list of URLs from all text files
@@ -115,12 +105,6 @@ def load_urls(folder_path):
 def download_and_save_html(urls, session):
     """
     Download HTML content from URLs and save to files.
-
-    For each URL:
-    1. Makes GET request with random delay (3-6 seconds)
-    2. Checks response status
-    3. Extracts filename from URL
-    4. Saves HTML content to file in crawl_temp/html_files/
 
     :param urls: List of URLs to download HTML from
     :type urls: list[str]
@@ -158,13 +142,6 @@ def parse_url_and_save(sitemap_url, target_file_name, session):
     """
     Parse URLs from a sitemap XML and save them to a text file.
 
-    1. Fetches sitemap XML from URL
-    2. Extracts URLs using extract_xml()
-    3. Prints extracted URLs to console
-    4. Creates crawl_temp/extracted_urls/ directory if needed
-    5. Saves URLs to specified file, one per line
-    6. Implements 5-second delay after processing
-
     :param sitemap_url: URL of the sitemap to parse
     :type sitemap_url: str
     :param target_file_name: Name for output file (without .txt extension)
@@ -196,12 +173,6 @@ def parse_url(sitemap_url, session):
     """
     Parse URLs from a sitemap XML and return them as a list.
 
-    Similar to parse_url_and_save() but doesn't save to file.
-    1. Fetches sitemap XML from URL
-    2. Extracts URLs using extract_xml()
-    3. Prints extracted URLs to console
-    4. Returns list of URLs
-
     :param sitemap_url: URL of the sitemap to parse
     :type sitemap_url: str
     :param session: Requests session for fetching sitemap
@@ -227,19 +198,6 @@ def crawl():
     """
     Orchestrate the complete website crawling process.
 
-    Main crawling function that:
-    1. Creates and configures a requests Session
-    2. Iterates through configured sitemaps from config
-    3. Extracts URLs from each sitemap
-    4. Downloads HTML content for all extracted URLs
-    5. Saves HTML files to crawl_temp directory
-
-    The function implements polite crawling practices:
-    - Uses retry mechanisms with backoff
-    - Adds delays between requests
-    - Uses proper User-Agent identification
-    - Handles errors gracefully
-
     :raises Exception: If critical crawling operations fail
     :raises OSError: If file operations fail
     :raises requests.exceptions.RequestException: If HTTP requests fail
@@ -262,12 +220,6 @@ def main():
     """
     Main entry point for running the crawler as a standalone script.
 
-    Executes the crawl() function and handles any exceptions
-    that might occur during the crawling process.
-
-    This function can be called directly when running the script
-    or imported and used as part of a larger application.
-
     :raises SystemExit: If critical errors occur during crawling
     """
     crawl()
@@ -275,29 +227,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-"""
-A robust web crawler for extracting content from sitemaps and web pages.
-
-This module implements a web crawler with built-in retry mechanisms and polite
-crawling behavior. It can process XML sitemaps, extract URLs, and download HTML
-content while respecting rate limits and server constraints.
-
-Features:
-- Configurable retry mechanism for failed requests
-- Random delays between requests to avoid overwhelming servers
-- XML sitemap parsing and URL extraction
-- Bulk HTML content downloading
-- File-based URL storage and management
-- Session management with custom headers
-
-The crawler implements best practices for web scraping including:
-- User-agent identification
-- Rate limiting
-- Error handling
-- Retry logic
-- Content verification
-
-Note:
-    Configuration settings including sitemaps and RAG_DIR are pulled from
-    indigobot.config.
-"""

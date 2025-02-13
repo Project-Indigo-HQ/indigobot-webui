@@ -1,12 +1,14 @@
 black
 bs4
 build
+fastapi
 isort
 jq
 langchain
 langchainhub
 langchain-chroma
 langchain-community
+langchain-core
 langchain-experimental
 langchain_openai
 langgraph
@@ -26,3 +28,4 @@ sphinx-autodoc-typehints
 sqlalchemy
 types-pyyaml
 unidecode
+uvicorn
