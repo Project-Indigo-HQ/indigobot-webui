@@ -9,6 +9,8 @@ from indigobot.context import chatbot_app
 from indigobot.quick_api import start_api
 from indigobot.utils.custom_loader import start_loader
 
+import indigobot.cl
+
 
 def load():
     """
@@ -45,7 +47,7 @@ def api():
             print(f"Error booting API: {e}")
 
 
-def main(skip_loader: bool = False, skip_api: bool = False) -> None:
+def main(cl_message, skip_loader: bool = False, skip_api: bool = False) -> None:
     """
     Main function that runs the interactive chat loop.
     Initializes the chatbot environment and starts an interactive session.
@@ -60,11 +62,11 @@ def main(skip_loader: bool = False, skip_api: bool = False) -> None:
     :raises: KeyboardInterrupt if user interrupts with Ctrl+C
     :raises: Exception for any other runtime errors
     """
-    if not skip_loader:
-        load()
+    # if not skip_loader:
+    #     load()
 
-    if not skip_api:
-        api()
+    # if not skip_api:
+    #     api()
 
     # Configuration constants
     thread_config = {"configurable": {"thread_id": "abc123"}}
@@ -76,19 +78,10 @@ def main(skip_loader: bool = False, skip_api: bool = False) -> None:
         try:
             line = input("\nllm>> ")
             if line:
-                state = {
-                    "input": line,
-                    "chat_history": chat_history,
-                    "context": context,
-                    "answer": "",
-                }
-
-                result = chatbot_app.invoke(state, config=thread_config)
-
-                # Update chat history and context
-                chat_history = result.get("chat_history", chat_history)
-                context = result.get("context", context)
-
+                result = chatbot_app.invoke(
+                    {"input": line},
+                    config=thread_config,
+                )
                 print(f"\n{result['answer']}")
             else:
                 print("Exiting chat...")
