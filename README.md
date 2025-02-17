@@ -19,12 +19,6 @@ pip install .
 ## Usage
 
 ```bash
-python3 -m indigobot
-```
-
-## Chainlit
-
-```bash
 chainlit run src/indigobot/__main__.py -w
 ```
 
