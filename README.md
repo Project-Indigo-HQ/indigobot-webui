@@ -1,4 +1,5 @@
-# Chatbot for Social Services
+# Chatbot for Social Services Web UI
+### Built with Chainlit
 
 **Portland State University | Computer Science capstone project | FW24: Sept 2024 - March 2025**
 
@@ -6,16 +7,16 @@
 
 ```bash
 pip install -r requirements.txt
+```
+```bash
 pip install -e .
+```
+or
+```bash
+pip install .
 ```
 
 ## Usage
-
-```bash
-python3 -m indigobot
-```
-
-##Chainlit
 
 ```bash
 chainlit run src/indigobot/__main__.py -w
@@ -27,8 +28,6 @@ chainlit run src/indigobot/__main__.py -w
 docker build -t example-name .
 docker run -it -e OPENAI_API_KEY="your-api-key" example-name
 ```
-
-### [Read the Docs](https://indigobot.readthedocs.io/en/latest/)
 
 **Thanks to Professors Bruce Irvin and Wu-chang Feng**
 
