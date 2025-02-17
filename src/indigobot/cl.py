@@ -9,7 +9,7 @@ async def main(message: cl.Message):
     # Send user input from chainlit Web UI to propbot LLM program
     indybot_res = indybot(message.content)
 
+    msg = cl.Message(content=f"{indybot_res}")
+
     # Send propbot response back to the user Web UI
-    await cl.Message(
-        content=f"{indybot_res}",
-    ).send()
+    await msg.send()

@@ -8,7 +8,6 @@ import threading
 from indigobot.context import chatbot_app
 from indigobot.quick_api import start_api
 from indigobot.utils.custom_loader import start_loader
-
 import indigobot.cl
 
 
@@ -47,7 +46,7 @@ def api():
             print(f"Error booting API: {e}")
 
 
-def main(cl_message, skip_loader: bool = False, skip_api: bool = False) -> None:
+def main(cl_message) -> None:
     """
     Main function that runs the interactive chat loop.
     Initializes the chatbot environment and starts an interactive session.
@@ -79,18 +78,18 @@ def main(cl_message, skip_loader: bool = False, skip_api: bool = False) -> None:
                     {"input": cl_message},
                     config=thread_config,
                 )
-                return result['answer']
+                return result["answer"]
                 # print(f"\n{result['answer']}")
 
             else:
                 break
         except Exception as e:
             print(f"Error with llm input: {e}")
-            
+
 
 if __name__ == "__main__":
     try:
-        main(skip_loader=False, skip_api=False)
+        main()
     except KeyboardInterrupt:
         print("\nExiting...")
     except Exception as e:
