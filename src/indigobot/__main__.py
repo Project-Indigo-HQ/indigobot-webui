@@ -71,24 +71,22 @@ def main(cl_message, skip_loader: bool = False, skip_api: bool = False) -> None:
     # Configuration constants
     thread_config = {"configurable": {"thread_id": "abc123"}}
 
-    chat_history = []  # Initialize as a list
-    context = ""
-
     while True:
         try:
-            line = input("\nllm>> ")
-            if line:
+            if cl_message:
+                # Get message from Chainlit and send back response from chatbot
                 result = chatbot_app.invoke(
-                    {"input": line},
+                    {"input": cl_message},
                     config=thread_config,
                 )
-                print(f"\n{result['answer']}")
+                return result['answer']
+                # print(f"\n{result['answer']}")
+
             else:
-                print("Exiting chat...")
                 break
         except Exception as e:
             print(f"Error with llm input: {e}")
-
+            
 
 if __name__ == "__main__":
     try:
