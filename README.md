@@ -34,8 +34,6 @@ docker build -t example-name .
 docker run -it -e OPENAI_API_KEY="your-api-key" example-name
 ```
 
-### [Read the Docs](https://indigobot.readthedocs.io/en/latest/)
-
 **Thanks to Professors Bruce Irvin and Wu-chang Feng**
 
 Team Indigo is:
