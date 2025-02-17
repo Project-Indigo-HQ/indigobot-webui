@@ -1,23 +1,23 @@
-# Use Python 3.10 slim base image
+# Use Python 3.10 base image
 FROM python:3.10-slim
 
-# Set working directory
+# Set the working directory inside the container
 WORKDIR /app
 
-# Copy requirements and install dependencies
+# Copy the project files into the container
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy source code
-COPY src/indigobot/ /app/indigobot
+COPY src/indigobot /app/indigobot
 
-# Set environment variables
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
 ENV PORT=8000
 
-# Expose the port the app runs on
-EXPOSE 8000
+# Expose the ports for Chainlit
+EXPOSE 8000  
 
-# Run the API server
-CMD ["python", "-m", "indigobot"]
+WORKDIR /app/indigobot
+
+CMD ["chainlit", "run", "src/indigobot/cl.py", "--host", "0.0.0.0", "--port", "8000"]
+
