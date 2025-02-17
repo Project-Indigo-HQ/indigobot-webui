@@ -1,4 +1,5 @@
-# Chatbot for Social Services
+# Chatbot for Social Services Web UI
+## Built with Chainlit
 
 **Portland State University | Computer Science capstone project | FW24: Sept 2024 - March 2025**
 
