@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech-to-Text</title>
+    <style>
+        #microphone-button {
+            font-size: 20px;
+            padding: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Speech-to-Text Demo</h1>
+
+<!-- Button to start speech recognition -->
+<button id="microphone-button" onclick="startSpeechRecognition()">🎤 Start Speech Recognition</button>
+
+<!-- Display recognized text -->
+<div id="recognized-text">
+    <p id="recognized-output">Speak now...</p>
+</div>
+
+<script>
+    // Function to start speech recognition
+    function startSpeechRecognition() {
+        if ('webkitSpeechRecognition' in window) {
+            const recognition = new webkitSpeechRecognition();
+            recognition.lang = 'en-US';  // Set the language for recognition
+            recognition.continuous = false;  // Stop after one recognition
+            recognition.interimResults = false;  // Don't return partial results
+
+            recognition.onstart = function() {
+                console.log("Speech recognition started.");
+                document.getElementById("recognized-output").innerText = "Listening...";
+            };
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                console.log("Recognized text: ", transcript);
+                document.getElementById("recognized-output").innerText = `You said: ${transcript}`;
+
+                // Send recognized text to Chainlit or process further
+                sendTranscriptToChainlit(transcript);
+            };
+
+            recognition.onerror = function(event) {
+                console.error("Speech recognition error: ", event.error);
+                document.getElementById("recognized-output").innerText = "Error with recognition.";
+            };
+
+            recognition.onend = function() {
+                console.log("Speech recognition ended.");
+            };
+
+            recognition.start();
+        } else {
+            alert("Speech recognition is not supported in this browser.");
+        }
+    }
+
+    // Function to send transcript to Chainlit (just an example placeholder)
+    function sendTranscriptToChainlit(transcript) {
+        console.log("Sending to Chainlit: ", transcript);
+        // Implement the logic for sending this text to Chainlit as a message
+    }
+</script>
+
+</body>
+</html>
