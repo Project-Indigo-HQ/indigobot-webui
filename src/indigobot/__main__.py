@@ -8,7 +8,7 @@ import threading
 from indigobot.context import chatbot_app
 from indigobot.quick_api import start_api
 from indigobot.utils.custom_loader import start_loader
-import indigobot.cl
+#import indigobot.cl
 
 
 def load():
@@ -69,22 +69,21 @@ def main(cl_message) -> None:
 
     # Configuration constants
     thread_config = {"configurable": {"thread_id": "abc123"}}
-
-    while True:
+    
+    if cl_message:
         try:
-            if cl_message:
-                # Get message from Chainlit and send back response from chatbot
-                result = chatbot_app.invoke(
-                    {"input": cl_message},
-                    config=thread_config,
-                )
-                return result["answer"]
-                # print(f"\n{result['answer']}")
-
-            else:
-                break
+            # Get message from Chainlit and return chatbot response
+            result = chatbot_app.invoke(
+                {"input": cl_message},
+                config=thread_config,
+            )
+            return result["answer"]
         except Exception as e:
-            print(f"Error with llm input: {e}")
+            print(f"Error with LLM input: {e}")
+            return "Error processing request."
+
+    # Prevents infinite loop when run directly
+    return "No input received."
 
 
 if __name__ == "__main__":
