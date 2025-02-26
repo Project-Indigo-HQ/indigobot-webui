@@ -19,7 +19,7 @@ pip install .
 ## Usage
 
 ```bash
-chainlit run src/indigobot/__main__.py -w
+chainlit run src/indigobot/cl.py -w
 ```
 
 ## Local Docker Usage
