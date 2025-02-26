@@ -18,10 +18,10 @@ RUN pip install -e .
 
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
-ENV PORT=8000
+ENV PORT=8080
 
 # Expose the port for Chainlit
-EXPOSE 8000
+EXPOSE 8080
 
-CMD ["chainlit", "run", "src/indigobot/cl.py", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["chainlit", "run", "src/indigobot/cl.py", "--host", "0.0.0.0", "--port", "8080"]
 
