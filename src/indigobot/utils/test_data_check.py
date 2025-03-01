@@ -1,8 +1,7 @@
-import numpy as np
 from langchain_chroma import Chroma
 
 from indigobot.config import RAG_DIR, vectorstore
-
+import numpy as np
 
 def quary_chroma(text: str):
     """
@@ -17,7 +16,6 @@ def quary_chroma(text: str):
         search_type="mmr", search_kwargs={"k": 1, "fetch_k": 5}
     )
     return retriever.get_relevant_documents(text)
-
 
 def check_duplicate(vectorstore, new_item_vector, similarity_threshold=0.9):
     """
@@ -39,7 +37,6 @@ def check_duplicate(vectorstore, new_item_vector, similarity_threshold=0.9):
             return True
     return False
 
-
 if __name__ == "__main__":
     chroma = Chroma()
 
@@ -51,17 +48,18 @@ if __name__ == "__main__":
     existing_item = retriever.get_relevant_documents("news")[0]
     existing_item_vector = existing_item["vector"]
     existing_item_metadata = existing_item["metadata"]
-
+    
     # Add the existing item to the vector store for testing
     vectorstore.add_item(existing_item_vector, existing_item_metadata)
-
+    
     # New item that is exactly the same as the existing item
     new_item_vector = existing_item_vector  # Same vector as existing item
-
+    
     # Check for duplicates
     is_duplicate = check_duplicate(vectorstore, new_item_vector)
     print("Is duplicate:", is_duplicate)
-    # ---------------------------------------------------------
+    #---------------------------------------------------------
 
     results = quary_chroma("Housing")
     print(results)
+

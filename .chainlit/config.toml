@@ -12,7 +12,7 @@ session_timeout = 3600
 user_session_timeout = 1296000  # 15 days
 
 # Enable third parties caching (e.g LangChain cache)
-cache = true
+cache = false
 
 # Authorized origins
 allow_origins = ["*"]
@@ -29,15 +29,6 @@ auto_tag_thread = true
 
 # Allow users to edit their own messages
 edit_message = true
-
-prompt_playground = true
-
-multi_modal = true
-
-# Allows user to use speech to text
-[features.speech_to_text]
-    enabled = true
-    language = "en-US"
 
 # Authorize users to spontaneously upload files with messages
 [features.spontaneous_file_upload]
@@ -72,7 +63,7 @@ name = "Project Indigo Social Services Chatbot"
 description = "Chatbot that provides info on social services in Portland, Oregon"
 
 # Chain of Thought (CoT) display mode. Can be "hidden", "tool_call" or "full".
-cot = "hidden"
+cot = "full"
 
 # Specify a CSS file that can be used to customize the user interface.
 # The CSS file can be served from the public directory or via an external link.

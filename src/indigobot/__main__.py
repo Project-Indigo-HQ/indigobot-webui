@@ -2,12 +2,13 @@
 This is the main chatbot program/file for conversational capabilities and info distribution.
 """
 
-import chainlit as cl
+import readline  # Required for using arrow keys in CLI
+import threading
 
 from indigobot.context import chatbot_app
-
-# from indigobot.quick_api import start_api
+from indigobot.quick_api import start_api
 from indigobot.utils.custom_loader import start_loader
+#import indigobot.cl
 
 
 def load():
@@ -36,16 +37,16 @@ def api():
 
     :raises: Exception if the API server fails to start
     """
-    # load_res = input("Would you like to enable the API? (y/n) ")
-    # if load_res == "y":
-    #     try:
-    #         api_thread = threading.Thread(target=start_api, daemon=True)
-    #         api_thread.start()
-    #     except Exception as e:
-    #         print(f"Error booting API: {e}")
+    load_res = input("Would you like to enable the API? (y/n) ")
+    if load_res == "y":
+        try:
+            api_thread = threading.Thread(target=start_api, daemon=True)
+            api_thread.start()
+        except Exception as e:
+            print(f"Error booting API: {e}")
 
 
-def main(cl_message: cl.Message) -> None:
+def main(cl_message) -> None:
     """
     Main function that runs the interactive chat loop.
     Initializes the chatbot environment and starts an interactive session.
@@ -60,28 +61,35 @@ def main(cl_message: cl.Message) -> None:
     :raises: KeyboardInterrupt if user interrupts with Ctrl+C
     :raises: Exception for any other runtime errors
     """
+    # if not skip_loader:
+    #     load()
 
+    # if not skip_api:
+    #     api()
+
+    # Configuration constants
+    thread_config = {"configurable": {"thread_id": "abc123"}}
+    
     if cl_message:
-        result = []
-        # Configuration constants
-        thread_config = {"configurable": {"thread_id": cl.context.session.id}}
         try:
             # Get message from Chainlit and return chatbot response
-            for chunk in chatbot_app.stream(
-                {"messages": [("human", cl_message)]},
-                stream_mode="values",
+            result = chatbot_app.invoke(
+                {"input": cl_message},
                 config=thread_config,
-            ):
-                result.append(chunk["messages"][-1])
+            )
+            return result["answer"]
         except Exception as e:
-            print(f"Error with llm invoke: {e}")
-
-        # send back response to chatbot
-        return result[-1].content
+            print(f"Error with LLM input: {e}")
+            return "Error processing request."
 
     # Prevents infinite loop when run directly
     return "No input received."
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\nExiting...")
+    except Exception as e:
+        print(f"Error: {e}")
