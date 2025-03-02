@@ -7,6 +7,8 @@ import tempfile
 import wave
 
 import chainlit as cl
+from chainlit.input_widget import Select, Slider, Switch
+
 import numpy as np
 import pygame
 from gtts import gTTS
@@ -33,10 +35,71 @@ pygame.mixer.init()
 
 @cl.on_chat_start
 async def start():
-    cl.user_session.set("message_history", [])
+    """id = context.session.id
+    env = context.session.user_env
+    chat_settings = context.session.chat_settings
+    user = context.session.user
+    chat_profile = context.session.chat_profile
+    http_referer = context.session.http_referer
+    client_type = context.session.client_type
+    http_cookie = context.session.http_cookie"""
+
     await cl.Message(
         content="Welcome. I'm the Indigo Social Services Chatbot!",
     ).send()
+
+    # app_user = cl.user_session.get("user")
+    # print(f"hello id: {cl.user_session.get("id")} user: {app_user} identifier: {app_user.identifier}")
+
+    # cl.user_session.set("message_history", [])
+
+    # Define the elements you want to display
+    # elements = [
+    #     cl.Image(path="C:/Users/kklein3/Desktop/prop/propbot/public/logo_light.png", name="image1"),
+    #     cl.Pdf(path="C:/Users/kklein3/Desktop/prop/propbot/src/propbot/rag_data/uploads/testpdf.pdf", name="pdf1"),
+    #     cl.Text(content="Here is a side text document", name="text1"),
+    #     cl.Text(content="Here is a page text document", name="text2"),
+    # ]
+    # # Setting elements will open the sidebar
+    # await cl.ElementSidebar.set_elements(elements)
+    # await cl.ElementSidebar.set_title("Sidebar")
+
+    settings = await cl.ChatSettings(
+        [
+            Select(
+                id="Model",
+                label="OpenAI - Model",
+                values=["gpt-3.5-turbo", "gpt-3.5-turbo-16k", "gpt-4", "gpt-4-32k"],
+                initial_index=0,
+            ),
+            Switch(id="Streaming", label="OpenAI - Stream Tokens", initial=True),
+            Slider(
+                id="Temperature",
+                label="OpenAI - Temperature",
+                initial=1,
+                min=0,
+                max=2,
+                step=0.1,
+            ),
+        ]
+    ).send()
+
+
+@cl.on_settings_update
+async def setup_agent(settings):
+    print("on_settings_update", settings)
+
+
+# @cl.password_auth_callback
+# def auth_callback(username: str, password: str):
+#     # Fetch the user matching username from your database
+#     # and compare the hashed password with the value stored in the database
+#     if (username, password) == ("admin", "admin"):
+#         return cl.User(
+#             identifier="admin", metadata={"role": "admin", "provider": "credentials"}
+#         )
+#     else:
+#         return None
 
 
 @cl.on_audio_start

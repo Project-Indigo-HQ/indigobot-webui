@@ -66,10 +66,10 @@ name = "Project Indigo Social Services Chatbot"
 
 # default_theme = "dark"
 
-# layout = "wide"
+layout = "wide"
 
 # Description of the assistant. This is used for HTML tags.
-description = "Chatbot that provides info on social services in Portland, Oregon"
+description = "Chatbot providing info on social services in Portland, Oregon"
 
 # Chain of Thought (CoT) display mode. Can be "hidden", "tool_call" or "full".
 cot = "hidden"
