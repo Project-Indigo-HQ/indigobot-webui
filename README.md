@@ -1,4 +1,5 @@
 # Chatbot for Social Services Web UI
+
 ### Built with Chainlit
 
 **Portland State University | Computer Science capstone project | FW24: Sept 2024 - March 2025**
@@ -8,10 +9,13 @@
 ```bash
 pip install -r requirements.txt
 ```
+
 ```bash
 pip install -e .
 ```
+
 or
+
 ```bash
 pip install .
 ```
@@ -19,7 +23,7 @@ pip install .
 ## Usage
 
 ```bash
-chainlit run src/indigobot/cl.py -w
+chainlit run src/indigobot/clui.py -w
 ```
 
 ## Local Docker Usage

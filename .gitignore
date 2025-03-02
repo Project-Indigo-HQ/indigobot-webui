@@ -13,3 +13,4 @@ project_indigo.egg-info
 .coverage
 chat_cache.db
 **/translations
+.langchain.db
