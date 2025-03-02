@@ -7,23 +7,15 @@ import tempfile
 import wave
 
 import chainlit as cl
-from chainlit.input_widget import Select, Slider, Switch
-
 import numpy as np
 import pygame
+from chainlit.input_widget import Select, Slider, Switch
 from gtts import gTTS
 from openai import AsyncOpenAI
 
 from indigobot.__main__ import main as indybot
 
-ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
-ELEVENLABS_VOICE_ID = os.getenv("ELEVENLABS_VOICE_ID")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-
-openai_client = AsyncOpenAI(api_key=OPENAI_API_KEY)
-
-if not ELEVENLABS_API_KEY or not ELEVENLABS_VOICE_ID or not OPENAI_API_KEY:
-    raise ValueError("missing API key")
+openai_client = AsyncOpenAI()
 
 # Define a threshold for detecting silence and a timeout for ending a turn
 # Adjust based on your audio level (e.g., lower for quieter audio)
