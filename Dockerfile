@@ -23,5 +23,5 @@ ENV PORT=8080
 # Expose the port for Chainlit
 EXPOSE 8080
 
-CMD ["chainlit", "run", "src/indigobot/cl.py", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["chainlit", "run", "src/indigobot/clui.py", "--host", "0.0.0.0", "--port", "8080"]
 
