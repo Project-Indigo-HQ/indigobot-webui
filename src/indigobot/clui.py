@@ -204,7 +204,12 @@ async def on_action(action):
         tts.save(temp_audio_path)
 
     elements = [
-        cl.Audio(name="audio response", path=temp_audio_path, display="inline"),
+        cl.Audio(
+            name="audio response",
+            path=temp_audio_path,
+            display="inline",
+            auto_play=True,
+        ),
     ]
     await cl.Message(content="", elements=elements).send()
 
