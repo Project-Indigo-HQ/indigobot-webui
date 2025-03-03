@@ -8,7 +8,6 @@ import wave
 
 import chainlit as cl
 import numpy as np
-import pygame
 from chainlit.input_widget import Select, Slider, Switch
 from gtts import gTTS
 from openai import AsyncOpenAI
@@ -21,8 +20,6 @@ openai_client = AsyncOpenAI()
 # Adjust based on your audio level (e.g., lower for quieter audio)
 SILENCE_THRESHOLD = 3500
 SILENCE_TIMEOUT = 1300.0  # Seconds of silence to consider the turn finished
-
-pygame.mixer.init()
 
 
 @cl.on_chat_start
@@ -202,22 +199,18 @@ async def on_action(action):
     tts = gTTS(text)
 
     # Create a temporary file for cross-platform compatibility
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as temp_audio:
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_audio:
         temp_audio_path = temp_audio.name
         tts.save(temp_audio_path)
 
-    # Play the audio using pygame
-    pygame.mixer.music.load(temp_audio_path)
-    pygame.mixer.music.play()
+    elements = [
+        cl.Audio(name="audio response", path=temp_audio_path, display="inline"),
+    ]
+    await cl.Message(content="", elements=elements).send()
 
-    # Wait until the audio finishes playing
-    while pygame.mixer.music.get_busy():
-        pygame.time.Clock().tick(10)
-
-    # Cleanup: Remove the temporary file after playback
     os.remove(temp_audio_path)
 
-    # await action.remove()
+    await action.remove()
 
 
 # Receives regular text messages
