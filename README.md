@@ -6,6 +6,8 @@
 
 ## Install
 
+**Note**: This program has only been built and tested using Python 3.12
+
 ```bash
 pip install -r requirements.txt
 ```
