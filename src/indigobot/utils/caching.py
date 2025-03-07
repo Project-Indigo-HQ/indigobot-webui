@@ -17,7 +17,7 @@ from pathlib import Path
 
 from indigobot.config import CACHE_DB
 
-CACHE_THRESHOLD = 3
+CACHE_THRESHOLD = 2
 Path(CACHE_DB).touch()
 
 
