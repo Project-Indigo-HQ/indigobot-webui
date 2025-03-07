@@ -20,8 +20,8 @@ HTML_DIR = os.path.join(CRAWL_TEMP, "html_files")
 JSON_DOCS_DIR = os.path.join(CRAWL_TEMP, "processed_text")
 TRACKED_URLS_FILE: Final[str] = os.path.join(RAG_DIR, "tracked_urls.txt")
 CHROMA_DIR: Final[str] = os.path.join(RAG_DIR, ".chromadb")
+SQL_DB: Final[str] = os.path.join(CHROMA_DIR, "chroma.sqlite3")
 CACHE_DB: Final[str] = os.path.join(RAG_DIR, "chat_cache.db")
-SQL_DB: Final[str] = os.path.join(CHROMA_DIR, "vectorstore/chroma.sqlite3")
 CRAWLER_DIR: Final[str] = os.path.join(CURRENT_DIR, "utils/jf_crawler")
 
 try:
@@ -55,10 +55,10 @@ cls_url_list: List[str] = [
 
 # Sitemap URLs
 sitemaps: List[str] = [
-    "https://centralcityconcern.org/housing-sitemap.xml",
-    "https://centralcityconcern.org/healthcare-sitemap.xml",
-    "https://centralcityconcern.org/recovery-sitemap.xml",
-    "https://centralcityconcern.org/jobs-sitemap.xml",
+    # "https://centralcityconcern.org/housing-sitemap.xml",
+    # "https://centralcityconcern.org/healthcare-sitemap.xml",
+    # "https://centralcityconcern.org/recovery-sitemap.xml",
+    # "https://centralcityconcern.org/jobs-sitemap.xml",
 ]
 
 # A series of URLs for test

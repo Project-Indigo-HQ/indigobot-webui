@@ -6,6 +6,8 @@
 
 ## Install
 
+**Note**: This program has only been built and tested using Python 3.12
+
 ```bash
 pip install -r requirements.txt
 ```
@@ -31,7 +33,6 @@ chainlit run src/indigobot/clui.py -w
 This program requires API key environment variables for:
 - OpenAI (**required** for LLM engine)
 - Google Places (Places lookup tool for supplementary info)
-- ElevenLabs (for UI speech-to-text)
 
 ## Local Docker Usage
 
