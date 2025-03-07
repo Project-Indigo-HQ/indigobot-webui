@@ -4,10 +4,10 @@ This is the main chatbot program/file for conversational capabilities and info d
 
 import chainlit as cl
 
-from indigobot.context import chatbot_app
+from indigobot.context import invoke_indybot
 
 # from indigobot.quick_api import start_api
-from indigobot.utils.custom_loader import start_loader
+from indigobot.utils.etl.custom_loader import start_loader
 
 
 def load():
@@ -62,22 +62,13 @@ def main(cl_message: cl.Message) -> None:
     """
 
     if cl_message:
-        result = []
         # Configuration constants
         thread_config = {"configurable": {"thread_id": cl.context.session.id}}
-        try:
-            # Get message from Chainlit and return chatbot response
-            for chunk in chatbot_app.stream(
-                {"messages": [("human", cl_message)]},
-                stream_mode="values",
-                config=thread_config,
-            ):
-                result.append(chunk["messages"][-1])
-        except Exception as e:
-            print(f"Error with llm invoke: {e}")
-
-        # send back response to chatbot
-        return result[-1].content
+        response = invoke_indybot(cl_message, thread_config=thread_config)
+        if response:
+            return response
+        else:
+            return "No response from chatbot!"
 
     # Prevents infinite loop when run directly
     return "No input received."
