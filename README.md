@@ -31,7 +31,6 @@ chainlit run src/indigobot/clui.py -w
 ## API Keys
 
 This program requires API key environment variables for:
-
 - OpenAI (**required** for LLM engine)
 - Google Places (Places lookup tool for supplementary info)
 
